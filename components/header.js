@@ -56,7 +56,7 @@
     this.bgColor     = o.bgColor     || THEMES.mathematik.bgColor;
     this.textColor   = o.textColor   || THEMES.mathematik.textColor;
     this.mode        = o.mode        || 'compact';
-    this.subtitle    = o.subtitle    || 'Clever lernen';
+    this.subtitle    = o.subtitle    || 'Wissen macht Spaß';
     this.logoSvg     = o.logoSvg     || null;
     this.homeHref    = o.homeHref    || 'index.html';
     this.onMenuClick = o.onMenuClick || null;
