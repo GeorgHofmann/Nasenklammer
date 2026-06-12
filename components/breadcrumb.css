@@ -1,0 +1,80 @@
+/* ─────────────────────────────────────────────
+   Breadcrumb (Mad-Libs-Flow) – reusable component
+   Farbe wird per CSS Custom Properties
+   von außen (Theme) gesteuert.
+   ───────────────────────────────────────────── */
+
+.nk-breadcrumb {
+  background: var(--breadcrumb-bg, #fbd4b0);
+  padding: 10px 56px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.nk-breadcrumb__icon {
+  flex-shrink: 0;
+  line-height: 0;
+  color: var(--breadcrumb-color, #964f12);  /* SVG erbt via currentColor */
+  transition: color 0.2s, opacity 0.15s;
+  text-decoration: none;
+}
+
+.nk-breadcrumb__icon:hover {
+  opacity: 0.75;
+}
+
+.nk-breadcrumb__icon svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
+.nk-breadcrumb__text {
+  font-family: var(--font-heading, 'Solway', Georgia, serif);
+  font-size: 20px;
+  line-height: 32px;
+  color: var(--breadcrumb-color, #964f12);
+  transition: color 0.2s;
+}
+
+/* Klickbare Slots (z. B. Klasse, Fach, Thema) */
+.nk-breadcrumb__slot {
+  color: var(--breadcrumb-color, #964f12);
+  transition: color 0.2s, opacity 0.15s;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  font: inherit;
+  padding: 0;
+}
+
+.nk-breadcrumb__slot:hover {
+  opacity: 0.75;
+}
+
+/* Nicht-klickbarer Slot (href: null) — kein Unterstreichen, kein Zeiger */
+.nk-breadcrumb__slot--static {
+  text-decoration: none;
+  cursor: default;
+  pointer-events: none;
+}
+
+/* ── Responsive ─────────────────────────────── */
+@media (max-width: 900px) {
+  .nk-breadcrumb {
+    padding: 10px 20px;
+  }
+  .nk-breadcrumb__text {
+    font-size: 17px;
+  }
+}
+
+@media (max-width: 600px) {
+  .nk-breadcrumb {
+    display: none;
+  }
+}

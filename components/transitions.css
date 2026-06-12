@@ -1,0 +1,37 @@
+/* ─────────────────────────────────────────────
+   Page Micro-Transitions
+   Ein/Ausblenden beim Seitenwechsel.
+   ───────────────────────────────────────────── */
+
+/* Einblenden beim Laden */
+@keyframes nk-page-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Ausblenden beim Verlassen */
+@keyframes nk-page-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+body.nk-entering {
+  animation: nk-page-in 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+body.nk-leaving {
+  animation: nk-page-out 0.18s ease-in both;
+  pointer-events: none;   /* Klicks während Ausblenden blockieren */
+}

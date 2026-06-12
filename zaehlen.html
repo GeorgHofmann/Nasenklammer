@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- SEO -->
+  <meta name="description" content="Zählen üben für Grundschulkinder – spielerische Mathe-Übungen kostenlos auf Nasenklammer.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://nasenklammer.de/zaehlen.html">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="de_DE">
+  <meta property="og:site_name" content="Nasenklammer">
+  <meta property="og:title" content="Zählen üben – Nasenklammer">
+  <meta property="og:description" content="Zählen üben für Grundschulkinder – spielerische Mathe-Übungen kostenlos auf Nasenklammer.">
+  <meta property="og:url" content="https://nasenklammer.de/zaehlen.html">
+  <meta property="og:image" content="https://nasenklammer.de/og-image.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Zählen üben – Nasenklammer">
+  <meta name="twitter:description" content="Zählen üben für Grundschulkinder – spielerische Mathe-Übungen kostenlos auf Nasenklammer.">
+  <meta name="twitter:image" content="https://nasenklammer.de/og-image.png">
+  <!-- /SEO -->
+  <title>Nasenklammer – Zählen</title>
+  <link rel="stylesheet" href="components/fonts.css">
+  <link rel="stylesheet" href="components/transitions.css">
+  <link rel="stylesheet" href="components/logo.css">
+  <link rel="stylesheet" href="components/header.css">
+  <link rel="stylesheet" href="components/breadcrumb.css">
+  <link rel="stylesheet" href="components/menu.css">
+  <link rel="stylesheet" href="components/fab.css">
+  <link rel="stylesheet" href="components/slider.css">
+  <style>
+    :root {
+      --font-logo:    'Alcyone', 'Solway', Georgia, serif;
+      --font-heading: 'Solway', Georgia, serif;
+      --font-body:    'Noto Sans', Arial, sans-serif;
+      --color-bg:     #fbd4b0;
+      --color-accent: #964f12;
+      --nk-fab-bg:    #f4a056;
+      --nk-fab-color: #00363d;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-body);
+      background: var(--color-bg);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Übungs-Bereich ─────────────────────────────── */
+    .ml-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px 80px;
+    }
+
+    /* Zähler */
+    .ml-counter {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      margin-bottom: 4px;
+    }
+    .ml-count {
+      font-family: var(--font-heading);
+      font-size: 72px;
+      font-weight: 400;
+      line-height: 1;
+      color: var(--color-accent);
+      min-width: 90px;
+      text-align: center;
+      display: block;
+      transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .ml-count.bump { transform: scale(1.3); }
+    .ml-count-label {
+      font-size: 15px;
+      letter-spacing: 0.75px;
+      text-transform: uppercase;
+      color: var(--color-accent);
+      opacity: 0.55;
+    }
+
+    /* Stage-Wrapper: responsive Skalierung */
+    .ml-stage-container {
+      display: flex;
+      justify-content: center;
+      width: 100%;
+      overflow: visible;
+    }
+
+    /* Stage: fixes 600×480-Koordinatensystem */
+    .ml-stage {
+      width: 600px;
+      height: 480px;
+      position: relative;
+      transform-origin: top center;
+      flex-shrink: 0;
+    }
+
+    /* Drop-Zone */
+    .ml-dropzone {
+      position: absolute;
+      left: 210px;
+      top:  150px;
+      width:  180px;
+      height: 180px;
+      border-radius: 50%;
+      border: 3px dashed rgba(150, 79, 18, 0.3);
+      z-index: 1;
+      pointer-events: none;
+      transition: border-color 0.2s, background-color 0.2s;
+    }
+    .ml-dropzone.is-over {
+      border-color: rgba(150, 79, 18, 0.7);
+      background-color: rgba(150, 79, 18, 0.06);
+    }
+
+    /* Zieh-Objekte */
+    .ml-item {
+      position: absolute;
+      width:  56px;
+      height: 56px;
+      color: var(--color-accent);
+      cursor: grab;
+      z-index: 2;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: none;
+    }
+    .ml-item.is-dragging {
+      cursor: grabbing;
+      z-index: 50;
+      filter: drop-shadow(0 4px 10px rgba(150, 79, 18, 0.35));
+    }
+    .ml-item svg {
+      width:  100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* ── Schieberegler-Abstand ──────────────────────── */
+    .ml-slider-wrap {
+      margin-top: 48px;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="siteMenu"></div>
+  <header id="siteHeader"></header>
+  <div id="siteBreadcrumb"></div>
+
+  <main class="ml-main">
+
+    <!-- Zähler -->
+    <div class="ml-counter">
+      <span class="ml-count" id="mlCount">0</span>
+      <span class="ml-count-label">in der Menge</span>
+    </div>
+
+    <!-- Übungsfläche -->
+    <div class="ml-stage-container" id="mlStageContainer">
+      <div class="ml-stage" id="mlStage">
+        <div class="ml-dropzone" id="mlDropzone"></div>
+        <!-- Objekte werden per JS eingefügt -->
+      </div>
+    </div>
+
+    <!-- Schieberegler: Anzahl der Objekte -->
+    <div class="ml-slider-wrap" id="mlSliderMount"></div>
+
+  </main>
+
+  <div id="siteFab"></div>
+
+  <script src="components/analytics.js"></script>
+  <script src="components/voice.js"></script>
+  <script src="components/fab.js"></script>
+  <script src="components/transitions.js"></script>
+  <script src="components/logo.js"></script>
+  <script src="components/icons.js"></script>
+  <script src="components/menu.js"></script>
+  <script src="components/header.js"></script>
+  <script src="components/breadcrumb.js"></script>
+  <script src="components/slider.js"></script>
+  <script>
+    /* ─── Seiten-Komponenten ─────────────────────────── */
+    var voiceText =
+      'Willkommen beim Zählen! ' +
+      'Ziehe die Kreise und Vierecke in den großen Kreis in der Mitte. ' +
+      'Zähle, wie viele Objekte du hineingezogen hast!';
+
+    var breadcrumb = new NKBreadcrumb(
+      document.getElementById('siteBreadcrumb'),
+      Object.assign({}, NKBreadcrumb.THEMES.mathematik, {
+        themaConnector: 'das',
+        slots: {
+          klasse: { label: 'Grundschulkind', href: 'grundschule-faecher.html' },
+          fach:   { label: 'Mathematik',     href: 'grundschule.html' },
+          thema:  { label: 'Zählen',         href: null },
+        }
+      })
+    );
+
+    var menu = new NKMenu(
+      document.getElementById('siteMenu'),
+      Object.assign({}, NKMenu.THEMES.mathematik, {
+        activeHref: 'zaehlen.html',
+        headerEl: document.getElementById('siteHeader'),
+        onItemClick: function(item) {
+          if (item.href && item.href !== '#') window.location.href = item.href;
+        }
+      })
+    );
+
+    var header = new NKHeader(
+      document.getElementById('siteHeader'),
+      Object.assign({}, NKHeader.THEMES.mathematik, {
+        homeHref: 'index.html',
+        onMenuClick: function() { menu.toggle(); }
+      })
+    );
+
+    var fab = new NKFab(document.getElementById('siteFab'), {
+      mode: 'module',
+      onSpeak: function() { NKVoice.speak(voiceText, function() { fab.done(); }); },
+      onStop:  function() { NKVoice.stop(); },
+    });
+
+    /* ─── Drag-and-Drop Mengenzähler ────────────────── */
+    (function() {
+
+      /* Internes Koordinatensystem: 600 × 480 px */
+      var STAGE_W   = 600;
+      var STAGE_H   = 480;
+      var STAGE_CX  = 300;
+      var STAGE_CY  = 240;
+      var ITEM_HALF = 28;
+      var ITEM_SIZE = 56;
+      var ZONE_R    = 90;
+
+      /* ── SVG-Motive ─────────────────────────────────── */
+      var SVG = {
+        circle: '<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="28" cy="28" r="23" stroke="currentColor" stroke-width="3"/></svg>',
+        square: '<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="7" y="7" width="42" height="42" rx="5" stroke="currentColor" stroke-width="3"/></svg>'
+      };
+
+      /* Zustand */
+      var items       = [];
+      var dragging    = null;
+      var inZoneCount = 0;
+
+      /* ── Zähler mit Bump-Animation ──────────────────── */
+      function updateCounter(val) {
+        var el = document.getElementById('mlCount');
+        el.textContent = val;
+        el.classList.remove('bump');
+        void el.offsetWidth;
+        el.classList.add('bump');
+        setTimeout(function() { el.classList.remove('bump'); }, 250);
+      }
+
+      /* ── Alle Zone-Slots neu anordnen ───────────────── */
+      function getZoneSlot(idx, total) {
+        if (total === 1) {
+          return { x: STAGE_CX - ITEM_HALF, y: STAGE_CY - ITEM_HALF };
+        }
+        var r     = total <= 5 ? 42 : 55;
+        var angle = (idx / total) * 2 * Math.PI - Math.PI / 2;
+        return {
+          x: Math.round(STAGE_CX + r * Math.cos(angle) - ITEM_HALF),
+          y: Math.round(STAGE_CY + r * Math.sin(angle) - ITEM_HALF)
+        };
+      }
+
+      function moveTo(item, x, y, animate) {
+        item.el.style.transition = animate
+          ? 'left 0.3s cubic-bezier(0.22,1,0.36,1), top 0.3s cubic-bezier(0.22,1,0.36,1)'
+          : 'none';
+        item.el.style.left = x + 'px';
+        item.el.style.top  = y + 'px';
+        item.x = x;
+        item.y = y;
+      }
+
+      function rearrangeZone() {
+        var inZone = items.filter(function(it) { return it.inZone; });
+        inZone.forEach(function(it, i) {
+          var slot = getZoneSlot(i, inZone.length);
+          moveTo(it, slot.x, slot.y, true);
+        });
+      }
+
+      /* ── Zufällige Startposition, Zone freilassen ───── */
+      function randomPos(placed) {
+        var margin    = 10;
+        var minX      = margin;
+        var maxX      = STAGE_W - ITEM_SIZE - margin;
+        var minY      = margin;
+        var maxY      = STAGE_H - ITEM_SIZE - margin;
+        var clearZone = ZONE_R + 56;   /* Mindestabstand zur Drop-Zone */
+        var clearItem = 68;            /* Mindestabstand zwischen Objekten */
+
+        for (var pass = 0; pass < 2; pass++) {
+          var tries = pass === 0 ? 80 : 200;
+          for (var t = 0; t < tries; t++) {
+            var x  = Math.round(minX + Math.random() * (maxX - minX));
+            var y  = Math.round(minY + Math.random() * (maxY - minY));
+            var cx = x + ITEM_HALF;
+            var cy = y + ITEM_HALF;
+
+            /* Zone freilassen */
+            var dz = Math.sqrt(Math.pow(cx - STAGE_CX, 2) + Math.pow(cy - STAGE_CY, 2));
+            if (dz < clearZone) continue;
+
+            /* Überlappung mit gesetzten Objekten prüfen (nur erster Durchlauf) */
+            if (pass === 0) {
+              var ok = true;
+              for (var j = 0; j < placed.length; j++) {
+                var di = Math.sqrt(
+                  Math.pow(cx - (placed[j].x + ITEM_HALF), 2) +
+                  Math.pow(cy - (placed[j].y + ITEM_HALF), 2)
+                );
+                if (di < clearItem) { ok = false; break; }
+              }
+              if (!ok) continue;
+            }
+
+            return { x: x, y: y };
+          }
+        }
+        /* Letzter Fallback */
+        return { x: minX, y: minY };
+      }
+
+      /* ── Stage aufbauen / neu aufbauen ──────────────── */
+      function buildStage(n) {
+        var stage    = document.getElementById('mlStage');
+        var dropzone = document.getElementById('mlDropzone');
+
+        /* Alte Objekte entfernen */
+        items.forEach(function(it) {
+          if (it.el.parentNode === stage) stage.removeChild(it.el);
+        });
+        items       = [];
+        dragging    = null;
+        inZoneCount = 0;
+        updateCounter(0);
+        dropzone.classList.remove('is-over');
+
+        /* Neue Objekte platzieren */
+        var placed = [];
+        for (var i = 0; i < n; i++) {
+          var type = i % 2 === 0 ? 'circle' : 'square';
+          var pos  = randomPos(placed);
+          placed.push(pos);
+
+          var el = document.createElement('div');
+          el.className = 'ml-item ml-item--' + type;
+          el.innerHTML = SVG[type];
+          el.setAttribute('role', 'img');
+          el.setAttribute('aria-label', type === 'circle' ? 'Kreis' : 'Viereck');
+          el.style.left = pos.x + 'px';
+          el.style.top  = pos.y + 'px';
+
+          var item = {
+            el:    el,
+            type:  type,
+            inZone: false,
+            homeX: pos.x,
+            homeY: pos.y,
+            x:     pos.x,
+            y:     pos.y
+          };
+          items.push(item);
+          stage.appendChild(el);
+
+          /* Drag-Events (Closure über item) */
+          (function(item) {
+            var el = item.el;
+
+            el.addEventListener('pointerdown', function(e) {
+              e.preventDefault();
+              el.setPointerCapture(e.pointerId);
+              el.style.transition = 'none';
+              el.classList.add('is-dragging');
+
+              var rect  = stage.getBoundingClientRect();
+              var scale = rect.width / STAGE_W;
+              dragging = {
+                item:    item,
+                offsetX: (e.clientX - rect.left) / scale - item.x,
+                offsetY: (e.clientY - rect.top)  / scale - item.y
+              };
+            });
+
+            el.addEventListener('pointermove', function(e) {
+              if (!dragging || dragging.item !== item) return;
+              var rect  = stage.getBoundingClientRect();
+              var scale = rect.width / STAGE_W;
+              var nx    = (e.clientX - rect.left) / scale - dragging.offsetX;
+              var ny    = (e.clientY - rect.top)  / scale - dragging.offsetY;
+
+              el.style.left = nx + 'px';
+              el.style.top  = ny + 'px';
+              item.x = nx;
+              item.y = ny;
+
+              var dist = Math.sqrt(
+                Math.pow(nx + ITEM_HALF - STAGE_CX, 2) +
+                Math.pow(ny + ITEM_HALF - STAGE_CY, 2)
+              );
+              dropzone.classList.toggle('is-over', dist < ZONE_R + 12);
+            });
+
+            el.addEventListener('pointerup', function() {
+              if (!dragging || dragging.item !== item) return;
+              el.classList.remove('is-dragging');
+              dragging = null;
+              dropzone.classList.remove('is-over');
+
+              var dist = Math.sqrt(
+                Math.pow(item.x + ITEM_HALF - STAGE_CX, 2) +
+                Math.pow(item.y + ITEM_HALF - STAGE_CY, 2)
+              );
+              var nowInZone = dist < ZONE_R;
+
+              if (!item.inZone && nowInZone) {
+                item.inZone = true;
+                inZoneCount++;
+                updateCounter(inZoneCount);
+                rearrangeZone();
+              } else if (item.inZone && !nowInZone) {
+                item.inZone = false;
+                inZoneCount--;
+                updateCounter(inZoneCount);
+                rearrangeZone();
+                moveTo(item, item.homeX, item.homeY, true);
+              } else if (!item.inZone) {
+                moveTo(item, item.homeX, item.homeY, true);
+              } else {
+                rearrangeZone();
+              }
+            });
+          })(item);
+        }
+      }
+
+      /* ── Init ───────────────────────────────────────── */
+      function init() {
+        buildStage(10);
+
+        new NKSlider(document.getElementById('mlSliderMount'), {
+          min:      10,
+          max:      20,
+          step:     10,
+          value:    10,
+          color:    '#964f12',
+          thumb:    '#f4a056',
+          onChange: function(n) { buildStage(n); }
+        });
+
+        /* Responsive Skalierung */
+        var container = document.getElementById('mlStageContainer');
+        var stage     = document.getElementById('mlStage');
+
+        function scaleStage() {
+          var avail = container.clientWidth;
+          var scale = Math.min(1, avail / STAGE_W);
+          stage.style.transform  = scale < 1 ? 'scale(' + scale + ')' : '';
+          container.style.height = Math.ceil(480 * scale) + 'px';
+        }
+
+        scaleStage();
+        window.addEventListener('resize', scaleStage);
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+
+    })();
+  </script>
+
+</body>
+</html>

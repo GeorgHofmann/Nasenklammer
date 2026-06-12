@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- SEO -->
+  <meta name="description" content="Uhrzeit lesen lernen für Grundschulkinder – interaktive Übungen mit ganzen Stunden, halben Stunden und Viertelstunden. Kostenlos auf Nasenklammer.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://nasenklammer.de/uhr.html">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="de_DE">
+  <meta property="og:site_name" content="Nasenklammer">
+  <meta property="og:title" content="Uhrzeit lesen üben – Nasenklammer">
+  <meta property="og:description" content="Uhrzeit lesen lernen für Grundschulkinder – interaktive Übungen mit ganzen Stunden, halben Stunden und Viertelstunden. Kostenlos auf Nasenklammer.">
+  <meta property="og:url" content="https://nasenklammer.de/uhr.html">
+  <meta property="og:image" content="https://nasenklammer.de/og-image.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Uhrzeit lesen üben – Nasenklammer">
+  <meta name="twitter:description" content="Uhrzeit lesen lernen für Grundschulkinder – interaktive Übungen mit ganzen Stunden, halben Stunden und Viertelstunden. Kostenlos auf Nasenklammer.">
+  <meta name="twitter:image" content="https://nasenklammer.de/og-image.png">
+  <!-- /SEO -->
+  <title>Nasenklammer – Uhr lesen</title>
+  <link rel="stylesheet" href="components/fonts.css">
+  <link rel="stylesheet" href="components/transitions.css">
+  <link rel="stylesheet" href="components/score-panel.css">
+  <link rel="stylesheet" href="components/fab.css">
+  <link rel="stylesheet" href="components/logo.css">
+  <link rel="stylesheet" href="components/header.css">
+  <link rel="stylesheet" href="components/breadcrumb.css">
+  <link rel="stylesheet" href="components/exercise-header.css">
+  <link rel="stylesheet" href="components/menu.css">
+  <style>
+    /* ─────────────────────────────────────────
+       DESIGN TOKENS – exact values from Figma
+       ───────────────────────────────────────── */
+    :root {
+      /* Surface – saisonal (Mathematik = orange/color-4) */
+      --color-header-bg:   #fef5ec;   /* =Menü-Hintergrund für nahtlosen Übergang */
+      --color-page-bg:     #fbd4b0;   /* surface/saisonal/color-4-default  */
+      --color-primary:     #964f12;   /* surface/saisonal/color-4-selected */
+      --color-fab:         #f4a056;
+      --nk-fab-bg:         #f4a056;
+      --nk-fab-color:      #00363d;
+
+      /* CTA / level chips */
+      --color-chip-active: #ed4790;   /* action/cta/saisonal/cta-default            */
+      --color-chip-on:     #f8fdff;   /* action/nav/surfaces/standard-button-selected */
+
+      /* Score panel */
+      --color-panel-bg:    #fde5cd;   /* colors/saisonal/orange/100  */
+      --color-correct:     #4f8e33;   /* colors/saisonal/hellgruen/600 */
+      --color-error:       #d2283b;   /* colors/main-colors/error      */
+
+      /* Clock */
+      --color-hours:       #2d4f38;   /* surface/legends/hours   */
+      --color-minutes:     #b3261e;   /* surface/legends/minutes */
+      --color-clock-nums:  #221b00;   /* layout/clock/design     */
+
+      /* Neutral */
+      --color-neutral:     #191c1d;   /* colors/neutral-grey/950 */
+
+      /* Typography */
+      --font-logo:    'Alcyone', 'Solway', Georgia, serif;
+      --font-heading: 'Solway', Georgia, serif;
+      --font-body:    'Noto Sans', Arial, sans-serif;
+
+      /* Spacing */
+      --sp-xs:  6px;
+      --sp-s:   8px;
+      --sp-m2: 12px;
+      --sp-m4: 16px;
+      --sp-m5: 18px;
+      --sp-m6: 24px;
+      --sp-m8: 32px;
+
+      /* Border radius */
+      --r-chip:   120px;
+      --r-choice:  16px;
+      --r-radio:   64px;
+      --r-panel:   16px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--color-page-bg);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      color: var(--color-neutral);
+    }
+
+    /* ── Header → components/header.css ─────── */
+
+    /* ── Breadcrumb → components/breadcrumb.css ─ */
+
+    /* ── Page layout ─────────────────────────── */
+    .page {
+      flex: 1;
+    }
+    .main {
+      padding: 27px 56px 80px;
+    }
+
+    /* Wrapper: aligns the content block + score panel side by side,
+       panel height = content height only */
+    .exercise-wrapper {
+      display: flex;
+      align-items: flex-start;   /* panel stops at content bottom */
+    }
+    .exercise-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    /* Score-Panel styles → components/score-panel.css */
+
+    /* ── Exercise title + chips → components/exercise-header.css ── */
+
+    /* ── Exercise area ───────────────────────── */
+    .exercise-area {
+      display: flex;
+      gap: var(--sp-m8);
+      align-items: center;
+    }
+
+    /* ── Clock ───────────────────────────────── */
+    .clock-col {
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      gap: var(--sp-m2);
+    }
+    .clock-wrap {
+      width: 256px;
+      height: 256px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #clockSvg {
+      width: 252px;
+      height: 252px;
+      filter:
+        drop-shadow(4px 6px 8px rgba(0,0,0,0.22))
+        drop-shadow(2px 3px 2px rgba(0,0,0,0.14));
+    }
+
+    /* ── Legend ──────────────────────────────── */
+    .legend {
+      display: flex;
+      gap: var(--sp-m6);
+      padding-left: 4px;
+      margin-top: 40px;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-s);
+      font-family: var(--font-body);
+      font-size: 16px;
+      line-height: 24px;
+      letter-spacing: 0.25px;
+      color: var(--color-neutral);
+    }
+    .legend-dot {
+      width: 20px;
+      height: 20px;
+      border-radius: var(--r-panel);
+      flex-shrink: 0;
+    }
+    .dot-hours   { background: var(--color-hours); }
+    .dot-minutes { background: var(--color-minutes); }
+
+    /* ── Q&A column ──────────────────────────── */
+    .qa-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: var(--sp-m8);
+      min-width: 0;
+    }
+    .question-text {
+      font-family: var(--font-heading);
+      font-size: 24px;
+      font-weight: 400;
+      line-height: 32px;
+      color: var(--color-primary);
+    }
+
+    /* ── Choice chips ────────────────────────── */
+    .choices {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--sp-m4);
+      align-items: center;
+    }
+    .choice-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--sp-xs);
+      padding: var(--sp-s) var(--sp-m5);
+      border: 1px solid var(--color-primary);
+      border-radius: var(--r-choice);
+      background: transparent;
+      font-family: var(--font-body);
+      font-size: 18px;
+      font-weight: 400;
+      line-height: 28px;
+      letter-spacing: 0.25px;
+      color: var(--color-primary);
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+      white-space: nowrap;
+    }
+    .choice-radio {
+      display: none;
+    }
+    .choice-btn:hover:not(:disabled) {
+      background: rgba(150,79,18,0.08);
+    }
+    .choice-btn.is-correct {
+      background: rgba(79,142,51,0.12);
+      border-color: var(--color-correct);
+      color: var(--color-correct);
+    }
+    .choice-btn.is-correct .choice-radio {
+      background: var(--color-correct);
+      border-color: var(--color-correct);
+    }
+    .choice-btn.is-wrong {
+      background: rgba(210,40,59,0.10);
+      border-color: var(--color-error);
+      color: var(--color-error);
+    }
+    .choice-btn.is-wrong .choice-radio {
+      background: var(--color-error);
+      border-color: var(--color-error);
+    }
+    .choice-btn:disabled { cursor: default; }
+
+    /* ── Feedback ────────────────────────────── */
+    .feedback {
+      font-family: var(--font-body);
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 28px;
+      min-height: 28px;
+      color: var(--color-primary);
+    }
+    .feedback.is-correct { color: var(--color-correct); }
+    .feedback.is-wrong   { color: var(--color-error); }
+
+    /* ── Responsive ──────────────────────────── */
+    @media (max-width: 900px) {
+      .main { padding-left: 20px; padding-right: 20px; }
+      .exercise-area { flex-direction: column; align-items: flex-start; }
+      .exercise-title { font-size: 24px; }
+      .score-panel { width: 72px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Menu overlay – mounted by NKMenu component -->
+  <div id="siteMenu"></div>
+
+  <!-- Header – mounted by NKHeader component -->
+  <header id="siteHeader"></header>
+
+  <!-- Breadcrumb – mounted by NKBreadcrumb component -->
+  <div id="siteBreadcrumb"></div>
+
+  <!-- Page -->
+  <div class="page">
+    <main class="main">
+      <div class="exercise-wrapper">
+        <div class="exercise-content">
+          <!-- Übungstitel + Level-Chips – mounted by NKExerciseHeader component -->
+          <div id="exerciseHeader"></div>
+
+      <!-- Exercise -->
+      <div class="exercise-area">
+
+        <!-- Clock + Legend -->
+        <div class="clock-col">
+          <div class="clock-wrap">
+            <svg id="clockSvg" viewBox="0 0 250 250" xmlns="http://www.w3.org/2000/svg">
+              <!-- Face – same colour as page background -->
+              <circle cx="125" cy="125" r="122" fill="#fbd4b0"/>
+              <!-- Outer border ring -->
+              <circle cx="125" cy="125" r="122" fill="none" stroke="none"/>
+              <!-- Ticks & numbers (built by JS) -->
+              <g id="tickGroup"></g>
+              <g id="numberGroup"></g>
+              <!-- Hour hand: dark green rounded pill, rotated around centre -->
+              <rect id="hourHand"
+                    x="-4.5" y="-54" width="9" height="66" rx="4.5"
+                    fill="#2d4f38"
+                    transform="translate(125,125) rotate(0)"/>
+              <!-- Minute hand: red rounded pill, longer -->
+              <rect id="minuteHand"
+                    x="-3" y="-79" width="6" height="95" rx="3"
+                    fill="#b3261e"
+                    transform="translate(125,125) rotate(0)"/>
+              <!-- Centre cap -->
+              <circle cx="125" cy="125" r="5.5" fill="#3a2c00"/>
+            </svg>
+          </div>
+          <div class="legend">
+            <div class="legend-item">
+              <div class="legend-dot dot-hours"></div>
+              <span>Stunden</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-dot dot-minutes"></div>
+              <span>Minuten</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Q&A -->
+        <div class="qa-col">
+          <p class="question-text">Wie spät ist es?</p>
+          <div class="choices" id="choices"></div>
+          <div class="feedback" id="feedback" aria-live="polite"></div>
+        </div>
+
+      </div><!-- /.exercise-area -->
+
+        </div><!-- /.exercise-content -->
+
+        <!-- Score panel – mounted by ScorePanel component (components/score-panel.js) -->
+        <aside class="score-panel" id="scorePanel" aria-label="Punktestand"></aside>
+
+      </div><!-- /.exercise-wrapper -->
+    </main>
+  </div><!-- /.page -->
+
+  <!-- FAB – mounted by NKFab component -->
+  <div id="siteFab"></div>
+
+  <!-- End Screen -->
+  <div id="endScreen" style="
+    display: none;
+    position: fixed; inset: 0; z-index: 200;
+    background: rgba(251,212,176,0.92);
+    align-items: center; justify-content: center;
+  ">
+    <div style="
+      background: #fff; border-radius: 24px;
+      padding: 48px 56px; text-align: center;
+      max-width: 420px; width: 90%;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    ">
+      <p style="font-family:'Solway',Georgia,serif; font-size:32px; color:#964f12; margin-bottom:8px;">
+        Geschafft! 🎉
+      </p>
+      <p id="endScore" style="font-family:'Noto Sans',Arial,sans-serif; font-size:18px; color:#202427; margin-bottom:32px;"></p>
+      <button id="restartBtn" style="
+        height:52px; padding:0 32px;
+        background:#964f12; color:#fff;
+        border:none; border-radius:14px;
+        font-family:'Noto Sans',Arial,sans-serif; font-size:18px;
+        cursor:pointer;
+      ">Nochmal</button>
+    </div>
+  </div>
+
+  <script src="components/analytics.js"></script>
+  <script src="components/voice.js"></script>
+  <script src="components/fab.js"></script>
+  <script src="components/score-panel.js"></script>
+  <script src="components/header.js"></script>
+  <script src="components/breadcrumb.js"></script>
+  <script src="components/exercise-header.js"></script>
+  <script src="components/transitions.js"></script>
+  <script src="components/logo.js"></script>
+  <script src="components/icons.js"></script>
+  <script src="components/menu.js"></script>
+  <script>
+    'use strict';
+
+    /* ─── Vorlese-Text ───────────────────────
+       Beschreibt die Übung für den Nutzer.
+       Bei Änderungen am UI diesen Text anpassen.
+       ───────────────────────────────────────── */
+    var voiceText =
+      'Hey! Kannst du eine Uhr lesen? Schau mal — die Uhr hat zwei Zeiger. ' +
+      'Der grüne zeigt die Stunden, der rote zeigt die Minuten. ' +
+      'Welche Zeit zeigt die Uhr gerade? Tipp einfach auf deine Antwort — du schaffst das!';
+
+    /* ─── State ───────────────────────────── */
+    var CX = 125, CY = 125;
+    var level = 1;
+    var correctAnswer = '';
+    var answered = false;
+    var round = 0;
+    var MAX_ROUNDS = 10;
+
+    /* ─── ScorePanel instance ──────────────── */
+    var scorePanel = new ScorePanel(document.getElementById('scorePanel'), {
+      timerDuration: 3000
+    });
+
+    /* ─── Build static clock face ─────────── */
+    function buildClockFace() {
+      var tickG   = document.getElementById('tickGroup');
+      var numberG = document.getElementById('numberGroup');
+      var svgNS   = 'http://www.w3.org/2000/svg';
+      var i, n, angle, innerR, x1, y1, x2, y2, line, x, y, txt;
+
+      for (i = 0; i < 60; i++) {
+        var isMajor = (i % 5 === 0);
+        angle  = (i / 60) * 2 * Math.PI - Math.PI / 2;
+        innerR = isMajor ? 106 : 112;
+        x1 = CX + innerR * Math.cos(angle);
+        y1 = CY + innerR * Math.sin(angle);
+        x2 = CX + 120    * Math.cos(angle);
+        y2 = CY + 120    * Math.sin(angle);
+
+        line = document.createElementNS(svgNS, 'line');
+        line.setAttribute('x1', x1); line.setAttribute('y1', y1);
+        line.setAttribute('x2', x2); line.setAttribute('y2', y2);
+        line.setAttribute('stroke',        '#964f12');
+        line.setAttribute('stroke-width',  isMajor ? '2' : '1');
+        line.setAttribute('stroke-linecap','round');
+        if (!isMajor) line.setAttribute('opacity', '0.5');
+        tickG.appendChild(line);
+      }
+
+      for (n = 1; n <= 12; n++) {
+        angle = (n / 12) * 2 * Math.PI - Math.PI / 2;
+        x = CX + 91 * Math.cos(angle);
+        y = CY + 91 * Math.sin(angle);
+        txt = document.createElementNS(svgNS, 'text');
+        txt.setAttribute('x', x);
+        txt.setAttribute('y', y);
+        txt.setAttribute('text-anchor',       'middle');
+        txt.setAttribute('dominant-baseline', 'central');
+        txt.setAttribute('font-size',         '18');
+        txt.setAttribute('font-weight',       '400');
+        txt.setAttribute('fill',              '#221b00');
+        txt.setAttribute('font-family',       "'Noto Sans', Arial, sans-serif");
+        txt.textContent = n;
+        numberG.appendChild(txt);
+      }
+    }
+
+    /* ─── Rotate a hand (degrees from 12 o'clock) ── */
+    function setHand(id, degrees) {
+      document.getElementById(id).setAttribute(
+        'transform',
+        'translate(' + CX + ',' + CY + ') rotate(' + degrees + ')'
+      );
+    }
+
+    /* ─── Random time per level ────────────── */
+    var lastTime = null;
+    function randomTime() {
+      var hours, minutes, pool;
+      var minutePools = {
+        1: [0],
+        2: [0, 30],
+        3: [0, 15, 30, 45],
+        4: [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]
+      };
+      pool = minutePools[level];
+      var attempts = 0;
+      do {
+        hours   = Math.floor(Math.random() * 12) + 1;
+        minutes = pool[Math.floor(Math.random() * pool.length)];
+        attempts++;
+      } while (
+        lastTime &&
+        hours === lastTime.hours &&
+        minutes === lastTime.minutes &&
+        attempts < 20
+      );
+      lastTime = { hours: hours, minutes: minutes };
+      return lastTime;
+    }
+
+    /* ─── Zahlwörter 1–12 ──────────────────── */
+    var ZAHLWORT = ['', 'eins', 'zwei', 'drei', 'vier', 'fünf', 'sechs',
+                    'sieben', 'acht', 'neun', 'zehn', 'elf', 'zwölf'];
+
+    /* ─── Format time as German string ─────── */
+    function formatTime(t, useWord) {
+      var next = t.hours === 12 ? 1 : t.hours + 1;
+      var h    = useWord ? ZAHLWORT[t.hours] : t.hours;
+      var hn   = useWord ? ZAHLWORT[next]    : next;
+      if (t.minutes === 0)  return (h === 'eins' ? 'ein' : h) + ' Uhr';
+      if (t.minutes === 15) return 'Viertel nach ' + h;
+      if (t.minutes === 30) return 'halb ' + hn;
+      if (t.minutes === 45) return 'Viertel vor ' + hn;
+      return t.hours + ':' + (t.minutes < 10 ? '0' : '') + t.minutes + ' Uhr';
+    }
+
+    /* ─── Build 4 shuffled answer strings ───── */
+    function generateAnswers(correctTime) {
+      /* One useWord decision per question — all buttons use the same format */
+      var useWord = Math.random() < 0.5;
+      var correctStr = formatTime(correctTime, useWord);
+      correctAnswer = correctStr;
+      var minutePools = {
+        1: [0],
+        2: [0, 30],
+        3: [0, 15, 30, 45],
+        4: [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]
+      };
+      var mins = minutePools[level];
+      var pool = [], h, m, s, i, j, a, b, tmp;
+
+      for (h = 1; h <= 12; h++) {
+        for (m = 0; m < mins.length; m++) {
+          if (h === correctTime.hours && mins[m] === correctTime.minutes) continue;
+          s = formatTime({ hours: h, minutes: mins[m] }, useWord);
+          pool.push(s);
+        }
+      }
+      for (i = pool.length - 1; i > 0; i--) {
+        j = Math.floor(Math.random() * (i + 1));
+        tmp = pool[i]; pool[i] = pool[j]; pool[j] = tmp;
+      }
+      var opts = [correctStr];
+      for (i = 0; opts.length < 4 && i < pool.length; i++) opts.push(pool[i]);
+      for (a = opts.length - 1; a > 0; a--) {
+        b = Math.floor(Math.random() * (a + 1));
+        tmp = opts[a]; opts[a] = opts[b]; opts[b] = tmp;
+      }
+      return opts;
+    }
+
+    /* ─── Render answer buttons ─────────────── */
+    function renderAnswers(answers) {
+      var container = document.getElementById('choices');
+      container.innerHTML = '';
+      for (var i = 0; i < answers.length; i++) {
+        (function(ans) {
+          var btn   = document.createElement('button');
+          btn.className       = 'choice-btn';
+          btn.dataset.answer  = ans;  /* safe comparison key */
+
+          var radio = document.createElement('span');
+          radio.className = 'choice-radio';
+          radio.setAttribute('aria-hidden', 'true');
+          btn.appendChild(radio);
+          btn.appendChild(document.createTextNode(ans));
+
+          btn.addEventListener('click', function() { checkAnswer(ans, btn); });
+          container.appendChild(btn);
+        })(answers[i]);
+      }
+    }
+
+    /* ─── Next question ─────────────────────── */
+    function nextQuestion() {
+      scorePanel.stopTimer();
+      answered = false;
+      var fb = document.getElementById('feedback');
+      fb.textContent = '';
+      fb.className   = 'feedback';
+
+      var time = randomTime();
+
+      setHand('hourHand',   (time.hours % 12) / 12 * 360 + time.minutes / 60 * 30);
+      setHand('minuteHand', time.minutes / 60 * 360);
+      renderAnswers(generateAnswers(time));
+    }
+
+    /* ─── Check answer ──────────────────────── */
+    function checkAnswer(selected, btn) {
+      if (answered) return;
+      answered = true;
+      round++;
+
+      var allBtns = document.querySelectorAll('.choice-btn');
+      for (var i = 0; i < allBtns.length; i++) {
+        allBtns[i].disabled = true;
+        if (allBtns[i].dataset.answer === correctAnswer) {
+          allBtns[i].classList.add('is-correct');
+        }
+      }
+
+      var fb = document.getElementById('feedback');
+      if (selected === correctAnswer) {
+        scorePanel.increment('correct');
+        var praise = ['Super! 🎉', 'Genau richtig!', 'Toll gemacht!', 'Richtig! ⭐'];
+        fb.textContent = praise[Math.floor(Math.random() * praise.length)];
+        fb.className   = 'feedback is-correct';
+      } else {
+        scorePanel.increment('wrong');
+        btn.classList.add('is-wrong');
+        fb.textContent = 'Fast! Es war: ' + correctAnswer;
+        fb.className   = 'feedback is-wrong';
+      }
+
+      if (round >= MAX_ROUNDS) {
+        scorePanel.startTimer(showEndScreen);
+      } else {
+        scorePanel.startTimer(nextQuestion);
+      }
+    }
+
+    /* ─── End screen ────────────────────────── */
+    function showEndScreen() {
+      var scores = scorePanel.getScores();
+      document.getElementById('endScore').textContent =
+        scores.correct + ' von ' + MAX_ROUNDS + ' richtig';
+      document.getElementById('endScreen').style.display = 'flex';
+    }
+
+    document.getElementById('restartBtn').addEventListener('click', function() {
+      document.getElementById('endScreen').style.display = 'none';
+      round = 0;
+      scorePanel.reset();
+      nextQuestion();
+    });
+
+    /* ─── FAB (Lasche) ──────────────────────── */
+    var fab = new NKFab(document.getElementById('siteFab'), {
+      mode: 'module',
+      onSpeak: function() { NKVoice.speak(voiceText, function() { fab.done(); }); },
+      onStop:  function() { NKVoice.stop(); },
+    });
+
+    /* ─── Init ──────────────────────────────── */
+    var menu = new NKMenu(
+      document.getElementById('siteMenu'),
+      Object.assign({}, NKMenu.THEMES.mathematik, {
+        activeHref: 'uhr.html',
+        headerEl: document.getElementById('siteHeader'),
+        onItemClick: function(item) {
+          console.log('Navigiere zu:', item.label, item.href);
+          /* TODO: Seitennavigation */
+        }
+      })
+    );
+
+    var header = new NKHeader(
+      document.getElementById('siteHeader'),
+      Object.assign({}, NKHeader.THEMES.mathematik, {
+        homeHref: 'index.html',
+        onMenuClick: function() { menu.toggle(); }
+      })
+    );
+
+    var exHeader = new NKExerciseHeader(
+      document.getElementById('exerciseHeader'),
+      {
+        title: 'Ich weiß, wie spät es ist',
+        chips: [
+          { label: 'Ganze Stunden',  value: 1 },
+          { label: 'Halbe Stunden',  value: 2 },
+          { label: 'Viertelstunden', value: 3 },
+          { label: 'Gemischt',       value: 4 },
+        ],
+        activeValue: 1,
+        onChipChange: function(value) {
+          level = value;
+          nextQuestion();
+        }
+      }
+    );
+
+    var breadcrumb = new NKBreadcrumb(
+      document.getElementById('siteBreadcrumb'),
+      Object.assign({}, NKBreadcrumb.THEMES.mathematik, {
+        slots: {
+          klasse: { label: 'Grundschulkind', href: 'grundschule-faecher.html' },
+          fach:   { label: 'Mathematik',     href: 'grundschule.html' },
+          thema:  { label: 'Uhrzeit',        href: null },
+        },
+        onSlotClick: function(key, label) {
+          console.log('Slot geklickt:', key, label);
+        }
+      })
+    );
+
+    buildClockFace();
+    nextQuestion();
+  </script>
+
+</body>
+</html>

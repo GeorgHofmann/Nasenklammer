@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- SEO -->
+  <meta name="description" content="Nasenklammer – das kostenlose Lernportal für Kinder. Spielerisch Mathe, Deutsch, Sachkunde und Englisch üben – für Vorschulkinder, Grundschulkinder und ältere Kinder.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://nasenklammer.de/index.html">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="de_DE">
+  <meta property="og:site_name" content="Nasenklammer">
+  <meta property="og:title" content="Nasenklammer – Clever lernen">
+  <meta property="og:description" content="Nasenklammer – das kostenlose Lernportal für Kinder. Spielerisch Mathe, Deutsch, Sachkunde und Englisch üben – für Vorschulkinder, Grundschulkinder und ältere Kinder.">
+  <meta property="og:url" content="https://nasenklammer.de/index.html">
+  <meta property="og:image" content="https://nasenklammer.de/og-image.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Nasenklammer – Clever lernen">
+  <meta name="twitter:description" content="Nasenklammer – das kostenlose Lernportal für Kinder. Spielerisch Mathe, Deutsch, Sachkunde und Englisch üben – für Vorschulkinder, Grundschulkinder und ältere Kinder.">
+  <meta name="twitter:image" content="https://nasenklammer.de/og-image.png">
+  <!-- /SEO -->
+  <title>Nasenklammer – Clever lernen</title>
+  <link rel="stylesheet" href="components/fonts.css">
+  <link rel="stylesheet" href="components/transitions.css">
+  <link rel="stylesheet" href="components/logo.css">
+  <link rel="stylesheet" href="components/header.css">
+  <link rel="stylesheet" href="components/menu.css">
+  <link rel="stylesheet" href="components/card.css">
+  <link rel="stylesheet" href="components/fab.css">
+  <style>
+    /* ─────────────────────────────────────────
+       DESIGN TOKENS – Startseite (home/blau)
+       ───────────────────────────────────────── */
+    :root {
+      --color-home-header:     #c8e0f4;   /* surface/saisonal/color-1-default  */
+      --color-home-strip:      #75aee3;   /* surface/saisonal/color-1-hover    */
+      --color-home-accent:     #225a93;   /* surface/saisonal/color-1-selected */
+      --color-home-search-bg:  #c8e0f4;
+      --color-home-search-icon:#963555;   /* rosa/700                          */
+      --color-home-fab:        #f4a056;
+      --color-home-fab-text:   #00363d;
+      --nk-fab-bg:             #f4a056;
+      --nk-fab-color:          #00363d;
+
+      --font-logo:    'Alcyone', 'Solway', Georgia, serif;
+      --font-heading: 'Solway', Georgia, serif;
+      --font-body:    'Noto Sans', Arial, sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--color-home-strip);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── "Ich bin ein …" Strip ───────────────── */
+    .start-strip {
+      background: var(--color-home-strip);
+      padding: 21px 56px;
+    }
+
+    .start-strip__text {
+      font-family: var(--font-heading);
+      font-size: 32px;
+      font-weight: 400;
+      line-height: 40px;
+      color: var(--color-home-accent);
+    }
+
+    /* ── Hauptbereich: Karten ────────────────── */
+    .start-main {
+      flex: 1;
+      background: var(--color-home-strip);
+      padding: 12px 68px 160px;   /* unten Platz für die Suchleiste */
+      display: flex;
+      align-items: flex-start;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* ── Monster-Illustration ────────────────── */
+    .start-monster {
+      position: absolute;
+      right: -7px;
+      bottom: 60px;   /* etwas Abstand zur Suchleiste */
+      width: 210px;
+      height: 386px;
+      opacity: 0.5;
+      pointer-events: none;
+      user-select: none;
+      display: block;
+    }
+
+    @media (max-width: 900px) {
+      .start-monster { display: none; }
+    }
+
+
+    /* ── Unterer Bereich: Suche + FAB ────────── */
+    .start-bottom {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 20px 68px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      /* leichter Gradient zum Ausblenden des Inhalts darunter */
+      background: linear-gradient(to bottom, transparent, var(--color-home-strip) 40%);
+      pointer-events: none;
+    }
+
+    /* ── Suchleiste ──────────────────────────── */
+    .start-search {
+      width: 560px;
+      height: 64px;
+      background: var(--color-home-search-bg);
+      border-radius: 64px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding-left: 10px;
+      padding-right: 20px;
+      pointer-events: auto;
+    }
+
+    .start-search__icon-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 32px;
+      background: var(--color-home-search-icon);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: #fff;
+      transition: opacity 0.15s;
+    }
+
+    .start-search__icon-btn:hover { opacity: 0.85; }
+
+    .start-search__icon-btn svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .start-search__input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      font-family: var(--font-body);
+      font-size: 18px;
+      line-height: 28px;
+      letter-spacing: 0.25px;
+      color: #4a6267;
+      outline: none;
+    }
+
+    .start-search__input::placeholder {
+      color: #4a6267;
+    }
+
+
+    /* ── Responsive ──────────────────────────── */
+    @media (max-width: 900px) {
+      .start-strip  { padding: 16px 20px; }
+      .start-strip__text { font-size: 24px; }
+      .start-main   { padding: 16px 20px 140px; }
+      .start-bottom { padding: 16px 20px 24px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Cookie Layer -->
+  <div id="cookieLayer" style="
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(0,0,0,0.4);
+    align-items: flex-end;
+    justify-content: center;
+    padding: 32px;
+  ">
+    <div style="
+      background: #fff;
+      border-radius: 16px;
+      padding: 32px;
+      max-width: 560px;
+      width: 100%;
+      font-family: var(--font-body, 'Noto Sans', sans-serif);
+    ">
+      <p style="font-size:16px; line-height:24px; color:#202427; margin-bottom:24px;">
+        Diese Website verwendet Cookies, um dir das beste Erlebnis zu bieten.
+      </p>
+      <div style="display:flex; gap:12px; flex-wrap:wrap;">
+        <button id="cookieAccept" style="
+          flex:1; min-width:120px; height:48px;
+          background:#225a93; color:#fff;
+          border:none; border-radius:12px;
+          font-family:inherit; font-size:16px;
+          cursor:pointer;
+        ">Alles akzeptieren</button>
+        <button id="cookieDecline" style="
+          flex:1; min-width:120px; height:48px;
+          background:transparent; color:#225a93;
+          border:2px solid #225a93; border-radius:12px;
+          font-family:inherit; font-size:16px;
+          cursor:pointer;
+        ">Nur notwendige</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Menu overlay -->
+  <div id="siteMenu"></div>
+
+  <!-- Header – Brand-Modus -->
+  <header id="siteHeader"></header>
+
+  <!-- "Ich bin ein …" Strip -->
+  <div class="start-strip">
+    <p class="start-strip__text">Ich bin ein …</p>
+  </div>
+
+  <!-- Kategorie-Auswahl -->
+  <main class="start-main">
+    <div id="cardGrid"></div>
+    <img class="start-monster" src="img/home-monster.svg" alt="" aria-hidden="true">
+  </main>
+
+  <!-- Suchleiste + FAB -->
+  <div class="start-bottom">
+    <div class="start-search">
+      <button class="start-search__icon-btn" aria-label="Suchen">
+        <svg viewBox="0 0 24 24" fill="none">
+          <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/>
+          <path d="M16.5 16.5L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <input class="start-search__input" type="text" placeholder="Ich suche eine Übung …" aria-label="Übung suchen">
+    </div>
+
+  </div>
+
+  <!-- FAB – mounted by NKFab component -->
+  <div id="siteFab"></div>
+
+  <script src="components/analytics.js"></script>
+  <script src="components/voice.js"></script>
+  <script src="components/fab.js"></script>
+  <script src="components/transitions.js"></script>
+  <script src="components/logo.js"></script>
+  <script src="components/icons.js"></script>
+  <script src="components/menu.js"></script>
+  <script src="components/header.js"></script>
+  <script src="components/card.js"></script>
+  <script>
+    /* ─── Vorlese-Text ───────────────────────
+       Beschreibt die Startseite für den Nutzer.
+       ───────────────────────────────────────── */
+    var voiceText =
+      'Hallo! Schön, dass du da bist! Bei Nasenklammer kannst du ganz viel Cooles lernen und üben. ' +
+      'Bist du ein Vorschulkind, ein Grundschulkind oder schon ein großes Kind? ' +
+      'Such dir einfach aus, was zu dir passt!';
+
+    /* ─── Menu ──────────────────────────────── */
+    var menu = new NKMenu(
+      document.getElementById('siteMenu'),
+      Object.assign({}, NKMenu.THEMES.home, {
+        headerEl: document.getElementById('siteHeader'),
+        onItemClick: function(item) {
+          if (item.href && item.href !== '#') {
+            window.location.href = item.href;
+          }
+        }
+      })
+    );
+
+    /* ─── Header (Brand-Modus) ──────────────── */
+    var header = new NKHeader(
+      document.getElementById('siteHeader'),
+      Object.assign({}, NKHeader.THEMES.home, {
+        onMenuClick: function() { menu.toggle(); }
+      })
+    );
+
+    /* ─── Karten ───────────────────────────── */
+    new NKCardGrid(document.getElementById('cardGrid'), {
+      cards: [
+        {
+          href: 'vorschule.html',
+          label: '… Vorschulkind',
+          imageSvg: '<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="64" cy="48" r="28" stroke="currentColor" stroke-width="3"/><path d="M64 20v28M64 76v8M36 112c0-15.464 12.536-28 28-28s28 12.536 28 28" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><circle cx="54" cy="44" r="3" fill="currentColor"/><circle cx="74" cy="44" r="3" fill="currentColor"/><path d="M54 58c2.5 4 6 6 10 6s7.5-2 10-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>'
+        },
+        {
+          href: 'grundschule-faecher.html',
+          label: '… Grundschulkind',
+          imageSvg: '<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="64" cy="44" r="24" stroke="currentColor" stroke-width="3"/><path d="M32 112c0-17.673 14.327-32 32-32s32 14.327 32 32" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M44 40l8 8 16-16" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><rect x="24" y="72" width="20" height="24" rx="3" stroke="currentColor" stroke-width="2.5"/><path d="M28 80h12M28 86h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>'
+        },
+        {
+          href: '#gross',
+          label: '… großes Kind',
+          imageSvg: '<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="64" cy="38" r="20" stroke="currentColor" stroke-width="3"/><path d="M28 112c0-19.882 16.118-36 36-36s36 16.118 36 36" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M80 60l8-8M80 52h8v8" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M40 88l-8 12h16M88 88l8 12H80" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+        }
+      ]
+    });
+
+    /* ─── FAB ───────────────────────────────── */
+    var fab = new NKFab(document.getElementById('siteFab'), {
+      mode: 'page',
+      onSpeak: function() { NKVoice.speak(voiceText, function() { fab.done(); }); },
+      onStop:  function() { NKVoice.stop(); },
+    });
+  </script>
+
+  <script>
+    /* ─── Cookie Layer ──────────────────────── */
+    (function() {
+      if (!localStorage.getItem('nk_cookie_consent')) {
+        var layer = document.getElementById('cookieLayer');
+        layer.style.display = 'flex';
+        document.getElementById('cookieAccept').addEventListener('click', function() {
+          localStorage.setItem('nk_cookie_consent', 'all');
+          layer.style.display = 'none';
+        });
+        document.getElementById('cookieDecline').addEventListener('click', function() {
+          localStorage.setItem('nk_cookie_consent', 'necessary');
+          layer.style.display = 'none';
+        });
+      }
+    })();
+  </script>
+
+</body>
+</html>

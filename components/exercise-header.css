@@ -1,0 +1,83 @@
+/* ─────────────────────────────────────────────
+   ExerciseHeader – Übungstitel + Level-Chips
+   Beide Teile werden gemeinsam als Block gerendert.
+   ───────────────────────────────────────────── */
+
+/* ── Titel ───────────────────────────────────── */
+.nk-exercise-header__title {
+  font-family: var(--font-heading, 'Solway', Georgia, serif);
+  font-size: 32px;
+  font-weight: 400;
+  line-height: 40px;
+  color: var(--color-primary, #964f12);
+  margin-bottom: var(--sp-m6, 24px);
+}
+
+/* ── Chip-Leiste ─────────────────────────────── */
+.nk-exercise-header__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 84px; /* 24px Abstand + 60px Extra-Luft bis Uhr */
+}
+
+/* ── Einzelner Chip ──────────────────────────── */
+.nk-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  border-radius: 120px;
+  border: 1.5px solid var(--chip-color, #ed4790);
+  background: transparent;
+  font-family: var(--font-body, 'Noto Sans', Arial, sans-serif);
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 28px;
+  letter-spacing: 0.25px;
+  color: var(--chip-color, #ed4790);
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s, border-color 0.18s;
+}
+
+/* Unselected hover: border + text dunkler */
+.nk-chip:hover:not(.is-active) {
+  border-color: var(--chip-color-hover, #8c0044);
+  color: var(--chip-color-hover, #8c0044);
+}
+
+.nk-chip.is-active {
+  background: var(--chip-color, #ed4790);
+  color: var(--chip-on, #f8fdff);
+  border-color: var(--chip-color, #ed4790);
+}
+
+/* Selected hover: Hintergrund dunkler */
+.nk-chip.is-active:hover {
+  background: var(--chip-color-hover, #8c0044);
+  border-color: var(--chip-color-hover, #8c0044);
+}
+
+/* Check-Icon – nur sichtbar wenn aktiv */
+.nk-chip__check {
+  display: none;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.nk-chip.is-active .nk-chip__check {
+  display: inline-block;
+}
+
+/* ── Responsive ──────────────────────────────── */
+@media (max-width: 900px) {
+  .nk-exercise-header__title {
+    font-size: 24px;
+  }
+  .nk-chip {
+    font-size: 16px;
+    padding: 6px 14px;
+  }
+}

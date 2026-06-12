@@ -1,0 +1,43 @@
+/* ─────────────────────────────────────────────
+   NKLogo – Logo-Komponente
+   Zwei Varianten:
+     .nk-logo            – kompaktes Logo (Header, Lernmodule)
+     .nk-logo--brand     – großes Logo (Brand-Header, Menü)
+   .nk-logo-brand        – Logo + Untertitel als Block
+   ───────────────────────────────────────────── */
+
+/* Kompaktes Logo */
+.nk-logo {
+  height: 36px;
+  width: auto;
+  display: block;
+}
+
+/* Großes Logo */
+.nk-logo--brand {
+  height: 52px;
+}
+
+/* Logo + Untertitel */
+.nk-logo-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.nk-logo-brand__sub {
+  font-family: var(--font-logo, 'Alcyone', 'Solway', Georgia, serif);
+  font-size: 32px;
+  font-weight: 300;
+  line-height: 40px;
+  letter-spacing: 0;
+  color: inherit;   /* erbt Akzentfarbe vom jeweiligen Theme */
+}
+
+/* ── Responsive ──────────────────────────────── */
+@media (max-width: 900px) {
+  .nk-logo          { height: 28px; }
+  .nk-logo--brand   { height: 38px; }
+  .nk-logo-brand__sub { font-size: 24px; line-height: 32px; }
+}

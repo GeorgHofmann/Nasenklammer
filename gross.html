@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- SEO -->
+  <meta name="description" content="Lernübungen für ältere Kinder auf Nasenklammer – Mathematik, Deutsch, Sachkunde und Englisch auf einem höheren Niveau.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://nasenklammer.de/gross.html">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="de_DE">
+  <meta property="og:site_name" content="Nasenklammer">
+  <meta property="og:title" content="Großes Kind – Nasenklammer">
+  <meta property="og:description" content="Lernübungen für ältere Kinder auf Nasenklammer – Mathematik, Deutsch, Sachkunde und Englisch auf einem höheren Niveau.">
+  <meta property="og:url" content="https://nasenklammer.de/gross.html">
+  <meta property="og:image" content="https://nasenklammer.de/og-image.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Großes Kind – Nasenklammer">
+  <meta name="twitter:description" content="Lernübungen für ältere Kinder auf Nasenklammer – Mathematik, Deutsch, Sachkunde und Englisch auf einem höheren Niveau.">
+  <meta name="twitter:image" content="https://nasenklammer.de/og-image.png">
+  <!-- /SEO -->
+  <title>Großes Kind – Nasenklammer</title>
+  <link rel="stylesheet" href="components/fonts.css">
+  <link rel="stylesheet" href="components/transitions.css">
+  <link rel="stylesheet" href="components/logo.css">
+  <link rel="stylesheet" href="components/header.css">
+  <link rel="stylesheet" href="components/menu.css">
+  <link rel="stylesheet" href="components/card.css">
+  <link rel="stylesheet" href="components/fab.css">
+  <style>
+    :root {
+      --font-logo:    'Alcyone', 'Solway', Georgia, serif;
+      --font-heading: 'Solway', Georgia, serif;
+      --font-body:    'Noto Sans', Arial, sans-serif;
+
+      --color-home-header:      #c8e0f4;
+      --color-home-strip:       #75aee3;
+      --color-home-accent:      #225a93;
+      --color-home-search-bg:   #c8e0f4;
+      --color-home-search-icon: #963555;
+      --color-home-fab:         #f4a056;
+      --color-home-fab-text:    #00363d;
+      --nk-fab-bg:              #f4a056;
+      --nk-fab-color:           #00363d;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--color-home-strip);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Breadcrumb-Strip ────────────────────── */
+    .gs-strip {
+      background: var(--color-home-strip);
+      padding: 21px 56px;
+    }
+
+    .gs-strip__text {
+      font-family: var(--font-heading);
+      font-size: 32px;
+      font-weight: 400;
+      line-height: 40px;
+      color: var(--color-home-accent);
+      white-space: nowrap;
+    }
+
+    .gs-strip__link {
+      color: inherit;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      text-decoration-thickness: 1px;
+      cursor: pointer;
+    }
+
+    .gs-strip__link:hover {
+      opacity: 0.75;
+    }
+
+    /* ── Übungs-Karten ───────────────────────── */
+    .gs-main {
+      flex: 1;
+      padding: 48px 56px 160px;
+    }
+
+    .gs-soon {
+      font-family: var(--font-heading);
+      font-size: 28px;
+      font-weight: 400;
+      color: var(--color-home-accent);
+      opacity: 0.55;
+    }
+
+    /* ── Unterer Bereich: Suche + FAB ────────── */
+    .gs-bottom {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 20px 68px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(to bottom, transparent, var(--color-home-strip) 40%);
+      pointer-events: none;
+    }
+
+    .gs-search {
+      width: 560px;
+      height: 64px;
+      background: var(--color-home-search-bg);
+      border-radius: 64px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding-left: 10px;
+      padding-right: 20px;
+      pointer-events: auto;
+    }
+
+    .gs-search__icon-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 32px;
+      background: var(--color-home-search-icon);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: #fff;
+      transition: opacity 0.15s;
+    }
+
+    .gs-search__icon-btn:hover { opacity: 0.85; }
+
+    .gs-search__icon-btn svg { width: 20px; height: 20px; }
+
+    .gs-search__input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      font-family: var(--font-body);
+      font-size: 18px;
+      line-height: 28px;
+      letter-spacing: 0.25px;
+      color: #4a6267;
+      outline: none;
+    }
+
+    .gs-search__input::placeholder { color: #4a6267; }
+
+
+    @media (max-width: 900px) {
+      .gs-strip   { padding: 16px 20px; }
+      .gs-strip__text { font-size: 22px; white-space: normal; }
+      .gs-main    { padding: 32px 20px 140px; }
+      .gs-bottom  { padding: 16px 20px 24px; }
+      .gs-fab     { right: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="siteMenu"></div>
+  <header id="siteHeader"></header>
+
+  <!-- Strip: Ich bin ein … -->
+  <div class="gs-strip">
+    <p class="gs-strip__text">
+      Ich bin ein
+      <a class="gs-strip__link" href="index.html">großes Kind</a>
+      …
+    </p>
+  </div>
+
+  <!-- Übungs-Karten -->
+  <main class="gs-main">
+    <div id="cardGrid"></div>
+    <p class="gs-soon">Hier kommen bald Übungen für dich!</p>
+  </main>
+
+  <!-- Suche + FAB -->
+  <div class="gs-bottom">
+    <div class="gs-search">
+      <button class="gs-search__icon-btn" aria-label="Suchen">
+        <svg viewBox="0 0 24 24" fill="none">
+          <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/>
+          <path d="M16.5 16.5L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <input class="gs-search__input" type="text" placeholder="Ich suche eine Übung …" aria-label="Übung suchen">
+    </div>
+  </div>
+
+  <!-- FAB – mounted by NKFab component -->
+  <div id="siteFab"></div>
+
+  <script src="components/analytics.js"></script>
+  <script src="components/voice.js"></script>
+  <script src="components/fab.js"></script>
+  <script src="components/transitions.js"></script>
+  <script src="components/logo.js"></script>
+  <script src="components/icons.js"></script>
+  <script src="components/menu.js"></script>
+  <script src="components/header.js"></script>
+  <script src="components/card.js"></script>
+  <script>
+    /* ─── Vorlese-Text ───────────────────────
+       Beschreibt die Übersicht für große Kinder.
+       ───────────────────────────────────────── */
+    var voiceText =
+      'Hey! Schön, dass du da bist. Hier kommen bald richtig spannende Übungen für große Kinder. ' +
+      'Wir arbeiten gerade daran — schau bald wieder rein!';
+
+    new NKCardGrid(document.getElementById('cardGrid'), {
+      cards: []
+    });
+
+    var menu = new NKMenu(
+      document.getElementById('siteMenu'),
+      Object.assign({}, NKMenu.THEMES.home, {
+        headerEl: document.getElementById('siteHeader'),
+        activeHref: 'gross.html',
+        onItemClick: function(item) {
+          if (item.href && item.href !== '#') window.location.href = item.href;
+        }
+      })
+    );
+
+    var header = new NKHeader(
+      document.getElementById('siteHeader'),
+      Object.assign({}, NKHeader.THEMES.home, {
+        homeHref: 'index.html',
+        onMenuClick: function() { menu.toggle(); }
+      })
+    );
+
+    /* ─── FAB ───────────────────────────────── */
+    var fab = new NKFab(document.getElementById('siteFab'), {
+      mode: 'page',
+      onSpeak: function() { NKVoice.speak(voiceText, function() { fab.done(); }); },
+      onStop:  function() { NKVoice.stop(); },
+    });
+  </script>
+
+</body>
+</html>

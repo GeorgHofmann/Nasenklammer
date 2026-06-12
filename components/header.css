@@ -1,0 +1,104 @@
+/* ─────────────────────────────────────────────
+   Header – reusable component styles
+   Farbe wird per CSS Custom Properties
+   von außen (Theme) gesteuert.
+   ───────────────────────────────────────────── */
+
+.nk-header {
+  background: var(--header-bg, #fef5ec);
+  padding: 14px 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  transition: opacity 0.2s, visibility 0.2s;
+}
+
+/* Ausgeblendet wenn Menü geöffnet */
+.nk-header--hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Logo-Bereich – nimmt entweder ein SVG oder
+   den Text-Fallback auf                        */
+.nk-header__logo {
+  display: flex;
+  align-items: center;
+  line-height: 0;        /* kein Extra-Abstand durch Inline */
+  text-decoration: none;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+a.nk-header__logo:hover {
+  opacity: 0.75;
+}
+
+/* SVG-Logo (wenn per logoSvg-Option übergeben) */
+.nk-header__logo svg {
+  height: 40px;
+  width: auto;
+  display: block;
+}
+
+/* Logo-Größen → components/logo.css (.nk-logo, .nk-logo--brand) */
+
+/* Menü-Button */
+.nk-header__menu-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 0;
+  color: var(--header-color, #964f12);
+  border-radius: 8px;
+  transition: background 0.15s, color 0.2s;
+}
+
+.nk-header__menu-btn:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.nk-header__menu-btn svg {
+  width: 26px;
+  height: 26px;
+  display: block;
+}
+
+/* ── Brand-Modus ─────────────────────────────── */
+.nk-header--brand {
+  align-items: flex-start;
+  padding-top: 52px;
+  padding-bottom: 52px;
+}
+
+.nk-header--brand .nk-header__logo {
+  line-height: normal;
+  /* Logo-Block-Layout → components/logo.css (.nk-logo-brand) */
+}
+
+/* Untertitel-Farbe im Header erbt von --header-color */
+.nk-header .nk-logo-brand__sub {
+  color: var(--header-color, #225a93);
+}
+
+.nk-header--brand .nk-header__menu-btn {
+  margin-top: 12px;   /* optisch auf Höhe des Titels ausrichten */
+}
+
+/* ── Responsive ──────────────────────────────  */
+@media (max-width: 900px) {
+  .nk-header {
+    padding: 12px 20px;
+  }
+  .nk-header__logo-text      { font-size: 22px; }
+  .nk-header__logo-img       { height: 28px; }
+  .nk-header__logo-img--brand { height: 38px; }
+  .nk-header--brand {
+    padding: 32px 20px;
+  }
+  .nk-header__brand-title { font-size: 36px; line-height: 44px; }
+  .nk-header__brand-sub   { font-size: 24px; line-height: 32px; }
+}

@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "nasenklammer",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "-p", "4200", "/Users/georghofmann/Documents/Claude/Projects/Nasenklammer"],
+      "port": 4200
+    }
+  ]
+}

@@ -1,0 +1,92 @@
+/* ─────────────────────────────────────────────
+   NKFab – Floating Action Button (Vorlesen/Stop)
+
+   Zwei Modi:
+     page   – immer sichtbar, 32px vom rechten Rand
+     module – Lasche: eingezogen, slide-in bei hover
+              oder während Wiedergabe (is-playing)
+   ───────────────────────────────────────────── */
+
+.nk-fab {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 24px;
+  height: 72px;
+  border-radius: 50px;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-heading, 'Solway', Georgia, serif);
+  font-size: 18px;
+  font-weight: 400;
+  white-space: nowrap;
+  z-index: 100;
+
+  background: var(--nk-fab-bg, #f4a056);
+  color:      var(--nk-fab-color, #00363d);
+
+  box-shadow:
+    0px 1px 3px rgba(0,0,0,0.30),
+    0px 4px 8px rgba(0,0,0,0.15);
+
+  transition:
+    transform   0.52s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow  0.15s,
+    border-radius 0.52s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.nk-fab:hover {
+  box-shadow:
+    0px 2px 6px rgba(0,0,0,0.30),
+    0px 6px 14px rgba(0,0,0,0.18);
+}
+
+.nk-fab__icon {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  fill: currentColor;
+}
+
+/* ── Lasche-Modus (Lernmodule) ───────────────
+   Standard: rechts eingezogen.
+   Sichtbar: nur Icon + linkes Padding = ~52px.
+   On hover oder is-playing: vollständig einfahren.
+   ────────────────────────────────────────────── */
+.nk-fab--module {
+  right: 0;
+  border-radius: 50px 0 0 50px;
+  transform: translateX(calc(100% - 56px));
+}
+
+.nk-fab--module.is-playing {
+  transform: translateX(0);
+}
+
+/* Hover nur auf Geräten mit echter Maus-Hover-Unterstützung.
+   Auf Touch-Geräten (Tablet, Phone) bleibt :hover nach dem Tap
+   "kleben" → der FAB würde nicht mehr einfahren.
+   @media (hover: hover) schließt Touch-Geräte sicher aus. */
+@media (hover: hover) {
+  .nk-fab--module:hover {
+    transform: translateX(0);
+  }
+}
+
+/* ── Responsive ──────────────────────────────── */
+@media (max-width: 900px) {
+  .nk-fab {
+    right: 20px;
+    height: 60px;
+    font-size: 16px;
+    padding: 0 18px;
+  }
+
+  .nk-fab--module {
+    right: 0;
+    transform: translateX(calc(100% - 54px));
+  }
+}

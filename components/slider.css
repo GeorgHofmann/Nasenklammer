@@ -1,0 +1,88 @@
+/* ─────────────────────────────────────────────
+   NKSlider – Stufenregler mit Label-Anzeige
+   Farben werden per CSS Custom Properties
+   von außen (Theme) gesteuert.
+   ───────────────────────────────────────────── */
+
+.nk-slider {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Regler-Zeile: Label · Track · Label */
+.nk-slider__row {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.nk-slider__label {
+  font-family: var(--font-heading, 'Solway', Georgia, serif);
+  font-size: 28px;
+  line-height: 1;
+  color: var(--nk-slider-color, #964f12);
+  opacity: 0.45;
+  min-width: 36px;
+  text-align: center;
+  transition: opacity 0.2s, font-size 0.2s;
+  user-select: none;
+}
+
+.nk-slider__label.is-active {
+  opacity: 1;
+  font-size: 36px;
+}
+
+/* Range-Input */
+.nk-slider__input {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 200px;
+  height: 8px;
+  border-radius: 8px;
+  background: var(--nk-slider-track, rgba(150, 79, 18, 0.18));
+  outline: none;
+  cursor: pointer;
+}
+
+.nk-slider__input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--nk-slider-thumb, #f4a056);
+  border: 4px solid #fff;
+  box-shadow: 0 2px 6px rgba(150, 79, 18, 0.35);
+  cursor: pointer;
+  transition: background 0.15s, transform 0.12s;
+}
+
+.nk-slider__input::-moz-range-thumb {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--nk-slider-thumb, #f4a056);
+  border: 4px solid #fff;
+  box-shadow: 0 2px 6px rgba(150, 79, 18, 0.35);
+  cursor: pointer;
+}
+
+.nk-slider__input:hover::-webkit-slider-thumb { background: #e8903c; }
+.nk-slider__input:hover::-moz-range-thumb     { background: #e8903c; }
+
+.nk-slider__input:active::-webkit-slider-thumb {
+  transform: scale(1.12);
+}
+
+/* Hinweistext unterhalb */
+.nk-slider__hint {
+  font-family: var(--font-body, 'Noto Sans', Arial, sans-serif);
+  font-size: 14px;
+  letter-spacing: 0.4px;
+  color: var(--nk-slider-color, #964f12);
+  opacity: 0.45;
+  text-align: center;
+}

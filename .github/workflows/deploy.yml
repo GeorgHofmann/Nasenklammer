@@ -1,0 +1,24 @@
+name: Deploy to 1&1
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: SFTP Deploy
+        uses: wlixcc/SFTP-Deploy-Action@v1.2.4
+        with:
+          server: ${{ secrets.YOUR_HOST }}
+          username: ${{ secrets.YOUR_USERNAME }}
+          password: ${{ secrets.YOUR_PASSWORD }}
+          local_path: ./
+          remote_path: /
+          sftp_only: true
+          args: '-o StrictHostKeyChecking=no'

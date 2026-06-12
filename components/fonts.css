@@ -1,0 +1,49 @@
+/*
+ * Nasenklammer – Zentrale Font-Deklarationen
+ *
+ * Alle @font-face Regeln für das Projekt an einem Ort.
+ * Einbinden als erstes CSS auf jeder Seite:
+ *   <link rel="stylesheet" href="components/fonts.css">
+ *
+ * Pfade sind relativ zu dieser Datei → ../fonts/ zeigt
+ * auf den /fonts/-Ordner im Projektstamm.
+ *
+ * ── Geladene Schriften ──────────────────────────
+ *   Noto Sans   – Body-Text, UI-Elemente
+ *   Solway      – Überschriften, Breadcrumb, FAB
+ *
+ * ── Verwendete CSS-Variablen ───────────────────
+ *   --font-body:    'Noto Sans', Arial, sans-serif
+ *   --font-heading: 'Solway', Georgia, serif
+ *   --font-logo:    'Alcyone', 'Solway', Georgia, serif
+ *                   (Alcyone = kommerzielle Lizenzschrift,
+ *                    muss als fonts/Alcyone.woff2 vorliegen
+ *                    um aktiv zu sein; fällt sonst auf Solway zurück)
+ */
+
+/* ── Noto Sans (variable, Regular + Bold) ─────── */
+@font-face {
+  font-family: 'Noto Sans';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('../fonts/NotoSans.woff2') format('woff2');
+}
+
+/* ── Solway Regular ───────────────────────────── */
+@font-face {
+  font-family: 'Solway';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../fonts/Solway-Regular.woff2') format('woff2');
+}
+
+/* ── Solway Bold ──────────────────────────────── */
+@font-face {
+  font-family: 'Solway';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../fonts/Solway-Bold.woff2') format('woff2');
+}

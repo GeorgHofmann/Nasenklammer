@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- SEO -->
+  <meta name="description" content="Kontaktiere das Nasenklammer-Team – wir freuen uns über Fragen, Feedback und Anregungen zu unserem kostenlosen Lernportal für Kinder.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://nasenklammer.de/kontakt.html">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="de_DE">
+  <meta property="og:site_name" content="Nasenklammer">
+  <meta property="og:title" content="Kontakt – Nasenklammer">
+  <meta property="og:description" content="Kontaktiere das Nasenklammer-Team – wir freuen uns über Fragen, Feedback und Anregungen zu unserem kostenlosen Lernportal für Kinder.">
+  <meta property="og:url" content="https://nasenklammer.de/kontakt.html">
+  <meta property="og:image" content="https://nasenklammer.de/og-image.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Kontakt – Nasenklammer">
+  <meta name="twitter:description" content="Kontaktiere das Nasenklammer-Team – wir freuen uns über Fragen, Feedback und Anregungen zu unserem kostenlosen Lernportal für Kinder.">
+  <meta name="twitter:image" content="https://nasenklammer.de/og-image.png">
+  <!-- /SEO -->
+  <title>Kontakt – Nasenklammer</title>
+  <link rel="stylesheet" href="components/fonts.css">
+  <link rel="stylesheet" href="components/transitions.css">
+  <link rel="stylesheet" href="components/logo.css">
+  <link rel="stylesheet" href="components/header.css">
+  <link rel="stylesheet" href="components/menu.css">
+  <link rel="stylesheet" href="components/back-nav.css">
+  <link rel="stylesheet" href="components/button.css">
+  <link rel="stylesheet" href="components/fab.css">
+  <style>
+    /* ── Design Tokens ───────────────────────── */
+    :root {
+      --font-logo:    'Alcyone', 'Solway', Georgia, serif;
+      --font-heading: 'Solway', Georgia, serif;
+      --font-body:    'Noto Sans', Arial, sans-serif;
+      --color-bg:     #c8e0f4;
+      --color-accent: #225a93;
+      --nk-fab-bg:    #f4a056;
+      --nk-fab-color: #00363d;
+
+      /* Contact form timing */
+      --t-fast:      220ms;
+      --ease-flash:  cubic-bezier(0.22, 1, 0.36, 1);
+      --ease-soft:   cubic-bezier(0.65, 0, 0.35, 1);
+
+      /* Contact form colors (blue theme) */
+      --cf-step-bg:      #f4a056;
+      --cf-step-text:    #00363d;
+      --cf-label-color:  #225a93;
+      --cf-label-hover:  rgba(34, 90, 147, 0.1);
+      --cf-wrap-bg:      rgba(255, 255, 255, 0.5);
+      --cf-input-color:  #1d4a80;
+      --cf-field-label:  rgba(34, 90, 147, 0.7);
+      --cf-clear-color:  #225a93;
+      --cf-filled-color: #225a93;
+      --cf-action-color: #225a93;
+      --cf-submit-bg:    #f4a056;
+      --cf-submit-text:  #00363d;
+      --cf-error-color:  #D2283B;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--color-bg);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Page main ───────────────────────────── */
+    .kontakt-main {
+      flex: 1;
+      padding: 48px 56px 160px;
+      max-width: 760px;
+    }
+
+    .kontakt-main h1 {
+      font-family: var(--font-heading);
+      font-size: 40px;
+      font-weight: 400;
+      color: var(--color-accent);
+      margin-bottom: 24px;
+    }
+
+    /* ── Intro-Text ─────────────────────────── */
+    .cf-intro {
+      white-space: nowrap;
+      font-size: 18px;
+      line-height: 28px;
+      color: var(--color-accent);
+      margin-bottom: 48px;
+    }
+
+    /* ── Success banner ─────────────────────── */
+    .cf-success {
+      display: none;
+      margin: 0 0 40px;
+      font-size: 18px;
+      font-weight: 600;
+      line-height: 28px;
+      color: var(--color-accent);
+    }
+    .cf-success.is-visible { display: block; }
+
+    /* ── Form + Fields ──────────────────────── */
+    .cf-form { display: flex; flex-direction: column; }
+
+    .cf-fields {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 56px;
+    }
+
+    /* ── Field row ── */
+    .cf-field {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      cursor: pointer;
+    }
+    .cf-field * { cursor: pointer; }
+    .cf-field.is-active,
+    .cf-field.is-active * { cursor: default; }
+    .cf-field.is-active .cf-confirm { cursor: pointer; }
+    .cf-field.has-content .cf-clear,
+    .cf-field.has-content .cf-clear * { cursor: pointer; }
+
+    /* ── Step circle ── */
+    .cf-step {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background-color: var(--cf-step-bg);
+      color: var(--cf-step-text);
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 500;
+      flex-shrink: 0;
+      transition: margin-top var(--t-fast) var(--ease-soft);
+    }
+    .cf-field.is-active .cf-step { margin-top: 0; }
+
+    /* ── Body (label + input stacked) ── */
+    .cf-body {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    /* ── Label ── */
+    .cf-label {
+      display: flex;
+      align-items: center;
+      font-size: clamp(15px, 1.1vw, 18px);
+      color: var(--cf-label-color);
+      font-weight: 400;
+      padding: 24px 16px;
+      border-radius: 6px;
+      background-color: transparent;
+      transition:
+        background-color var(--t-fast) var(--ease-soft),
+        font-size 150ms var(--ease-soft),
+        padding 150ms var(--ease-soft);
+    }
+    .cf-field:not(.is-active):not(.is-filled):hover .cf-label { background-color: var(--cf-label-hover); }
+    .cf-field.is-active .cf-label  { display: none; }
+    .cf-field.is-filled .cf-label  { display: none !important; }
+
+    /* ── Input wrap (the styled box) ── */
+    .cf-input-wrap {
+      display: none;
+      position: relative;
+      align-items: flex-end;
+      gap: 10px;
+      padding: 24px 16px;
+      border-radius: 6px;
+      background: var(--cf-wrap-bg);
+      min-width: 458px;
+      max-width: 50vw;
+      width: max-content;
+    }
+    .cf-field.is-active .cf-input-wrap { display: inline-flex; }
+
+    /* ── Inner group: label + input stacked ── */
+    .cf-input-group {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 6px;
+      flex: 1;
+    }
+
+    .cf-field-label {
+      font-size: 12px;
+      color: var(--cf-field-label);
+      font-weight: 400;
+      line-height: 1.3;
+    }
+
+    /* ── Contenteditable input ── */
+    .cf-input {
+      flex: 1;
+      min-width: 140px;
+      outline: none;
+      font: inherit;
+      font-size: clamp(15px, 1.1vw, 18px);
+      color: var(--cf-input-color);
+      word-break: break-word;
+      white-space: pre-wrap;
+      overflow-wrap: break-word;
+      cursor: text;
+      line-height: 1.45;
+    }
+    .cf-input:empty::before {
+      content: attr(data-placeholder);
+      color: rgba(34, 90, 147, 0.4);
+      pointer-events: none;
+    }
+
+    /* ── Clear (×) button ── */
+    .cf-clear {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      color: var(--cf-clear-color);
+      transition: color var(--t-fast);
+      background: none;
+      border: none;
+      padding: 0;
+    }
+    .cf-clear:hover { color: #1a4573; }
+    .cf-clear svg { width: 24px; height: 24px; }
+
+    /* ── Resize grabber — hidden ── */
+    .cf-grabber { display: none !important; }
+
+    /* ── Filled state ── */
+    .cf-filled-value {
+      display: none;
+      font-size: clamp(15px, 1.1vw, 18px);
+      color: var(--cf-filled-color);
+      font-weight: 400;
+    }
+    .cf-field.is-filled                    { align-items: center; gap: 24px; cursor: default; }
+    .cf-field.is-filled *                  { cursor: default; }
+    .cf-field.is-filled .cf-delete         { cursor: pointer; }
+    .cf-field.is-filled .cf-body           { display: none; }
+    .cf-field.is-filled .cf-filled-value   { display: block; }
+    .cf-field.is-filled .cf-actions {
+      display: flex;
+      flex-direction: row;
+      gap: 12px;
+      margin-left: 0;
+      padding-top: 0;
+    }
+    .cf-field.is-filled .cf-confirm        { display: flex; pointer-events: none; }
+    .cf-field.is-filled .cf-clear          { display: none; }
+    .cf-field.is-filled .cf-delete:hover   { color: #CC2200; }
+
+    /* ── Action buttons (✓ 🗑) ── */
+    .cf-actions {
+      display: none;
+      flex-direction: row;
+      gap: 12px;
+      margin-left: 10px;
+      flex-shrink: 0;
+    }
+    .cf-field.is-active .cf-actions { display: flex; }
+    .cf-field.is-active .cf-confirm { display: none; }
+    .cf-field.is-active .cf-clear { display: none; }
+    .cf-field.has-content .cf-clear { display: flex; }
+
+    .cf-confirm,
+    .cf-delete {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      color: var(--cf-action-color);
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+    }
+    .cf-delete { display: none; }
+    .cf-field.is-filled .cf-delete { display: flex; }
+    .cf-delete:hover { color: #CC2200; }
+    .cf-confirm svg,
+    .cf-delete svg { width: 24px; height: 24px; }
+
+    /* ── Error state ── */
+    .cf-error-msg {
+      display: none;
+      font-size: 12px;
+      line-height: 24px;
+      letter-spacing: 0.25px;
+      color: var(--cf-error-color);
+      margin: 4px 0 0;
+      padding: 0 16px;
+    }
+    .cf-field.is-error .cf-error-msg   { display: block; }
+    .cf-field.is-error .cf-input-wrap  { display: inline-flex; }
+    .cf-field.is-error .cf-label       { display: none; }
+    .cf-field.is-error .cf-input,
+    .cf-field.is-error .cf-clear       { color: var(--cf-error-color); }
+    .cf-field.is-error .cf-clear:hover { color: #B11D2F; }
+    .cf-field.is-error .cf-actions     { display: flex; flex-direction: row; }
+    .cf-field.is-error .cf-confirm     { display: none; }
+    .cf-field.is-error .cf-delete      { display: flex; }
+
+    /* ── Submit wrap ── */
+    .cf-submit-wrap {
+      margin-top: 80px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    /* cf-submit: only form-state hooks — visuals come from nk-btn */
+    .cf-form.is-sending .cf-submit { opacity: 0.6; cursor: wait; pointer-events: none; }
+    .cf-form.is-sending .cf-submit .nk-btn__label::after { content: ' …'; }
+
+    .cf-submit-error {
+      display: none;
+      color: var(--cf-error-color);
+      font-size: 14px;
+      line-height: 24px;
+    }
+    .cf-form.has-submit-error .cf-submit-error { display: block; }
+
+    /* ── Kontakt-Info-Zeile ──────────────────── */
+    .cf-contact-info {
+      margin: 48px 0 0;
+      font-size: clamp(13px, 1vw, 18px);
+      font-weight: 400;
+      color: var(--color-accent);
+      letter-spacing: 0.25px;
+      line-height: 28px;
+      white-space: nowrap;
+    }
+    .cf-sep { color: rgba(34, 90, 147, 0.35); }
+    .cf-ci-link {
+      color: inherit;
+      text-decoration: none;
+    }
+    .cf-ci-link:hover {
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    @media (max-width: 900px) {
+      .kontakt-main { padding: 32px 20px 140px; }
+      .cf-input-wrap { min-width: 280px; max-width: 90vw; }
+      .cf-contact-info { white-space: normal; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="siteMenu"></div>
+  <header id="siteHeader"></header>
+  <nav id="siteBackNav"></nav>
+
+  <main class="kontakt-main">
+    <h1>Kontakt</h1>
+
+    <p class="cf-intro">Hast du eine Frage, eine Idee oder möchtest du einfach Hallo sagen? Ich freue mich über deine Nachricht!</p>
+
+    <p class="cf-success" aria-live="polite">Vielen Dank! Deine Nachricht ist angekommen. Ich melde mich bald bei Dir.</p>
+
+    <form class="cf-form" action="https://formspree.io/f/xlgpawea" method="POST" novalidate>
+      <div class="cf-fields">
+
+        <!-- Name -->
+        <div class="cf-field" data-field="name" data-error="Bitte Vor- und Nachnamen eingeben" data-min="3">
+          <span class="cf-step">1</span>
+          <span class="cf-filled-value"></span>
+          <div class="cf-body">
+            <span class="cf-label">Dein Vor- und Nachname</span>
+            <div class="cf-input-wrap">
+              <div class="cf-input-group">
+                <span class="cf-field-label">Dein Vor- und Nachname</span>
+                <div class="cf-input" contenteditable="true" role="textbox" aria-multiline="true"
+                     aria-label="Dein Vor- und Nachname" data-placeholder="Dein Vor- und Nachname"></div>
+              </div>
+              <button class="cf-clear" type="button" aria-label="Eingabe löschen">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M18 6L6 18"/><path d="M6 6L18 18"/>
+                </svg>
+              </button>
+              <div class="cf-grabber" aria-hidden="true"></div>
+            </div>
+            <p class="cf-error-msg" aria-live="polite"></p>
+          </div>
+          <div class="cf-actions">
+            <button class="cf-confirm" type="button" aria-label="Bestätigen">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M20 6L9 17L4 12"/>
+              </svg>
+            </button>
+            <button class="cf-delete" type="button" aria-label="Zurücksetzen">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M3 6H21"/><path d="M19 6V20C19 21 18 22 17 22H7C6 22 5 21 5 20V6"/>
+                <path d="M8 6V4C8 3 9 2 10 2H14C15 2 16 3 16 4V6"/>
+                <path d="M10 11V17"/><path d="M14 11V17"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- E-Mail -->
+        <div class="cf-field" data-field="email" data-error="E-Mail-Adresse ist nicht korrekt" data-min="3">
+          <span class="cf-step">2</span>
+          <span class="cf-filled-value"></span>
+          <div class="cf-body">
+            <span class="cf-label">Deine E-Mail-Adresse</span>
+            <div class="cf-input-wrap">
+              <div class="cf-input-group">
+                <span class="cf-field-label">Deine E-Mail-Adresse</span>
+                <div class="cf-input" contenteditable="true" role="textbox" aria-multiline="true"
+                     aria-label="Deine E-Mail-Adresse" data-placeholder="Deine E-Mail-Adresse"></div>
+              </div>
+              <button class="cf-clear" type="button" aria-label="Eingabe löschen">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M18 6L6 18"/><path d="M6 6L18 18"/>
+                </svg>
+              </button>
+              <div class="cf-grabber" aria-hidden="true"></div>
+            </div>
+            <p class="cf-error-msg" aria-live="polite"></p>
+          </div>
+          <div class="cf-actions">
+            <button class="cf-confirm" type="button" aria-label="Bestätigen">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M20 6L9 17L4 12"/>
+              </svg>
+            </button>
+            <button class="cf-delete" type="button" aria-label="Zurücksetzen">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M3 6H21"/><path d="M19 6V20C19 21 18 22 17 22H7C6 22 5 21 5 20V6"/>
+                <path d="M8 6V4C8 3 9 2 10 2H14C15 2 16 3 16 4V6"/>
+                <path d="M10 11V17"/><path d="M14 11V17"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Nachricht -->
+        <div class="cf-field" data-field="message" data-min="1">
+          <span class="cf-step">3</span>
+          <span class="cf-filled-value"></span>
+          <div class="cf-body">
+            <span class="cf-label">Deine Nachricht</span>
+            <div class="cf-input-wrap">
+              <div class="cf-input-group">
+                <span class="cf-field-label">Deine Nachricht</span>
+                <div class="cf-input" contenteditable="true" role="textbox" aria-multiline="true"
+                     aria-label="Deine Nachricht" data-placeholder="Worum geht's?"></div>
+              </div>
+              <button class="cf-clear" type="button" aria-label="Eingabe löschen">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M18 6L6 18"/><path d="M6 6L18 18"/>
+                </svg>
+              </button>
+              <div class="cf-grabber" aria-hidden="true"></div>
+            </div>
+            <p class="cf-error-msg" aria-live="polite"></p>
+          </div>
+          <div class="cf-actions">
+            <button class="cf-confirm" type="button" aria-label="Bestätigen">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M20 6L9 17L4 12"/>
+              </svg>
+            </button>
+            <button class="cf-delete" type="button" aria-label="Zurücksetzen">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M3 6H21"/><path d="M19 6V20C19 21 18 22 17 22H7C6 22 5 21 5 20V6"/>
+                <path d="M8 6V4C8 3 9 2 10 2H14C15 2 16 3 16 4V6"/>
+                <path d="M10 11V17"/><path d="M14 11V17"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Captcha (Mathe) -->
+        <div class="cf-field" data-field="captcha" data-error="Antwort stimmt leider nicht" data-min="1">
+          <span class="cf-step">4</span>
+          <span class="cf-filled-value"></span>
+          <div class="cf-body">
+            <span class="cf-label" data-captcha-label>Captcha</span>
+            <div class="cf-input-wrap">
+              <div class="cf-input-group">
+                <span class="cf-field-label" data-captcha-label>Captcha</span>
+                <div class="cf-input" contenteditable="true" role="textbox"
+                     aria-label="Captcha-Antwort" inputmode="numeric" data-placeholder="Antwort"></div>
+              </div>
+              <button class="cf-clear" type="button" aria-label="Eingabe löschen">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M18 6L6 18"/><path d="M6 6L18 18"/>
+                </svg>
+              </button>
+              <div class="cf-grabber" aria-hidden="true"></div>
+            </div>
+            <p class="cf-error-msg" aria-live="polite"></p>
+          </div>
+          <div class="cf-actions">
+            <button class="cf-confirm" type="button" aria-label="Bestätigen">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M20 6L9 17L4 12"/>
+              </svg>
+            </button>
+            <button class="cf-delete" type="button" aria-label="Zurücksetzen">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M3 6H21"/><path d="M19 6V20C19 21 18 22 17 22H7C6 22 5 21 5 20V6"/>
+                <path d="M8 6V4C8 3 9 2 10 2H14C15 2 16 3 16 4V6"/>
+                <path d="M10 11V17"/><path d="M14 11V17"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Submit -->
+      <div class="cf-submit-wrap">
+        <button class="nk-btn nk-btn--primary cf-submit is-locked" type="submit" disabled aria-disabled="true">
+          <span class="nk-btn__label">Abschicken</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="22" y1="2" x2="11" y2="13"/>
+            <polygon points="22 2 15 22 11 13 2 9 22 2" fill="currentColor"/>
+          </svg>
+        </button>
+        <p class="cf-submit-error" aria-live="polite">Senden hat nicht geklappt. Bitte später erneut versuchen.</p>
+      </div>
+    </form>
+
+    <p class="cf-contact-info">
+      <a href="georg-hofmann.vcf" download class="cf-ci-link">Georg Hofmann <span class="cf-sep">|</span> Geiststr. 36 <span class="cf-sep">|</span> 06108 Halle <span class="cf-sep">|</span> Deutschland</a><span class="cf-sep"> | </span><a href="tel:+491791424191" class="cf-ci-link">+49&nbsp;179&nbsp;1424191</a><span class="cf-sep"> | </span><a href="mailto:georg@nasenklammer.de" class="cf-ci-link">georg@nasenklammer.de</a>
+    </p>
+
+  </main>
+
+  <div id="siteFab"></div>
+
+  <script src="components/analytics.js"></script>
+  <script src="components/back-nav.js"></script>
+  <script src="components/voice.js"></script>
+  <script src="components/fab.js"></script>
+  <script src="components/transitions.js"></script>
+  <script src="components/logo.js"></script>
+  <script src="components/icons.js"></script>
+  <script src="components/menu.js"></script>
+  <script src="components/header.js"></script>
+  <script>
+    var voiceText = 'Hier kannst du Kontakt zu Nasenklammer aufnehmen. ' +
+      'Füll einfach das Formular aus — ich freue mich über deine Nachricht!';
+
+    new NKBackNav(document.getElementById('siteBackNav'));
+
+    var menu = new NKMenu(document.getElementById('siteMenu'), {
+      bgColor: '#c8e0f4', accentColor: '#225a93', textColor: '#202427',
+      activeColor: '#2d74bc', borderColor: 'rgba(34,90,147,0.12)',
+      activeHref: 'kontakt.html',
+      headerEl: document.getElementById('siteHeader'),
+      onItemClick: function(item) { if (item.href && item.href !== '#') window.location.href = item.href; }
+    });
+
+    var header = new NKHeader(document.getElementById('siteHeader'), {
+      bgColor: '#c8e0f4', textColor: '#225a93', homeHref: 'index.html',
+      onMenuClick: function() { menu.toggle(); }
+    });
+
+    var fab = new NKFab(document.getElementById('siteFab'), {
+      mode: 'page',
+      onSpeak: function() { NKVoice.speak(voiceText, function() { fab.done(); }); },
+      onStop:  function() { NKVoice.stop(); },
+    });
+  </script>
+
+  <script>
+    /* ─── Contact Form Logic ─────────────────────────────────────────── */
+    (function () {
+
+      function scrollFieldVisible(field) {
+        field.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+
+      /* ── Per-field behaviour ── */
+      document.querySelectorAll('.cf-field').forEach(function (field) {
+        var inputEl    = field.querySelector('.cf-input');
+        var wrap       = field.querySelector('.cf-input-wrap');
+        var clearBtn   = field.querySelector('.cf-clear');
+        var confirmBtn = field.querySelector('.cf-confirm');
+        var deleteBtn  = field.querySelector('.cf-delete');
+
+        if (!inputEl) return;
+
+        function activate() {
+          field.classList.add('is-active');
+          void field.offsetHeight;
+          inputEl.focus();
+          setTimeout(function () {
+            try {
+              var range = document.createRange();
+              var sel   = window.getSelection();
+              range.selectNodeContents(inputEl);
+              range.collapse(false);
+              sel.removeAllRanges();
+              sel.addRange(range);
+            } catch (_) {}
+            scrollFieldVisible(field);
+          }, 50);
+          setTimeout(function () { scrollFieldVisible(field); }, 350);
+        }
+
+        var filledValue = field.querySelector('.cf-filled-value');
+        var errorEl     = field.querySelector('.cf-error-msg');
+        var errorMsg    = field.getAttribute('data-error') || 'Eingabe ist nicht korrekt';
+        var fieldKind   = field.getAttribute('data-field');
+        var minContent  = parseInt(field.getAttribute('data-min') || '3', 10);
+
+        /* Math captcha */
+        if (fieldKind === 'captcha') {
+          var a = Math.floor(Math.random() * 8) + 2;
+          var b = Math.floor(Math.random() * 8) + 2;
+          field.dataset.captchaAnswer = String(a + b);
+          field.querySelectorAll('[data-captcha-label]').forEach(function (el) {
+            el.textContent = a + ' + ' + b + ' = ?';
+          });
+        }
+
+        function isValid(val) {
+          if (fieldKind === 'email')   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(val);
+          if (fieldKind === 'captcha') return val.trim() === field.dataset.captchaAnswer;
+          if (fieldKind === 'message') return val.trim().length > 0;
+          return val.length >= 3;
+        }
+
+        function setError() {
+          field.classList.remove('is-active');
+          field.classList.add('is-error');
+          if (errorEl) errorEl.textContent = errorMsg;
+        }
+        function clearError() {
+          field.classList.remove('is-error');
+          if (errorEl) errorEl.textContent = '';
+        }
+        function showFilled(text) {
+          if (filledValue) filledValue.textContent = text;
+          clearError();
+          field.classList.remove('is-active', 'has-content', 'has-min-content');
+          field.classList.add('is-filled');
+        }
+        function deactivate() {
+          field.classList.remove('is-active', 'has-content', 'has-min-content', 'is-filled');
+          clearError();
+          inputEl.textContent = '';
+          if (filledValue) filledValue.textContent = '';
+          if (wrap)    { wrap.style.width = ''; wrap.style.height = ''; }
+          if (inputEl) { inputEl.style.minHeight = ''; inputEl.style.overflow = ''; }
+        }
+
+        field.addEventListener('click', function (e) {
+          if (e.target.closest('.cf-actions') || e.target.closest('.cf-clear')) return;
+          if (!field.classList.contains('is-active')) {
+            document.querySelectorAll('.cf-field.is-active').forEach(function (other) {
+              if (other === field) return;
+              if (other.classList.contains('has-min-content')) {
+                var btn = other.querySelector('.cf-confirm');
+                if (btn) btn.click();
+              } else {
+                other.classList.remove('is-active', 'has-content', 'has-min-content');
+              }
+            });
+            if (field.classList.contains('is-filled')) {
+              var savedText = filledValue ? filledValue.textContent.trim() : '';
+              field.classList.remove('is-filled');
+              clearError();
+              inputEl.textContent = savedText;
+              if (savedText.length > 0) {
+                field.classList.add('has-content');
+                if (savedText.length >= minContent) field.classList.add('has-min-content');
+              }
+            }
+            activate();
+          }
+        });
+
+        if (clearBtn) clearBtn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          inputEl.textContent = '';
+          field.classList.remove('has-content', 'has-min-content');
+          clearError();
+          if (wrap) { wrap.style.width = ''; wrap.style.height = ''; }
+          inputEl.focus();
+        });
+
+        if (confirmBtn) confirmBtn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          var val = inputEl.textContent.trim();
+          if (isValid(val)) showFilled(val);
+          else if (val.length > 0) setError();
+        });
+
+        if (deleteBtn) deleteBtn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          deactivate();
+        });
+
+        inputEl.addEventListener('input', function () {
+          var val = inputEl.textContent.trim();
+          var len = val.length;
+          field.classList.toggle('has-content',     len > 0);
+          field.classList.toggle('has-min-content', len >= minContent);
+          if (field.classList.contains('is-error')) clearError();
+          if (fieldKind === 'captcha' && len > 0) {
+            if (isValid(val)) showFilled(val);
+            else setError();
+          }
+        });
+
+        inputEl.addEventListener('blur', function (e) {
+          var val = inputEl.textContent.trim();
+          if (val.length > 0 && !isValid(val)) setError();
+          else if (val.length > 0) {
+            var related = e.relatedTarget;
+            if (!related || !field.contains(related)) showFilled(val);
+          }
+        });
+      });
+
+      /* ── Submit handling (Formspree) ── */
+      var form      = document.querySelector('.cf-form');
+      var submitBtn = form ? form.querySelector('.cf-submit') : null;
+      if (!form || !submitBtn) return;
+
+      var fields    = Array.from(form.querySelectorAll('.cf-field'));
+      var successEl = form.previousElementSibling; /* .cf-success */
+
+      function refreshSubmitState() {
+        var allFilled = fields.length > 0 && fields.every(function (f) { return f.classList.contains('is-filled'); });
+        var anyError  = fields.some(function (f) { return f.classList.contains('is-error'); });
+        var enabled   = allFilled && !anyError;
+        submitBtn.disabled = !enabled;
+        submitBtn.setAttribute('aria-disabled', enabled ? 'false' : 'true');
+        submitBtn.classList.toggle('is-locked', !enabled);
+      }
+
+      var observer = new MutationObserver(refreshSubmitState);
+      fields.forEach(function (f) { observer.observe(f, { attributes: true, attributeFilter: ['class'] }); });
+      refreshSubmitState();
+
+      function buildPayload() {
+        var data = new FormData();
+        fields.forEach(function (f) {
+          var key      = f.getAttribute('data-field');
+          if (!key) return;
+          var filledEl = f.querySelector('.cf-filled-value');
+          var inputEl  = f.querySelector('.cf-input');
+          var value    = (filledEl && filledEl.textContent.trim()) ||
+                         (inputEl  && inputEl.textContent.trim())  || '';
+          if (value) data.set(key, value);
+        });
+        data.set('_subject', 'Neue Nachricht über Nasenklammer Kontaktformular');
+        return data;
+      }
+
+      function resetForm() {
+        if (successEl) successEl.classList.remove('is-visible');
+        form.classList.remove('is-sent');
+        fields.forEach(function (f) {
+          f.classList.remove('is-active', 'has-content', 'has-min-content', 'is-filled', 'is-error');
+          var input   = f.querySelector('.cf-input');
+          var filled  = f.querySelector('.cf-filled-value');
+          var error   = f.querySelector('.cf-error-msg');
+          var wrap    = f.querySelector('.cf-input-wrap');
+          if (input)  input.textContent  = '';
+          if (filled) filled.textContent = '';
+          if (error)  error.textContent  = '';
+          if (wrap)   { wrap.style.width = ''; wrap.style.height = ''; }
+          if (f.getAttribute('data-field') === 'captcha') {
+            var a = Math.floor(Math.random() * 8) + 2;
+            var b = Math.floor(Math.random() * 8) + 2;
+            f.dataset.captchaAnswer = String(a + b);
+            f.querySelectorAll('[data-captcha-label]').forEach(function (el) {
+              el.textContent = a + ' + ' + b + ' = ?';
+            });
+          }
+        });
+        submitBtn.disabled = true;
+        submitBtn.setAttribute('aria-disabled', 'true');
+        submitBtn.classList.add('is-locked');
+      }
+
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        if (submitBtn.disabled) return;
+        if (!form.action) return;
+
+        form.classList.remove('has-submit-error');
+        form.classList.add('is-sending');
+        submitBtn.disabled = true;
+
+        fetch(form.action, {
+          method:  'POST',
+          body:    buildPayload(),
+          headers: { 'Accept': 'application/json' }
+        }).then(function (res) {
+          if (res.ok) {
+            form.classList.add('is-sent');
+            if (successEl) successEl.classList.add('is-visible');
+            setTimeout(resetForm, 8000);
+          } else {
+            throw new Error('Formspree ' + res.status);
+          }
+        }).catch(function () {
+          form.classList.add('has-submit-error');
+          submitBtn.disabled = false;
+        }).finally(function () {
+          form.classList.remove('is-sending');
+        });
+      });
+
+      /* ── Tab navigation ── */
+      function buildTabOrder() {
+        var order = [];
+        form.querySelectorAll('.cf-field').forEach(function (field) {
+          if (!field.classList.contains('is-filled')) {
+            var input = field.querySelector('.cf-input');
+            if (input) order.push(input);
+          }
+          field.querySelectorAll('.cf-clear, .cf-delete').forEach(function (btn) {
+            if (btn.offsetParent !== null) order.push(btn);
+          });
+        });
+        order.push(submitBtn);
+        return order;
+      }
+
+      form.addEventListener('keydown', function (e) {
+        if (e.key !== 'Tab') return;
+        var tabOrder = buildTabOrder();
+        var current  = document.activeElement;
+        var idx      = tabOrder.indexOf(current);
+        if (idx === -1) return;
+
+        var step    = e.shiftKey ? -1 : 1;
+        var nextIdx = idx + step;
+        while (nextIdx >= 0 && nextIdx < tabOrder.length) {
+          var next  = tabOrder[nextIdx];
+          var field = next.closest('.cf-field');
+          if (field && next.classList.contains('cf-input')) {
+            if (field.classList.contains('is-active')) {
+              try { next.focus(); e.preventDefault(); return; } catch (_) {}
+            } else {
+              e.preventDefault();
+              document.querySelectorAll('.cf-field.is-active').forEach(function (other) {
+                if (other === field) return;
+                if (other.classList.contains('has-min-content')) {
+                  var btn = other.querySelector('.cf-confirm');
+                  if (btn) btn.click();
+                } else {
+                  other.classList.remove('is-active', 'has-content', 'has-min-content');
+                }
+              });
+              field.classList.add('is-active');
+              void field.offsetHeight;
+              next.focus();
+              return;
+            }
+          } else {
+            try { next.focus(); e.preventDefault(); return; } catch (_) {}
+          }
+          nextIdx += step;
+        }
+      });
+
+      /* Mobile keyboard: keep active field visible */
+      if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', function () {
+          var active = document.querySelector('.cf-field.is-active');
+          if (active) scrollFieldVisible(active);
+        });
+      }
+
+    })();
+  </script>
+
+</body>
+</html>

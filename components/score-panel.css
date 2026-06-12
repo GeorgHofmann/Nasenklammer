@@ -1,0 +1,98 @@
+/* ─────────────────────────────────────────────
+   ScorePanel – reusable component styles
+   Used by: all exercise pages
+   ───────────────────────────────────────────── */
+
+.score-panel {
+  width: 92px;
+  background: var(--color-panel-bg, #fde5cd);
+  border-radius: var(--r-panel, 16px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding-bottom: 0;
+  flex-shrink: 0;
+  position: relative;
+  align-self: stretch;
+  margin-top: 100px;
+  margin-bottom: 64px;
+}
+
+.score-panel__row {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.score-panel__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.score-panel__icon {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.score-panel__icon svg {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.score-panel__bar {
+  width: 24px;
+  height: 36px;                /* minimum readable height */
+  border-radius: 24px 24px 0 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 4px;
+  transition: height 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.score-panel__bar--correct {
+  background: var(--color-correct, #4f8e33);
+}
+
+.score-panel__bar--wrong {
+  background: var(--color-error, #d2283b);
+}
+
+.score-panel__num {
+  font-family: var(--font-body, 'Noto Sans', Arial, sans-serif);
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1;
+}
+
+/* Auto-advance timer strip – runs along the bottom edge */
+.score-panel__timer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0%;
+  height: 3px;
+  background: var(--color-primary, #964f12);
+  border-radius: 0 0 var(--r-panel, 16px) var(--r-panel, 16px);
+  opacity: 0;
+  transition: none;
+}
+
+.score-panel__timer--running {
+  opacity: 1;
+  transition: width var(--score-panel-timer-duration, 4s) linear;
+  width: 100%;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .score-panel { width: 72px; }
+}

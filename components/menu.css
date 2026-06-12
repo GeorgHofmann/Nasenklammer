@@ -1,0 +1,236 @@
+/* ─────────────────────────────────────────────
+   NKMenu – Push-down Menü
+   Visuell: Figma node 150:2799
+   Animation: schnell auf → langsam abbremsen
+   ───────────────────────────────────────────── */
+
+/* ── Äußere Hülle – steuert die Höhe ─────────── */
+.nk-menu {
+  display: grid;
+  grid-template-rows: 0fr;
+  background: var(--menu-bg, #fef5ec);
+  overflow: hidden;
+  transition: grid-template-rows 0.52s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.nk-menu.is-open {
+  grid-template-rows: 1fr;
+}
+
+/* ── Innerer Wrapper (min-height:0 Pflicht) ──── */
+.nk-menu__inner {
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ── Inhaltsbereich ──────────────────────────── */
+.nk-menu__body {
+  padding: 52px 56px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  border-bottom: 1px solid var(--menu-border, rgba(150,79,18,0.10));
+}
+
+/* ── Brand-Bereich: Logo + Clever lernen  */
+.nk-menu__brand {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+/* Logo-Block-Layout → components/logo.css (.nk-logo-brand) */
+
+/* Klickbarer Logo-Link im Menü */
+.nk-menu__brand-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  transition: opacity 0.15s;
+}
+
+.nk-menu__brand-link:hover {
+  opacity: 0.75;
+}
+
+/* Untertitel-Farbe im Menü erbt von --menu-accent */
+.nk-menu .nk-logo-brand__sub {
+  color: var(--menu-accent, #964f12);
+  transition: color 0.2s;
+}
+
+/* ── Schließen-Button ────────────────────────── */
+/* Schließen-Button erbt Farbe via currentColor */
+.nk-menu__close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 0;
+  color: var(--menu-accent, #964f12);
+  border-radius: 8px;
+  flex-shrink: 0;
+  transition: opacity 0.15s, color 0.2s;
+}
+.nk-menu__close:hover { opacity: 0.6; }
+.nk-menu__close svg   { width: 28px; height: 28px; display: block; }
+
+/* ── Navigation – alle Items untereinander ────── */
+.nk-menu__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;           /* Abstand zwischen den Gruppen */
+  align-items: flex-start;
+}
+
+.nk-menu__group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* ── Hierarchie-Einrückung (Ebene 2 + 3) ────────
+   level-2 = Fächer unter einer Persona
+   level-3 = Lernmodule unter einem Fach
+
+   Die Einrückung muss groß genug sein, um mit Icons
+   klar als Sub-Ebene erkennbar zu sein.              */
+.nk-menu__item.nk-menu__item--level-2 {
+  padding-left: 47px;
+  font-size: 16px;
+}
+
+.nk-menu__item.nk-menu__item--level-3 {
+  padding-left: 80px;
+  font-size: 15px;
+}
+
+/* Icon-Größe an kleinere Schrift angleichen */
+.nk-menu__item--level-2 .nk-menu__item-icon,
+.nk-menu__item--level-2 .nk-menu__item-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.nk-menu__item--level-3 .nk-menu__item-icon,
+.nk-menu__item--level-3 .nk-menu__item-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* ── Icon-Variante ───────────────────────────── */
+/* Kombinierter Selektor nötig, damit display:flex
+   das display:block aus .nk-menu__item überschreibt. */
+.nk-menu__item.nk-menu__item--has-icon {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.nk-menu__item-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Erbt Farbe vom übergeordneten .nk-menu__item —
+     damit Icon und Schrift immer identisch eingefärbt sind. */
+  color: inherit;
+}
+
+.nk-menu__item-icon svg {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+
+/* ── Einzelner Menüpunkt ─────────────────────── */
+.nk-menu__item {
+  display: block;
+  padding: 4px 10px;
+  font-family: var(--font-logo, 'Alcyone', 'Solway', Georgia, serif);
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 24px;
+  letter-spacing: 0.25px;
+  color: var(--menu-text, #202427);
+  text-decoration: none;
+  border-radius: 6px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  text-align: left;
+  transition: color 0.15s, background 0.15s;
+
+  /* Ausgangszustand für Stagger-Animation */
+  transform: translateY(-10px);
+  opacity: 0;
+}
+
+.nk-menu__item.is-active {
+  color: var(--menu-active, #2d74bc);
+}
+
+.nk-menu__item:hover:not(.is-active) {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+/* Stagger beim Öffnen */
+.nk-menu.is-open .nk-menu__item {
+  animation: nk-menu-item-in 0.42s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(0.14s + var(--i, 0) * 0.048s);
+}
+
+@keyframes nk-menu-item-in {
+  from { transform: translateY(-10px); opacity: 0; }
+  to   { transform: translateY(0);     opacity: 1; }
+}
+
+/* Brand-Bereich einblenden */
+.nk-menu__brand-text {
+  transform: translateY(-12px);
+  opacity: 0;
+}
+
+.nk-menu.is-open .nk-menu__brand-text {
+  animation: nk-menu-brand-in 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: 0.08s;
+}
+
+@keyframes nk-menu-brand-in {
+  from { transform: translateY(-12px); opacity: 0; }
+  to   { transform: translateY(0);     opacity: 1; }
+}
+
+/* ── Copyright ────────────────────────────────── */
+.nk-menu__footer {
+  font-family: var(--font-body, 'Noto Sans', Arial, sans-serif);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 16px;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--menu-text, #202427);
+  padding: 0 10px;
+  opacity: 0;
+  transform: translateY(-6px);
+}
+
+.nk-menu.is-open .nk-menu__footer {
+  animation: nk-menu-footer-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: 0.42s;
+}
+
+@keyframes nk-menu-footer-in {
+  from { transform: translateY(-6px); opacity: 0;    }
+  to   { transform: translateY(0);    opacity: 0.45; }
+}
+
+/* ── Responsive ──────────────────────────────── */
+@media (max-width: 900px) {
+  .nk-menu__body        { padding: 32px 20px 32px; gap: 32px; }
+  .nk-menu__brand-title { font-size: 36px; line-height: 44px; }
+  .nk-menu__brand-sub   { font-size: 24px; line-height: 32px; }
+  .nk-menu__item        { font-size: 20px; line-height: 28px; }
+}

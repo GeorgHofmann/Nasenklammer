@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- SEO -->
+  <meta name="description" content="Über Nasenklammer – unser kostenloses Lernportal hilft Kindern spielerisch beim Lernen von Mathe, Deutsch, Sachkunde und Englisch.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://nasenklammer.de/about.html">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="de_DE">
+  <meta property="og:site_name" content="Nasenklammer">
+  <meta property="og:title" content="Über Nasenklammer">
+  <meta property="og:description" content="Über Nasenklammer – unser kostenloses Lernportal hilft Kindern spielerisch beim Lernen von Mathe, Deutsch, Sachkunde und Englisch.">
+  <meta property="og:url" content="https://nasenklammer.de/about.html">
+  <meta property="og:image" content="https://nasenklammer.de/og-image.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Über Nasenklammer">
+  <meta name="twitter:description" content="Über Nasenklammer – unser kostenloses Lernportal hilft Kindern spielerisch beim Lernen von Mathe, Deutsch, Sachkunde und Englisch.">
+  <meta name="twitter:image" content="https://nasenklammer.de/og-image.png">
+  <!-- /SEO -->
+  <title>About – Nasenklammer</title>
+  <link rel="stylesheet" href="components/fonts.css">
+  <link rel="stylesheet" href="components/transitions.css">
+  <link rel="stylesheet" href="components/logo.css">
+  <link rel="stylesheet" href="components/header.css">
+  <link rel="stylesheet" href="components/menu.css">
+  <link rel="stylesheet" href="components/fab.css">
+  <style>
+    :root {
+      --font-logo:    'Alcyone', 'Solway', Georgia, serif;
+      --font-heading: 'Solway', Georgia, serif;
+      --font-body:    'Noto Sans', Arial, sans-serif;
+      --color-bg:     #c8e0f4;
+      --color-accent: #225a93;
+      --nk-fab-bg:    #f4a056;
+      --nk-fab-color: #00363d;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-body);
+      background: var(--color-bg);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .placeholder-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      padding: 48px 32px;
+      text-align: center;
+    }
+    .placeholder-main h1 {
+      font-family: var(--font-heading);
+      font-size: 40px;
+      font-weight: 400;
+      color: var(--color-accent);
+    }
+    .placeholder-main p {
+      font-size: 20px;
+      color: var(--color-accent);
+      opacity: 0.7;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="siteMenu"></div>
+  <header id="siteHeader"></header>
+
+  <main class="placeholder-main">
+    <h1>About</h1>
+    <p>Diese Seite ist noch im Aufbau.</p>
+  </main>
+
+  <div id="siteFab"></div>
+
+  <script src="components/analytics.js"></script>
+  <script src="components/voice.js"></script>
+  <script src="components/fab.js"></script>
+  <script src="components/transitions.js"></script>
+  <script src="components/logo.js"></script>
+  <script src="components/icons.js"></script>
+  <script src="components/menu.js"></script>
+  <script src="components/header.js"></script>
+  <script>
+    var voiceText = 'Hier erfährst du bald mehr über Nasenklammer.';
+
+    var menu = new NKMenu(document.getElementById('siteMenu'), {
+      bgColor: '#c8e0f4', accentColor: '#225a93', textColor: '#202427',
+      activeColor: '#2d74bc', borderColor: 'rgba(34,90,147,0.12)',
+      headerEl: document.getElementById('siteHeader'),
+      onItemClick: function(item) { if (item.href && item.href !== '#') window.location.href = item.href; }
+    });
+
+    var header = new NKHeader(document.getElementById('siteHeader'), {
+      bgColor: '#c8e0f4', textColor: '#225a93', homeHref: 'index.html',
+      onMenuClick: function() { menu.toggle(); }
+    });
+
+    var fab = new NKFab(document.getElementById('siteFab'), {
+      mode: 'page',
+      onSpeak: function() { NKVoice.speak(voiceText, function() { fab.done(); }); },
+      onStop:  function() { NKVoice.stop(); },
+    });
+  </script>
+
+</body>
+</html>
