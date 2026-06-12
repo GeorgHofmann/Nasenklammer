@@ -30,7 +30,7 @@
 
   /* ── Themes ────────────────────────────────────── */
   var THEMES = {
-    home:       { bgColor: '#c8e0f4', textColor: '#225a93', mode: 'brand', subtitle: 'Clever lernen' },
+    home:       { bgColor: '#c8e0f4', textColor: '#225a93', mode: 'brand', subtitle: 'Wissen macht Spaß' },
     mathematik: { bgColor: '#fef5ec', textColor: '#964f12' },
     deutsch:    { bgColor: '#e8f0fc', textColor: '#1a3a7a' },
     sachkunde:  { bgColor: '#e8f5ec', textColor: '#1a5c2a' },
