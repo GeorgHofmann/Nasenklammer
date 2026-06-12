@@ -12,13 +12,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Install lftp
+        run: sudo apt-get install -y lftp
+
       - name: SFTP Deploy
-        uses: wlixcc/SFTP-Deploy-Action@v1.2.4
-        with:
-          server: ${{ secrets.YOUR_HOST }}
-          username: ${{ secrets.YOUR_USERNAME }}
-          password: ${{ secrets.YOUR_PASSWORD }}
-          local_path: ./
-          remote_path: /
-          sftp_only: true
-          args: '-o StrictHostKeyChecking=no'
+        run: |
+          lftp -u "${{ secrets.YOUR_USERNAME }}","${{ secrets.YOUR_PASSWORD }}" sftp://${{ secrets.YOUR_HOST }} <<EOF
+          set sftp:auto-confirm yes
+          set net:max-retries 3
+          mirror -R \
+            --exclude=.git/ \
+            --exclude=.github/ \
+            --exclude=.claude/ \
+            ./ /ablnkr/
+          quit
+          EOF
