@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Monster und Höhle</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      overflow: hidden;
+      background: #f4efe8;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+    canvas { display: block; }
+
+    #counter {
+      position: fixed;
+      top: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255,253,250,0.92);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-radius: 50px;
+      padding: 10px 26px 10px 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 2px 18px rgba(0,0,0,0.10);
+      z-index: 10;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+    #count-num {
+      font-size: 2.4rem;
+      font-weight: 800;
+      color: #4a3a58;
+      min-width: 2.4rem;
+      text-align: right;
+      transition: transform 0.12s;
+      display: inline-block;
+    }
+    #count-num.pop { transform: scale(1.35); }
+    #count-total  { font-size: 1.0rem; color: #b0a0b8; font-weight: 600; }
+    #count-label  { font-size: 0.92rem; color: #9a8aaa; font-weight: 500; }
+
+    #dots {
+      position: fixed;
+      top: 78px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 7px;
+      z-index: 10;
+      pointer-events: none;
+    }
+    .dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: #ddd5e0;
+      transition: background 0.3s, transform 0.3s;
+    }
+    .dot.filled { background: #c9a8d8; transform: scale(1.22); }
+
+    #hint {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.88rem;
+      color: #b0a0b8;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    #success {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba(248,244,252,0.97);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      z-index: 30;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.7s ease;
+    }
+    #success.show { opacity: 1; pointer-events: all; }
+    #success-star {
+      font-size: 5rem;
+      margin-bottom: 10px;
+      animation: floatStar 1.4s ease-in-out infinite alternate;
+    }
+    @keyframes floatStar {
+      from { transform: translateY(0) rotate(-4deg); }
+      to   { transform: translateY(-14px) rotate(4deg); }
+    }
+    #success-title { font-size: 2.4rem; font-weight: 900; color: #4a3a58; margin-bottom: 6px; }
+    #success-sub   { font-size: 1.0rem; color: #9a8aaa; margin-bottom: 36px; }
+    #restart-btn {
+      background: linear-gradient(135deg, #d4a8d4, #a8c4e0);
+      color: #fff;
+      border: none;
+      border-radius: 50px;
+      padding: 16px 52px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 6px 24px rgba(180,150,210,0.4);
+      transition: transform 0.12s;
+    }
+    #restart-btn:hover  { transform: scale(1.04); }
+    #restart-btn:active { transform: scale(0.96); }
+  </style>
+</head>
+<body>
+
+<div id="counter">
+  <span id="count-num">0</span><span id="count-total">/10</span>
+  <span id="count-label">Monster in der Höhle</span>
+</div>
+
+<div id="dots">
+  <div class="dot" id="d0"></div><div class="dot" id="d1"></div>
+  <div class="dot" id="d2"></div><div class="dot" id="d3"></div>
+  <div class="dot" id="d4"></div><div class="dot" id="d5"></div>
+  <div class="dot" id="d6"></div><div class="dot" id="d7"></div>
+  <div class="dot" id="d8"></div><div class="dot" id="d9"></div>
+</div>
+
+<div id="hint">Monster in die Höhle ziehen ✦</div>
+
+<div id="success">
+  <div id="success-star">🌟</div>
+  <div id="success-title">Geschafft! 10 / 10</div>
+  <div id="success-sub">Alle Monster sind jetzt in der Höhle!</div>
+  <button id="restart-btn" onclick="restartGame()">Nochmal spielen ↩</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// ── RENDERER ─────────────────────────────
+var scene    = new THREE.Scene();
+scene.background = new THREE.Color(0xf4efe8);
+scene.fog    = new THREE.Fog(0xf4efe8, 24, 38);
+
+var camera   = new THREE.PerspectiveCamera(54, window.innerWidth / window.innerHeight, 0.1, 60);
+camera.position.set(0, 8, 17);
+camera.lookAt(new THREE.Vector3(0, 0, 0));
+
+var renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type    = THREE.PCFSoftShadowMap;
+document.body.insertBefore(renderer.domElement, document.body.firstChild);
+
+window.addEventListener('resize', function() {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+// ── LIGHTS ───────────────────────────────
+var ambient = new THREE.AmbientLight(0xfff8f0, 0.75);
+scene.add(ambient);
+
+var sun = new THREE.DirectionalLight(0xfff5e4, 1.0);
+sun.position.set(6, 14, 9);
+sun.castShadow = true;
+sun.shadow.mapSize.width  = 1024;
+sun.shadow.mapSize.height = 1024;
+sun.shadow.camera.left   = -12;
+sun.shadow.camera.right  =  12;
+sun.shadow.camera.top    =  12;
+sun.shadow.camera.bottom = -12;
+sun.shadow.camera.near   =   1;
+sun.shadow.camera.far    =  40;
+sun.shadow.bias = -0.001;
+scene.add(sun);
+
+var fill = new THREE.DirectionalLight(0xddeeff, 0.30);
+fill.position.set(-6, 4, 6);
+scene.add(fill);
+
+// ── GROUND ───────────────────────────────
+var ground = new THREE.Mesh(
+  new THREE.PlaneGeometry(36, 36),
+  new THREE.MeshLambertMaterial({ color: 0xece5da })
+);
+ground.rotation.x = -Math.PI / 2;
+ground.position.y = -0.92;
+ground.receiveShadow = true;
+scene.add(ground);
+
+// Soft ground spots
+for (var gi = 0; gi < 10; gi++) {
+  var spot = new THREE.Mesh(
+    new THREE.CircleGeometry(0.5 + Math.random() * 0.6, 14),
+    new THREE.MeshLambertMaterial({ color: 0xe8e0d4 })
+  );
+  spot.rotation.x = -Math.PI / 2;
+  spot.position.set((Math.random()-0.5)*18, -0.915, (Math.random()-0.5)*14);
+  scene.add(spot);
+}
+
+// ── CAVE ─────────────────────────────────
+var CAVE_POS   = new THREE.Vector3(0, 0, -4.0);
+var CAVE_RZONE = 2.0; // drop-detection radius
+
+function buildCave() {
+  var g = new THREE.Group();
+
+  var rockMat  = new THREE.MeshLambertMaterial({ color: 0x8c8070 });
+  var rock2Mat = new THREE.MeshLambertMaterial({ color: 0x9a8e80 });
+  var darkMat  = new THREE.MeshLambertMaterial({ color: 0x110c18 });
+  var floorMat = new THREE.MeshLambertMaterial({ color: 0x342c3e });
+
+  // Dark back wall
+  var back = new THREE.Mesh(new THREE.PlaneGeometry(2.8, 2.8), darkMat);
+  back.position.set(0, 0.30, -0.62);
+  g.add(back);
+
+  // Cave floor
+  var cf = new THREE.Mesh(new THREE.PlaneGeometry(2.8, 1.3), floorMat);
+  cf.rotation.x = -Math.PI / 2;
+  cf.position.set(0, -0.91, -0.25);
+  g.add(cf);
+
+  // Left pillar
+  var lp = new THREE.Mesh(new THREE.CylinderGeometry(0.46, 0.60, 2.9, 12), rockMat);
+  lp.position.set(-1.35, 0.35, 0);
+  lp.castShadow = true; lp.receiveShadow = true;
+  g.add(lp);
+
+  // Right pillar (clone)
+  var rp = lp.clone();
+  rp.position.set(1.35, 0.35, 0);
+  g.add(rp);
+
+  // Arch
+  var arch = new THREE.Mesh(new THREE.TorusGeometry(1.35, 0.50, 10, 28, Math.PI), rockMat);
+  arch.position.set(0, 1.80, 0);
+  arch.castShadow = true;
+  g.add(arch);
+
+  // Top rock blob
+  var topRock = new THREE.Mesh(new THREE.SphereGeometry(1.05, 12, 12), rock2Mat);
+  topRock.scale.set(1.8, 0.9, 0.8);
+  topRock.position.set(0, 2.50, -0.1);
+  topRock.castShadow = true;
+  g.add(topRock);
+
+  // Side pebbles
+  var pebPos = [[-2.0,-0.60,0.30],[2.0,-0.70,0.30],[-1.5,-0.75,0.65],[1.5,-0.72,0.72],[0.0,-0.80,0.82]];
+  for (var pi = 0; pi < pebPos.length; pi++) {
+    var p = pebPos[pi];
+    var peb = new THREE.Mesh(new THREE.SphereGeometry(0.28+Math.random()*0.12, 9, 9), rockMat);
+    peb.position.set(p[0], p[1], p[2]);
+    peb.scale.y = 0.65;
+    peb.castShadow = true;
+    g.add(peb);
+  }
+
+  // Sparkle dots at entrance
+  var sparkMat = new THREE.MeshBasicMaterial({ color: 0xecd8f0 });
+  var sparkPos = [[-1.0,2.0,0.3],[0.6,2.2,0.3],[-0.3,2.4,0.2],[1.1,1.7,0.4]];
+  for (var si = 0; si < sparkPos.length; si++) {
+    var sp = new THREE.Mesh(new THREE.SphereGeometry(0.05, 6, 6), sparkMat);
+    sp.position.set(sparkPos[si][0], sparkPos[si][1], sparkPos[si][2]);
+    g.add(sp);
+  }
+
+  g.position.copy(CAVE_POS);
+  return g;
+}
+
+scene.add(buildCave());
+
+// Cave slots (world space)
+var SLOTS = [];
+var sx = [-1.0, -0.5, 0.0, 0.5, 1.0];
+for (var row = 0; row < 2; row++) {
+  for (var col = 0; col < 5; col++) {
+    SLOTS.push({
+      pos: new THREE.Vector3(CAVE_POS.x + sx[col], CAVE_POS.y + 0.18 - row * 0.52, CAVE_POS.z - 0.45 - row * 0.08),
+      occupied: false
+    });
+  }
+}
+
+// ── SHARED MATS ──────────────────────────
+var DARK_MAT  = new THREE.MeshLambertMaterial({ color: 0x28183a });
+var WHITE_MAT = new THREE.MeshLambertMaterial({ color: 0xffffff });
+
+function cMat(hex) { return new THREE.MeshLambertMaterial({ color: hex }); }
+
+// ── MONSTER PARTS ────────────────────────
+function addEyes(g) {
+  [-0.19, 0.19].forEach(function(x) {
+    var ew = new THREE.Mesh(new THREE.SphereGeometry(0.135, 12, 12), WHITE_MAT);
+    ew.position.set(x, 0.16, 0.43);
+    g.add(ew);
+    var pu = new THREE.Mesh(new THREE.SphereGeometry(0.073, 10, 10), DARK_MAT);
+    pu.position.set(x, 0.16, 0.515);
+    g.add(pu);
+    var sh = new THREE.Mesh(new THREE.SphereGeometry(0.033, 8, 8), WHITE_MAT);
+    sh.position.set(x + 0.046, 0.200, 0.550);
+    g.add(sh);
+  });
+}
+
+function addSmile(g) {
+  var sm = new THREE.Mesh(
+    new THREE.TorusGeometry(0.092, 0.023, 8, 16, Math.PI),
+    DARK_MAT
+  );
+  sm.position.set(0, -0.068, 0.458);
+  sm.rotation.z = Math.PI;
+  g.add(sm);
+}
+
+function addLegs(g, bMat) {
+  [-0.20, 0.20].forEach(function(x) {
+    var leg = new THREE.Mesh(new THREE.SphereGeometry(0.18, 10, 10), bMat);
+    leg.position.set(x, -0.54, 0.08);
+    leg.castShadow = true;
+    g.add(leg);
+  });
+}
+
+var ARM_REST_L =  Math.PI / 3.6;
+var ARM_REST_R = -Math.PI / 3.6;
+
+function addArms(g, bMat) {
+  var armGeo = new THREE.CylinderGeometry(0.088, 0.072, 0.44, 8);
+
+  var la = new THREE.Mesh(armGeo, bMat);
+  la.position.set(-0.56, 0.02, 0.08);
+  la.rotation.z = ARM_REST_L;
+  la.castShadow = true;
+  g.add(la);
+
+  var ra = new THREE.Mesh(armGeo, bMat);
+  ra.position.set(0.56, 0.02, 0.08);
+  ra.rotation.z = ARM_REST_R;
+  ra.castShadow = true;
+  g.add(ra);
+
+  return { la: la, ra: ra };
+}
+
+// ── FEATURES ─────────────────────────────
+function fCatEars(g, bMat) {
+  var innerMat = cMat(0xffabc4);
+  [-0.23, 0.23].forEach(function(x) {
+    var ear = new THREE.Mesh(new THREE.ConeGeometry(0.145, 0.32, 8), bMat);
+    ear.position.set(x, 0.67, 0.07);
+    g.add(ear);
+    var inn = new THREE.Mesh(new THREE.ConeGeometry(0.075, 0.22, 8), innerMat);
+    inn.position.set(x, 0.67, 0.14);
+    g.add(inn);
+  });
+}
+
+function fBunnyEars(g, bMat) {
+  var innerMat = cMat(0xe8c0dc);
+  [-0.17, 0.17].forEach(function(x) {
+    var ear = new THREE.Mesh(new THREE.CylinderGeometry(0.078, 0.105, 0.58, 8), bMat);
+    ear.position.set(x, 0.90, 0.04);
+    ear.rotation.z = x < 0 ? 0.17 : -0.17;
+    g.add(ear);
+    var inn = new THREE.Mesh(new THREE.CylinderGeometry(0.036, 0.056, 0.44, 8), innerMat);
+    inn.position.set(x, 0.90, 0.10);
+    inn.rotation.z = x < 0 ? 0.17 : -0.17;
+    g.add(inn);
+  });
+}
+
+function fBow(g, bMat) {
+  var bwMat = cMat(0xff9ab8);
+  [-1, 1].forEach(function(s) {
+    var petal = new THREE.Mesh(new THREE.SphereGeometry(0.155, 8, 8), bwMat);
+    petal.scale.set(0.55, 0.88, 0.38);
+    petal.position.set(s * 0.17, 0.63, 0.14);
+    g.add(petal);
+  });
+  var ctr = new THREE.Mesh(new THREE.SphereGeometry(0.072, 8, 8), bwMat);
+  ctr.position.set(0, 0.63, 0.19);
+  g.add(ctr);
+}
+
+function fSmallHorns(g, bMat) {
+  [-0.19, 0.19].forEach(function(x) {
+    var h = new THREE.Mesh(new THREE.ConeGeometry(0.082, 0.26, 8), bMat);
+    h.position.set(x, 0.62, 0.07);
+    g.add(h);
+  });
+}
+
+function fWings(g, bMat) {
+  var wMat = cMat(0xf8d2dc);
+  wMat.side = THREE.DoubleSide;
+  [-1, 1].forEach(function(s) {
+    var w = new THREE.Mesh(new THREE.SphereGeometry(0.32, 8, 8), wMat);
+    w.scale.set(0.33, 0.72, 0.12);
+    w.position.set(s * 0.74, 0.14, -0.12);
+    w.rotation.y = s * 0.55;
+    g.add(w);
+  });
+}
+
+function fSingleHorn(g, bMat) {
+  var hMat = cMat(0xbcd0f0);
+  var h = new THREE.Mesh(new THREE.ConeGeometry(0.105, 0.42, 8), hMat);
+  h.position.set(0, 0.70, 0.09);
+  g.add(h);
+}
+
+function fSpikes(g, bMat) {
+  [-0.21, 0, 0.21].forEach(function(x, i) {
+    var sp = new THREE.Mesh(new THREE.ConeGeometry(0.072, 0.26, 6), bMat);
+    sp.position.set(x, 0.60 + (i === 1 ? 0.09 : 0), 0.06);
+    g.add(sp);
+  });
+}
+
+function fRoundNose(g, bMat) {
+  var nMat = cMat(0xd48060);
+  var n = new THREE.Mesh(new THREE.SphereGeometry(0.105, 10, 10), nMat);
+  n.position.set(0, -0.05, 0.535);
+  g.add(n);
+}
+
+function fAntenna(g, bMat) {
+  var aMat = cMat(0x9898c0);
+  var stick = new THREE.Mesh(new THREE.CylinderGeometry(0.027, 0.027, 0.44, 8), aMat);
+  stick.position.set(0, 0.74, 0.05);
+  g.add(stick);
+  var ball = new THREE.Mesh(new THREE.SphereGeometry(0.096, 10, 10), aMat);
+  ball.position.set(0, 1.0, 0.05);
+  g.add(ball);
+}
+
+function fPointyEars(g, bMat) {
+  [-0.41, 0.41].forEach(function(x) {
+    var e = new THREE.Mesh(new THREE.ConeGeometry(0.125, 0.34, 6), bMat);
+    e.position.set(x, 0.44, 0.04);
+    e.rotation.z = x < 0 ? 0.46 : -0.46;
+    g.add(e);
+  });
+}
+
+// ── MONSTER FACTORY ──────────────────────
+//  [color, featureFn, name]
+var DEFS = [
+  [0xf4a7b9, fCatEars,    'Rosie' ],  // f1 – rosa ♀
+  [0xc5b8ec, fBunnyEars,  'Lila'  ],  // f2 – lavender ♀
+  [0xa8d8c0, fBow,        'Minni' ],  // f3 – mint ♀
+  [0xf0d9b5, fSmallHorns, 'Crema' ],  // f4 – cream ♀
+  [0xe8b4b8, fWings,      'Dusti' ],  // f5 – dusty rose ♀
+  [0xa8c4e0, fSingleHorn, 'Blu'   ],  // m1 – blue ♂
+  [0xb8c9a8, fSpikes,     'Sage'  ],  // m2 – sage ♂
+  [0xf0c89a, fRoundNose,  'Ori'   ],  // m3 – orange ♂
+  [0xc8c0cc, fAntenna,    'Grisu' ],  // m4 – gray ♂
+  [0xf0e0a0, fPointyEars, 'Yello' ],  // m5 – yellow ♂
+];
+
+function buildMonster(def) {
+  var g    = new THREE.Group();
+  var bMat = cMat(def[0]);
+
+  var body = new THREE.Mesh(new THREE.SphereGeometry(0.50, 20, 20), bMat);
+  body.castShadow = true; body.receiveShadow = true;
+  g.add(body);
+
+  addEyes(g);
+  addSmile(g);
+  addLegs(g, bMat);
+  var arms = addArms(g, bMat);
+  def[1](g, bMat);   // feature
+
+  g.userData = {
+    name:     def[2],
+    isInCave: false,
+    slotIdx:  -1,
+    homePos:  new THREE.Vector3(),
+    arms:     arms,
+    tL:       ARM_REST_L,  // arm rotation targets
+    tR:       ARM_REST_R,
+    popAnim:  0,
+  };
+  return g;
+}
+
+// Home grid: 2 rows × 5 cols
+var HOME_POS = [];
+for (var row = 0; row < 2; row++) {
+  for (var col = 0; col < 5; col++) {
+    HOME_POS.push(new THREE.Vector3(-4 + col * 2, 0, 3.5 + row * 3.2));
+  }
+}
+
+var MONSTERS = DEFS.map(function(def, i) {
+  var m = buildMonster(def);
+  m.position.copy(HOME_POS[i]);
+  m.userData.homePos.copy(HOME_POS[i]);
+  scene.add(m);
+  return m;
+});
+
+// ── DRAG ─────────────────────────────────
+var raycaster  = new THREE.Raycaster();
+var dragPlane  = new THREE.Plane();
+dragPlane.normal.set(0, 1, 0);
+var hitTarget  = new THREE.Vector3();
+var LIFT_Y     = 1.4;
+var dragged    = null;
+var dragOffX   = 0, dragOffZ = 0;
+
+function ndc(e) {
+  var rect = renderer.domElement.getBoundingClientRect();
+  var src  = e.touches ? e.touches[0] : e;
+  return new THREE.Vector2(
+    ((src.clientX - rect.left) / rect.width)  *  2 - 1,
+    ((src.clientY - rect.top)  / rect.height) * -2 + 1
+  );
+}
+
+function groundPt(v2) {
+  raycaster.setFromCamera(v2, camera);
+  var ok = raycaster.ray.intersectPlane(dragPlane, hitTarget);
+  return ok ? { x: hitTarget.x, z: hitTarget.z } : null;
+}
+
+function onDown(e) {
+  e.preventDefault();
+  var v = ndc(e);
+  raycaster.setFromCamera(v, camera);
+  var hits = raycaster.intersectObjects(MONSTERS, true);
+  if (!hits.length) return;
+
+  var obj = hits[0].object;
+  while (obj.parent && obj.parent !== scene) obj = obj.parent;
+  dragged = obj;
+
+  var ud = dragged.userData;
+  if (ud.isInCave) {
+    ud.isInCave = false;
+    if (ud.slotIdx >= 0) { SLOTS[ud.slotIdx].occupied = false; ud.slotIdx = -1; }
+    dragged.scale.setScalar(1.0);
+    decrement();
+  }
+
+  dragged.position.y = LIFT_Y;
+  dragPlane.constant  = -LIFT_Y;
+
+  var pt = groundPt(v);
+  if (pt) { dragOffX = dragged.position.x - pt.x; dragOffZ = dragged.position.z - pt.z; }
+  else    { dragOffX = 0; dragOffZ = 0; }
+
+  ud.tL = -Math.PI / 2.4;
+  ud.tR =  Math.PI / 2.4;
+}
+
+function onMove(e) {
+  if (!dragged) return;
+  e.preventDefault();
+  var pt = groundPt(ndc(e));
+  if (!pt) return;
+  dragged.position.x = pt.x + dragOffX;
+  dragged.position.z = pt.z + dragOffZ;
+}
+
+function onUp(e) {
+  if (!dragged) return;
+
+  var px = dragged.position.x - CAVE_POS.x;
+  var pz = dragged.position.z - CAVE_POS.z;
+  var inZone = Math.sqrt(px*px + pz*pz) < CAVE_RZONE;
+
+  if (inZone) {
+    var slot = null;
+    for (var si = 0; si < SLOTS.length; si++) {
+      if (!SLOTS[si].occupied) { slot = SLOTS[si]; break; }
+    }
+    if (slot) {
+      SLOTS[SLOTS.indexOf(slot)].occupied = true;
+      dragged.userData.slotIdx  = SLOTS.indexOf(slot);
+      dragged.userData.isInCave = true;
+      dragged.position.copy(slot.pos);
+      dragged.scale.setScalar(0.46);
+      dragged.userData.popAnim = 1;
+      increment();
+    } else {
+      snapHome(dragged);
+    }
+  } else {
+    snapHome(dragged);
+  }
+
+  dragged.userData.tL = ARM_REST_L;
+  dragged.userData.tR = ARM_REST_R;
+  dragged = null;
+}
+
+function snapHome(m) {
+  m.position.copy(m.userData.homePos);
+  m.position.y = 0;
+  m.scale.setScalar(1.0);
+}
+
+var cvs = renderer.domElement;
+cvs.addEventListener('mousedown',  onDown);
+cvs.addEventListener('mousemove',  onMove);
+cvs.addEventListener('mouseup',    onUp);
+cvs.addEventListener('mouseleave', onUp);
+cvs.addEventListener('touchstart', onDown, { passive: false });
+cvs.addEventListener('touchmove',  onMove, { passive: false });
+cvs.addEventListener('touchend',   onUp,   { passive: false });
+
+// ── COUNTER ──────────────────────────────
+var count   = 0;
+var numEl   = document.getElementById('count-num');
+var sucEl   = document.getElementById('success');
+var dotEls  = [];
+for (var di = 0; di < 10; di++) dotEls.push(document.getElementById('d' + di));
+
+function updateDots() {
+  for (var i = 0; i < dotEls.length; i++) {
+    if (i < count) dotEls[i].classList.add('filled');
+    else           dotEls[i].classList.remove('filled');
+  }
+}
+
+function popNum() {
+  numEl.classList.remove('pop');
+  void numEl.offsetWidth;
+  numEl.classList.add('pop');
+  setTimeout(function() { numEl.classList.remove('pop'); }, 200);
+}
+
+function increment() {
+  count = Math.min(10, count + 1);
+  numEl.textContent = count;
+  updateDots(); popNum();
+  if (count >= 10) setTimeout(function() { sucEl.classList.add('show'); }, 700);
+}
+
+function decrement() {
+  count = Math.max(0, count - 1);
+  numEl.textContent = count;
+  updateDots();
+  sucEl.classList.remove('show');
+}
+
+function restartGame() {
+  count = 0;
+  numEl.textContent = 0;
+  updateDots();
+  sucEl.classList.remove('show');
+  for (var si = 0; si < SLOTS.length; si++) SLOTS[si].occupied = false;
+  for (var mi = 0; mi < MONSTERS.length; mi++) {
+    var m = MONSTERS[mi];
+    m.userData.isInCave = false;
+    m.userData.slotIdx  = -1;
+    m.userData.popAnim  = 0;
+    m.userData.tL = ARM_REST_L;
+    m.userData.tR = ARM_REST_R;
+    snapHome(m);
+  }
+}
+window.restartGame = restartGame;
+
+// ── ANIMATE ──────────────────────────────
+var clock = new THREE.Clock();
+
+function animate() {
+  requestAnimationFrame(animate);
+  var t = clock.getElapsedTime();
+
+  for (var i = 0; i < MONSTERS.length; i++) {
+    var m  = MONSTERS[i];
+    var ud = m.userData;
+
+    if (m !== dragged && !ud.isInCave) {
+      m.position.y = Math.sin(t * 1.15 + i * 0.82) * 0.09;
+      m.rotation.y = Math.sin(t * 0.78 + i * 1.08) * 0.12;
+    }
+
+    if (ud.popAnim > 0) {
+      ud.popAnim -= 0.07;
+      if (ud.popAnim < 0) ud.popAnim = 0;
+      m.scale.setScalar(0.46 + Math.sin(ud.popAnim * Math.PI) * 0.16);
+    }
+
+    var arms = ud.arms;
+    arms.la.rotation.z += (ud.tL - arms.la.rotation.z) * 0.14;
+    arms.ra.rotation.z += (ud.tR - arms.ra.rotation.z) * 0.14;
+  }
+
+  renderer.render(scene, camera);
+}
+
+animate();
+</script>
+</body>
+</html>

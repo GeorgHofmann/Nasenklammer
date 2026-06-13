@@ -63,9 +63,9 @@
         iconSvg: ICONS.vorschule,
         children: [
           { label: 'Mathematik', href: '#', iconSvg: ICONS.mathematik, children: [
-            { label: 'Uhrzeit',     href: '#', iconSvg: ICONS.uhrzeit     },
-            { label: 'Zählen',      href: '#', iconSvg: ICONS.zaehlen     },
-            { label: 'Mengenlehre', href: '#', iconSvg: ICONS.mengenlehre },
+            { label: 'Uhrzeit',     href: '#',                iconSvg: ICONS.uhrzeit     },
+            { label: 'Zählen',      href: '#',                iconSvg: ICONS.zaehlen     },
+            { label: 'Mengenlehre', href: 'mengenlehre.html', iconSvg: ICONS.mengenlehre },
           ]},
           { label: 'Deutsch',   href: '#', iconSvg: ICONS.deutsch   },
           { label: 'Sachkunde', href: '#', iconSvg: ICONS.sachkunde },
@@ -78,9 +78,9 @@
         iconSvg: ICONS.grundschule,
         children: [
           { label: 'Mathematik', href: 'grundschule.html', iconSvg: ICONS.mathematik, children: [
-            { label: 'Uhrzeit',     href: 'uhr.html',     iconSvg: ICONS.uhrzeit     },
-            { label: 'Zählen',      href: 'zaehlen.html', iconSvg: ICONS.zaehlen     },
-            { label: 'Mengenlehre', href: '#',            iconSvg: ICONS.mengenlehre },
+            { label: 'Uhrzeit',     href: 'uhr.html',          iconSvg: ICONS.uhrzeit     },
+            { label: 'Zählen',      href: 'zaehlen.html',      iconSvg: ICONS.zaehlen     },
+            { label: 'Mengenlehre', href: 'mengenlehre.html',  iconSvg: ICONS.mengenlehre },
           ]},
           { label: 'Deutsch',   href: '#', iconSvg: ICONS.deutsch   },
           { label: 'Sachkunde', href: '#', iconSvg: ICONS.sachkunde },
