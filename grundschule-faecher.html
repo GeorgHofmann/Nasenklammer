@@ -188,7 +188,7 @@
   <script>
     var voiceText =
       'Welches Fach möchtest du heute üben? ' +
-      'Du kannst Mathematik, Deutsch, Sachkunde oder Englisch wählen. ' +
+      'Im Moment ist Mathematik verfügbar. ' +
       'Tippe einfach auf das Fach, das dich interessiert!';
 
     new NKCardGrid(document.getElementById('cardGrid'), {
@@ -204,39 +204,19 @@
           ].join('')
         },
         {
-          href: '#',
+          href: '#', disabled: true,
           label: 'Deutsch',
-          imageSvg: [
-            '<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">',
-            '  <path d="M64 40v48" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>',
-            '  <path d="M30 36h34v52H30V36z" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>',
-            '  <path d="M64 36h34v52H64V36z" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>',
-            '  <path d="M38 52h18M38 62h18M38 72h12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>',
-            '  <path d="M72 52h18M72 62h18M72 72h12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>',
-            '</svg>'
-          ].join('')
+          imageSvg: '<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M64 40v48" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M30 36h34v52H30V36z" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><path d="M64 36h34v52H64V36z" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><path d="M38 52h18M38 62h18M38 72h12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><path d="M72 52h18M72 62h18M72 72h12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>'
         },
         {
-          href: '#',
+          href: '#', disabled: true,
           label: 'Sachkunde',
-          imageSvg: [
-            '<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">',
-            '  <circle cx="64" cy="60" r="34" stroke="currentColor" stroke-width="3"/>',
-            '  <path d="M64 26v68M30 60h68" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>',
-            '  <ellipse cx="64" cy="60" rx="14" ry="34" stroke="currentColor" stroke-width="2.5"/>',
-            '  <path d="M35 44c9 4 19 6 29 6s20-2 29-6M35 76c9-4 19-6 29-6s20 2 29 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>',
-            '</svg>'
-          ].join('')
+          imageSvg: '<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="64" cy="60" r="34" stroke="currentColor" stroke-width="3"/><path d="M64 26v68M30 60h68" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><ellipse cx="64" cy="60" rx="14" ry="34" stroke="currentColor" stroke-width="2.5"/><path d="M35 44c9 4 19 6 29 6s20-2 29-6M35 76c9-4 19-6 29-6s20 2 29 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>'
         },
         {
-          href: '#',
-          label: 'English',
-          imageSvg: [
-            '<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">',
-            '  <path d="M22 32h84v56H74l-18 20V88H22V32z" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>',
-            '  <path d="M40 52h48M40 64h48M40 76h30" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>',
-            '</svg>'
-          ].join('')
+          href: '#', disabled: true,
+          label: 'Englisch',
+          imageSvg: '<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M22 32h84v56H74l-18 20V88H22V32z" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><path d="M40 52h48M40 64h48M40 76h30" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>'
         }
       ]
     });

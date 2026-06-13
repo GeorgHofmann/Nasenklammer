@@ -66,6 +66,13 @@
   padding-top: 20px;
 }
 
+/* ── Disabled-Karte ──────────────────────────── */
+.nk-card--disabled {
+  opacity: 0.35;
+  pointer-events: none;
+  cursor: default;
+}
+
 /* ── Responsive ──────────────────────────────── */
 @media (max-width: 900px) {
   .nk-cards {

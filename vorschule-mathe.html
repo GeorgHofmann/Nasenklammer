@@ -4,22 +4,22 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- SEO -->
-  <meta name="description" content="Lernübungen für Vorschulkinder auf Nasenklammer – Mathe, Deutsch und mehr spielerisch entdecken. Kostenlos und kindgerecht.">
+  <meta name="description" content="Mathe üben für Vorschulkinder – Zählen bis 10 und mehr. Kostenlose interaktive Übungen auf Nasenklammer.">
   <meta name="robots" content="index, follow">
-  <link rel="canonical" href="https://nasenklammer.de/vorschule.html">
+  <link rel="canonical" href="https://nasenklammer.de/vorschule-mathe.html">
   <meta property="og:type" content="website">
   <meta property="og:locale" content="de_DE">
   <meta property="og:site_name" content="Nasenklammer">
-  <meta property="og:title" content="Vorschulkind – Nasenklammer">
-  <meta property="og:description" content="Lernübungen für Vorschulkinder auf Nasenklammer – Mathe, Deutsch und mehr spielerisch entdecken. Kostenlos und kindgerecht.">
-  <meta property="og:url" content="https://nasenklammer.de/vorschule.html">
+  <meta property="og:title" content="Mathematik für Vorschulkinder – Nasenklammer">
+  <meta property="og:description" content="Mathe üben für Vorschulkinder – Zählen bis 10 und mehr. Kostenlose interaktive Übungen auf Nasenklammer.">
+  <meta property="og:url" content="https://nasenklammer.de/vorschule-mathe.html">
   <meta property="og:image" content="https://nasenklammer.de/og-image.png">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Vorschulkind – Nasenklammer">
-  <meta name="twitter:description" content="Lernübungen für Vorschulkinder auf Nasenklammer – Mathe, Deutsch und mehr spielerisch entdecken. Kostenlos und kindgerecht.">
+  <meta name="twitter:title" content="Mathematik für Vorschulkinder – Nasenklammer">
+  <meta name="twitter:description" content="Mathe üben für Vorschulkinder – Zählen bis 10 und mehr. Kostenlose interaktive Übungen auf Nasenklammer.">
   <meta name="twitter:image" content="https://nasenklammer.de/og-image.png">
   <!-- /SEO -->
-  <title>Vorschulkind – Nasenklammer</title>
+  <title>Vorschulkind – Mathematik – Nasenklammer</title>
   <link rel="stylesheet" href="components/fonts.css">
   <link rel="stylesheet" href="components/transitions.css">
   <link rel="stylesheet" href="components/logo.css">
@@ -33,22 +33,18 @@
       --font-heading: 'Solway', Georgia, serif;
       --font-body:    'Noto Sans', Arial, sans-serif;
 
-      --color-home-header:      #c8e0f4;
-      --color-home-strip:       #75aee3;
-      --color-home-accent:      #225a93;
-      --color-home-search-bg:   #c8e0f4;
-      --color-home-search-icon: #963555;
-      --color-home-fab:         #f4a056;
-      --color-home-fab-text:    #00363d;
-      --nk-fab-bg:              #f4a056;
-      --nk-fab-color:           #00363d;
+      --color-bg:      #fbd4b0;
+      --color-accent:  #964f12;
+      --nk-card-color: #964f12;
+      --nk-fab-bg:     #f4a056;
+      --nk-fab-color:  #00363d;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       font-family: var(--font-body);
-      background: var(--color-home-strip);
+      background: var(--color-bg);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
@@ -56,7 +52,7 @@
 
     /* ── Breadcrumb-Strip ────────────────────── */
     .gs-strip {
-      background: var(--color-home-strip);
+      background: var(--color-bg);
       padding: 21px 56px;
     }
 
@@ -65,7 +61,7 @@
       font-size: 32px;
       font-weight: 400;
       line-height: 40px;
-      color: var(--color-home-accent);
+      color: var(--color-accent);
       white-space: nowrap;
     }
 
@@ -87,14 +83,6 @@
       padding: 48px 56px 160px;
     }
 
-    .gs-soon {
-      font-family: var(--font-heading);
-      font-size: 28px;
-      font-weight: 400;
-      color: var(--color-home-accent);
-      opacity: 0.55;
-    }
-
     /* ── Unterer Bereich: Suche + FAB ────────── */
     .gs-bottom {
       position: fixed;
@@ -105,14 +93,14 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: linear-gradient(to bottom, transparent, var(--color-home-strip) 40%);
+      background: linear-gradient(to bottom, transparent, var(--color-bg) 40%);
       pointer-events: none;
     }
 
     .gs-search {
       width: 560px;
       height: 64px;
-      background: var(--color-home-search-bg);
+      background: #fde8d0;
       border-radius: 64px;
       display: flex;
       align-items: center;
@@ -126,7 +114,7 @@
       width: 44px;
       height: 44px;
       border-radius: 32px;
-      background: var(--color-home-search-icon);
+      background: #f4a056;
       border: none;
       cursor: pointer;
       display: flex;
@@ -149,11 +137,11 @@
       font-size: 18px;
       line-height: 28px;
       letter-spacing: 0.25px;
-      color: #4a6267;
+      color: #7a4420;
       outline: none;
     }
 
-    .gs-search__input::placeholder { color: #4a6267; }
+    .gs-search__input::placeholder { color: #7a4420; }
 
 
     @media (max-width: 900px) {
@@ -161,7 +149,6 @@
       .gs-strip__text { font-size: 22px; white-space: normal; }
       .gs-main    { padding: 32px 20px 140px; }
       .gs-bottom  { padding: 16px 20px 24px; }
-      .gs-fab     { right: 20px; }
     }
   </style>
 </head>
@@ -170,12 +157,14 @@
   <div id="siteMenu"></div>
   <header id="siteHeader"></header>
 
-  <!-- Strip: Ich bin ein … -->
+  <!-- Strip: Ich bin ein … und übe in … -->
   <div class="gs-strip">
     <p class="gs-strip__text">
       Ich bin ein
-      <a class="gs-strip__link" href="index.html">Vorschulkind</a>
-      und übe …
+      <a class="gs-strip__link" href="vorschule.html">Vorschulkind</a>
+      und übe in
+      <a class="gs-strip__link" href="#">Mathematik</a>
+      …
     </p>
   </div>
 
@@ -210,43 +199,25 @@
   <script src="components/header.js"></script>
   <script src="components/card.js"></script>
   <script>
-    /* ─── Vorlese-Text ───────────────────────
-       Beschreibt die Vorschul-Übersicht.
-       ───────────────────────────────────────── */
     var voiceText =
-      'Hallo, du kleines Schlaukind! Was möchtest du heute entdecken? ' +
-      'Im Moment kannst du schon Meine Welt erkunden. Tippe einfach drauf!';
+      'Toll, dass du hier bist! Das hier sind die Mathe-Übungen für Vorschulkinder. ' +
+      'Tippe einfach auf eine Aufgabe und leg los!';
 
     new NKCardGrid(document.getElementById('cardGrid'), {
       cards: [
         {
-          href: 'vorschule-mathe.html',
-          label: 'Meine Welt',
-          imageSvg: '<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="76" y="26" width="12" height="22" rx="2" stroke="currentColor" stroke-width="2.5"/><path d="M18 66L64 24l46 42" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M30 66v36h68V66" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><rect x="50" y="78" width="28" height="24" rx="3" stroke="currentColor" stroke-width="2.5"/><rect x="36" y="70" width="16" height="14" rx="2" stroke="currentColor" stroke-width="2"/></svg>'
-        },
-        {
-          href: '#', disabled: true,
-          label: 'Logik & Reihenfolgen',
-          imageSvg: '<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="16" y="76" width="28" height="24" rx="4" stroke="currentColor" stroke-width="3"/><rect x="50" y="56" width="28" height="44" rx="4" stroke="currentColor" stroke-width="3"/><rect x="84" y="36" width="28" height="64" rx="4" stroke="currentColor" stroke-width="3"/><path d="M16 108h96" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="30" cy="88" r="5" fill="currentColor"/><circle cx="60" cy="74" r="5" fill="currentColor"/><circle cx="94" cy="58" r="5" fill="currentColor"/></svg>'
-        },
-        {
-          href: '#', disabled: true,
-          label: 'Ich und mein Körper',
-          imageSvg: '<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="64" cy="32" r="18" stroke="currentColor" stroke-width="3"/><path d="M64 50v34" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M64 62L42 76M64 62L86 76" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M64 84L50 106M64 84L78 106" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M56 66c0-4.5 3.5-6.5 8-4 4.5-2.5 8-0.5 8 4 0 5-8 11-8 11S56 71 56 66z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>'
-        },
-        {
-          href: '#', disabled: true,
-          label: 'Kreativwerkstatt',
-          imageSvg: '<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M90 18L44 82" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/><path d="M50 74L58 64" stroke="currentColor" stroke-width="6" stroke-linecap="round"/><path d="M44 82c-5 5-7 14-5 20 6 2 15-1 20-7L44 82z" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/><path d="M96 44l2.5 6 6 2.5-6 2.5-2.5 6-2.5-6-6-2.5 6-2.5 2.5-6z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M78 26l1.5 4 4 1.5-4 1.5-1.5 4-1.5-4-4-1.5 4-1.5 1.5-4z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>'
+          href: 'vorschule-zaehlen.html',
+          label: '… Zählen bis 10',
+          imageSvg: '<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="40" cy="52" r="10" stroke="currentColor" stroke-width="3"/><circle cx="40" cy="76" r="10" stroke="currentColor" stroke-width="3"/><circle cx="64" cy="40" r="10" stroke="currentColor" stroke-width="3"/><circle cx="64" cy="64" r="10" stroke="currentColor" stroke-width="3"/><circle cx="64" cy="88" r="10" stroke="currentColor" stroke-width="3"/><circle cx="88" cy="52" r="10" stroke="currentColor" stroke-width="3"/><circle cx="88" cy="76" r="10" stroke="currentColor" stroke-width="3"/></svg>'
         }
       ]
     });
 
     var menu = new NKMenu(
       document.getElementById('siteMenu'),
-      Object.assign({}, NKMenu.THEMES.home, {
+      Object.assign({}, NKMenu.THEMES.mathematik, {
+        activeHref: 'vorschule-mathe.html',
         headerEl: document.getElementById('siteHeader'),
-        activeHref: 'vorschule.html',
         onItemClick: function(item) {
           if (item.href && item.href !== '#') window.location.href = item.href;
         }
@@ -255,13 +226,14 @@
 
     var header = new NKHeader(
       document.getElementById('siteHeader'),
-      Object.assign({}, NKHeader.THEMES.home, {
+      Object.assign({}, NKHeader.THEMES.mathematik, {
+        mode: 'brand',
+        subtitle: 'Clever lernen',
         homeHref: 'index.html',
         onMenuClick: function() { menu.toggle(); }
       })
     );
 
-    /* ─── FAB ───────────────────────────────── */
     var fab = new NKFab(document.getElementById('siteFab'), {
       mode: 'page',
       onSpeak: function() { NKVoice.speak(voiceText, function() { fab.done(); }); },

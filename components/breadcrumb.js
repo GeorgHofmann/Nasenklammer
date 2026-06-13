@@ -56,7 +56,7 @@
     this.textColor   = o.textColor   || THEMES.mathematik.textColor;
     this.borderColor = o.borderColor || THEMES.mathematik.borderColor;
     this.homeHref       = o.homeHref       || 'index.html';
-    this.themaConnector = o.themaConnector || 'die';
+    this.themaConnector = o.themaConnector || 'das';
     this.onSlotClick    = o.onSlotClick    || null;
 
     /* Slot-Daten: { klasse, fach, thema } */

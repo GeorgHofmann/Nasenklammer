@@ -747,4 +747,90 @@ Die Sitemap muss nach dem Hinzufügen neuer Seiten aktualisiert und erneut einge
 
 ---
 
-*Zuletzt aktualisiert: 2026-06-12 (SEO-Sektion hinzugefügt: Meta-Tags, OG-Tags, sitemap.xml, robots.txt, Google Search Console)*
+## Vorschule – Lernbereiche & Themen
+
+Die Nasenklammer-Vorschule ist in fünf Hauptbereiche gegliedert. Vier davon erscheinen als Kacheln auf `vorschule.html`; Sprache & Kommunikation ist in die anderen Bereiche integriert.
+
+### 1. Meine Welt *(Sachunterricht / Mein Alltag & Die Welt)*
+
+Orientierung und tägliches Leben — alles, was ein Vorschulkind unmittelbar erleben und erkunden kann.
+
+| Unterthema | Inhalt |
+|---|---|
+| Zeit verstehen | Tagesabläufe, die Uhr, Jahreszeiten, Wochentage |
+| Mein Umfeld | Familie, Freunde, Regeln im Zusammenleben |
+| Natur & Umwelt | Pflanzen, Tiere, Wetter |
+
+**Kachel:** aktiv → `vorschule-mathe.html` (Platzhalter; eigene Seite noch geplant)
+
+---
+
+### 2. Logik & Reihenfolgen *(Mathematik / Die Welt der Zahlen & Formen)*
+
+Ordnen, zählen und messen — mathematische Grundkonzepte spielerisch entdecken.
+
+| Unterthema | Inhalt |
+|---|---|
+| Logik & Reihenfolgen | Sequenzen, „Was kommt zuerst, was kommt dann?", zeitliche Abfolgen |
+| Zahlen & Mengen | Zählen bis 10, einfache Rechnungen, Mengenvergleiche |
+| Geometrie | Formen entdecken, räumliches Vorstellungsvermögen |
+
+**Aktuell verfügbar:** Zählen bis 10 → `vorschule-zaehlen.html` (Modul: `monster-hoehle.html`)  
+**Kachel:** disabled (geplant: `vorschule-logik.html`)
+
+---
+
+### 3. Ich und mein Körper *(Gesundheit & Soziales)*
+
+Identität, Körper und soziale Kompetenzen.
+
+| Unterthema | Inhalt |
+|---|---|
+| Gesundheit | Was braucht mein Körper? (Essen, Bewegung, Schlaf) |
+| Gefühle | Umgang mit Emotionen |
+| Körperwahrnehmung | Motorik und Koordination |
+
+**Kachel:** disabled (geplant: `vorschule-koerper.html`)
+
+---
+
+### 4. Kreativwerkstatt *(Kunst & Werken)*
+
+Gelerntes durch eigenes Handeln vertiefen.
+
+| Unterthema | Inhalt |
+|---|---|
+| Basteln & Bauen | Zeitstrahlen basteln, Kalender gestalten |
+| Malen & Gestalten | Ausdruck der eigenen Wahrnehmung |
+
+**Kachel:** disabled (geplant: `vorschule-kreativ.html`)
+
+---
+
+### 5. Sprache & Kommunikation *(Sprache)*
+
+Kein eigener Kachel-Eintrag — Sprache ist als Querschnittskompetenz in alle anderen Bereiche integriert.
+
+| Unterthema | Inhalt |
+|---|---|
+| Geschichtenerzählen | Erlebnisse strukturieren (Gestern, Heute, Morgen) |
+| Wortschatz | Begriffe rund um die Zeit lernen |
+
+---
+
+### Seitenstruktur Vorschule
+
+```
+vorschule.html                    ← Kategorieauswahl (4 Kacheln)
+├── vorschule-mathe.html          ← Meine Welt / Mathematik (aktiv)
+│   └── vorschule-zaehlen.html   ← Zählen bis 10 (Modul: monster-hoehle.html)
+├── [vorschule-logik.html]        ← Logik & Reihenfolgen (geplant)
+├── [vorschule-koerper.html]      ← Ich und mein Körper (geplant)
+└── [vorschule-kreativ.html]      ← Kreativwerkstatt (geplant)
+```
+
+**Farbregel:** Alle Vorschul-Auswahlseiten (`vorschule.html`) → Home-Blau. Fach- und Modulseiten → Mathematik-Orange (aktuell als Platzhalter; eigene Vorschul-Farbpalette noch festzulegen).
+
+---
+
+*Zuletzt aktualisiert: 2026-06-13 (Vorschule Lernbereiche & Curriculum-Struktur hinzugefügt)*

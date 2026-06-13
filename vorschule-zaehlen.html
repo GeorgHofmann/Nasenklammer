@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- SEO -->
+  <meta name="description" content="Zählen bis 10 für Vorschulkinder – spielerische Mathe-Übungen kostenlos auf Nasenklammer.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://nasenklammer.de/vorschule-zaehlen.html">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="de_DE">
+  <meta property="og:site_name" content="Nasenklammer">
+  <meta property="og:title" content="Zählen bis 10 – Nasenklammer">
+  <meta property="og:description" content="Zählen bis 10 für Vorschulkinder – spielerische Mathe-Übungen kostenlos auf Nasenklammer.">
+  <meta property="og:url" content="https://nasenklammer.de/vorschule-zaehlen.html">
+  <meta property="og:image" content="https://nasenklammer.de/og-image.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Zählen bis 10 – Nasenklammer">
+  <meta name="twitter:description" content="Zählen bis 10 für Vorschulkinder – spielerische Mathe-Übungen kostenlos auf Nasenklammer.">
+  <meta name="twitter:image" content="https://nasenklammer.de/og-image.png">
+  <!-- /SEO -->
+  <title>Nasenklammer – Zählen bis 10</title>
+  <link rel="stylesheet" href="components/fonts.css">
+  <link rel="stylesheet" href="components/transitions.css">
+  <link rel="stylesheet" href="components/logo.css">
+  <link rel="stylesheet" href="components/header.css">
+  <link rel="stylesheet" href="components/breadcrumb.css">
+  <link rel="stylesheet" href="components/menu.css">
+  <link rel="stylesheet" href="components/fab.css">
+  <style>
+    :root {
+      --font-logo:    'Alcyone', 'Solway', Georgia, serif;
+      --font-heading: 'Solway', Georgia, serif;
+      --font-body:    'Noto Sans', Arial, sans-serif;
+      --color-bg:     #fbd4b0;
+      --color-accent: #964f12;
+      --nk-fab-bg:    #f4a056;
+      --nk-fab-color: #00363d;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-body);
+      background: var(--color-bg);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .ml-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 0;
+    }
+    .ml-iframe {
+      flex: 1;
+      width: 100%;
+      border: none;
+      display: block;
+      min-height: calc(100vh - 120px);
+    }
+  </style>
+</head>
+<body>
+
+  <div id="siteMenu"></div>
+  <header id="siteHeader"></header>
+  <div id="siteBreadcrumb"></div>
+
+  <main class="ml-main">
+    <iframe
+      class="ml-iframe"
+      src="module/monster-hoehle.html"
+      title="Zählen bis 10 – Monster und Höhle"
+      allow="autoplay"
+    ></iframe>
+  </main>
+
+  <div id="siteFab"></div>
+
+  <script src="components/analytics.js"></script>
+  <script src="components/voice.js"></script>
+  <script src="components/fab.js"></script>
+  <script src="components/transitions.js"></script>
+  <script src="components/logo.js"></script>
+  <script src="components/icons.js"></script>
+  <script src="components/menu.js"></script>
+  <script src="components/header.js"></script>
+  <script src="components/breadcrumb.js"></script>
+  <script>
+    'use strict';
+
+    var voiceText =
+      'Willkommen beim Zählen bis 10! ' +
+      'Schau dir die Aufgabe an und tipp auf deine Antwort!';
+
+    var menu = new NKMenu(
+      document.getElementById('siteMenu'),
+      Object.assign({}, NKMenu.THEMES.mathematik, {
+        activeHref: 'vorschule-zaehlen.html',
+        headerEl: document.getElementById('siteHeader'),
+        onItemClick: function(item) {
+          if (item.href && item.href !== '#') window.location.href = item.href;
+        }
+      })
+    );
+
+    var header = new NKHeader(
+      document.getElementById('siteHeader'),
+      Object.assign({}, NKHeader.THEMES.mathematik, {
+        homeHref: 'index.html',
+        onMenuClick: function() { menu.toggle(); }
+      })
+    );
+
+    var breadcrumb = new NKBreadcrumb(
+      document.getElementById('siteBreadcrumb'),
+      Object.assign({}, NKBreadcrumb.THEMES.mathematik, {
+        themaConnector: 'das',
+        slots: {
+          klasse: { label: 'Vorschulkind',   href: 'vorschule.html' },
+          fach:   { label: 'Mathematik',     href: 'vorschule-mathe.html' },
+          thema:  { label: 'Zählen bis 10',  href: null },
+        },
+        onSlotClick: function(key, slot) {
+          if (slot.href) window.location.href = slot.href;
+        }
+      })
+    );
+
+    var fab = new NKFab(document.getElementById('siteFab'), {
+      mode: 'module',
+      onSpeak: function() { NKVoice.speak(voiceText, function() { fab.done(); }); },
+      onStop:  function() { NKVoice.stop(); },
+    });
+  </script>
+
+</body>
+</html>

@@ -41,9 +41,10 @@
 
     for (var i = 0; i < this.cards.length; i++) {
       var card = this.cards[i];
-      var href = card.href || '#';
+      var href     = card.href || '#';
+      var disabled = card.disabled ? ' nk-card--disabled' : '';
       html +=
-        '<a class="nk-card" href="' + this._esc(href) + '">' +
+        '<a class="nk-card' + disabled + '" href="' + this._esc(href) + '">' +
           '<div class="nk-card__image">' +
             (card.imageSvg || '') +          /* Raw SVG – kein Escaping */
           '</div>' +
