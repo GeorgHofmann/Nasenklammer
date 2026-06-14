@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>Monster und Höhle</title>
+  <link rel="stylesheet" href="../components/count-display.css">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -16,54 +17,32 @@
     }
     canvas { display: block; }
 
-    #counter {
+    #counter-wrap {
       position: fixed;
       top: 18px;
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(255,253,250,0.92);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      border-radius: 50px;
-      padding: 10px 26px 10px 18px;
+      z-index: 10;
+      pointer-events: none;
       display: flex;
+      flex-direction: column;
       align-items: center;
-      gap: 10px;
-      box-shadow: 0 2px 18px rgba(0,0,0,0.10);
-      z-index: 10;
-      pointer-events: none;
-      white-space: nowrap;
+      gap: 12px;
     }
-    #count-num {
-      font-size: 2.4rem;
-      font-weight: 800;
-      color: #4a3a58;
-      min-width: 2.4rem;
-      text-align: right;
-      transition: transform 0.12s;
-      display: inline-block;
-    }
-    #count-num.pop { transform: scale(1.35); }
-    #count-total  { font-size: 1.0rem; color: #b0a0b8; font-weight: 600; }
-    #count-label  { font-size: 0.92rem; color: #9a8aaa; font-weight: 500; }
-
     #dots {
-      position: fixed;
-      top: 78px;
-      left: 50%;
-      transform: translateX(-50%);
       display: flex;
-      gap: 7px;
-      z-index: 10;
-      pointer-events: none;
+      gap: 8px;
+      align-items: center;
     }
     .dot {
-      width: 10px; height: 10px;
-      border-radius: 50%;
-      background: #ddd5e0;
-      transition: background 0.3s, transform 0.3s;
+      width: 24px;
+      height: 4px;
+      border-radius: 2px;
+      background: #3d6e27;
+      opacity: 0.5;
+      transition: opacity 0.3s;
     }
-    .dot.filled { background: #c9a8d8; transform: scale(1.22); }
+    .dot.filled { opacity: 1; }
 
     #hint {
       position: fixed;
@@ -153,17 +132,15 @@
 </head>
 <body>
 
-<div id="counter">
-  <span id="count-num">0</span><span id="count-total">/10</span>
-  <span id="count-label">Monster in der Höhle</span>
-</div>
-
-<div id="dots">
+<div id="counter-wrap">
+  <div id="counter"></div>
+  <div id="dots">
   <div class="dot" id="d0"></div><div class="dot" id="d1"></div>
   <div class="dot" id="d2"></div><div class="dot" id="d3"></div>
   <div class="dot" id="d4"></div><div class="dot" id="d5"></div>
   <div class="dot" id="d6"></div><div class="dot" id="d7"></div>
   <div class="dot" id="d8"></div><div class="dot" id="d9"></div>
+</div>
 </div>
 
 <div id="hint">Tippe auf ein Monster ✦</div>
@@ -181,6 +158,7 @@
   <button id="restart-btn" onclick="restartGame()">Nochmal spielen ↩</button>
 </div>
 
+<script src="../components/count-display.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 // ── RENDERER ─────────────────────────────
@@ -621,7 +599,7 @@ cvs.addEventListener('pointerup', function(e) {
 
 // ── COUNTER & ZZZ ────────────────────────
 var count   = 0;
-var numEl   = document.getElementById('count-num');
+var countDisplay = new NKCountDisplay(document.getElementById('counter'), { value: 0, total: 10 });
 var sucEl   = document.getElementById('success');
 var zzzEl   = document.getElementById('zzz');
 var dotEls  = [];
@@ -650,30 +628,23 @@ function updateDots() {
   }
 }
 
-function popNum() {
-  numEl.classList.remove('pop');
-  void numEl.offsetWidth;
-  numEl.classList.add('pop');
-  setTimeout(function() { numEl.classList.remove('pop'); }, 200);
-}
-
 function increment() {
   count = Math.min(10, count + 1);
-  numEl.textContent = count;
-  updateDots(); popNum(); showZzz();
+  countDisplay.set(count);
+  updateDots(); showZzz();
   if (count >= 10) setTimeout(function() { sucEl.classList.add('show'); }, 700);
 }
 
 function decrement() {
   count = Math.max(0, count - 1);
-  numEl.textContent = count;
+  countDisplay.set(count);
   updateDots(); showZzz();
   sucEl.classList.remove('show');
 }
 
 function restartGame() {
   count = 0;
-  numEl.textContent = 0;
+  countDisplay.set(0);
   updateDots(); showZzz();
   sucEl.classList.remove('show');
   for (var si = 0; si < SLOTS.length; si++) SLOTS[si].occupied = false;

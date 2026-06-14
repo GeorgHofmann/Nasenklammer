@@ -1,0 +1,24 @@
+/* NKCountDisplay – styled numeric display chip */
+.nk-count-display {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #f9e2c8;
+  border-radius: 16px;
+  padding: 16px 32px;
+}
+
+.nk-count-display__number {
+  font-family: var(--font-heading, 'Solway', Georgia, serif);
+  font-size: 60px;
+  line-height: 1;
+  color: #964f12;
+  text-align: center;
+  white-space: nowrap;
+  display: block;
+  transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.nk-count-display__number--bump {
+  transform: scale(1.3);
+}

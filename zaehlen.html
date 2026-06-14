@@ -28,6 +28,7 @@
   <link rel="stylesheet" href="components/menu.css">
   <link rel="stylesheet" href="components/fab.css">
   <link rel="stylesheet" href="components/slider.css">
+  <link rel="stylesheet" href="components/count-display.css">
   <style>
     :root {
       --font-logo:    'Alcyone', 'Solway', Georgia, serif;
@@ -58,30 +59,7 @@
 
     /* Zähler */
     .ml-counter {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 2px;
-      margin-bottom: 4px;
-    }
-    .ml-count {
-      font-family: var(--font-heading);
-      font-size: 72px;
-      font-weight: 400;
-      line-height: 1;
-      color: var(--color-accent);
-      min-width: 90px;
-      text-align: center;
-      display: block;
-      transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1);
-    }
-    .ml-count.bump { transform: scale(1.3); }
-    .ml-count-label {
-      font-size: 15px;
-      letter-spacing: 0.75px;
-      text-transform: uppercase;
-      color: var(--color-accent);
-      opacity: 0.55;
+      margin-bottom: 40px;
     }
 
     /* Stage-Wrapper: responsive Skalierung */
@@ -157,10 +135,7 @@
   <main class="ml-main">
 
     <!-- Zähler -->
-    <div class="ml-counter">
-      <span class="ml-count" id="mlCount">0</span>
-      <span class="ml-count-label">in der Menge</span>
-    </div>
+    <div class="ml-counter" id="mlCountDisplay"></div>
 
     <!-- Übungsfläche -->
     <div class="ml-stage-container" id="mlStageContainer">
@@ -187,6 +162,7 @@
   <script src="components/header.js"></script>
   <script src="components/breadcrumb.js"></script>
   <script src="components/slider.js"></script>
+  <script src="components/count-display.js"></script>
   <script>
     /* ─── Seiten-Komponenten ─────────────────────────── */
     var voiceText =
@@ -254,14 +230,14 @@
       var dragging    = null;
       var inZoneCount = 0;
 
-      /* ── Zähler mit Bump-Animation ──────────────────── */
+      /* ── Zähler-Komponente ──────────────────────────── */
+      var countDisplay = new NKCountDisplay(
+        document.getElementById('mlCountDisplay'),
+        { value: 0 }
+      );
+
       function updateCounter(val) {
-        var el = document.getElementById('mlCount');
-        el.textContent = val;
-        el.classList.remove('bump');
-        void el.offsetWidth;
-        el.classList.add('bump');
-        setTimeout(function() { el.classList.remove('bump'); }, 250);
+        countDisplay.set(val);
       }
 
       /* ── Alle Zone-Slots neu anordnen ───────────────── */
