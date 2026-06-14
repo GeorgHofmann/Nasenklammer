@@ -90,8 +90,12 @@
     'use strict';
 
     var voiceText =
-      'Willkommen beim Zählen bis 10! ' +
-      'Schau dir die Aufgabe an und tipp auf deine Antwort!';
+      'Oh, schau mal! Die kleinen Monster sind ganz müde und wollen schlafen. ' +
+      'Aber die Höhle ist noch leer — kein einziges Monster liegt drin. ' +
+      'Kannst du ihnen helfen? ' +
+      'Wenn du auf ein Monster tippst, kuschelt es sich in die Höhle. ' +
+      'Zähl einfach mit, bis alle zehn drin sind und friedlich schlafen. ' +
+      'Los geht\'s!';
 
     var menu = new NKMenu(
       document.getElementById('siteMenu'),
@@ -118,7 +122,7 @@
         themaConnector: 'das',
         slots: {
           klasse: { label: 'Vorschulkind',   href: 'vorschule.html' },
-          fach:   { label: 'Mathematik',     href: 'vorschule-mathe.html' },
+          fach:   { label: 'Meine Welte',    href: 'vorschule-meine-welt.html' },
           thema:  { label: 'Zählen bis 10',  href: null },
         },
         onSlotClick: function(key, slot) {

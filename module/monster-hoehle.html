@@ -76,6 +76,38 @@
       z-index: 10;
     }
 
+    /* ── Zzz-Schläfer-Animation ─────────────── */
+    #zzz {
+      position: fixed;
+      pointer-events: none;
+      z-index: 10;
+      display: none;
+      white-space: nowrap;
+      transform: translateX(-50%);
+    }
+    #zzz span {
+      display: inline-block;
+      font-weight: 900;
+      color: #9a7ab8;
+      opacity: 0;
+      animation: floatZ 2.8s ease-in-out infinite;
+    }
+    #zzz span:nth-child(1) { font-size: 0.85rem; animation-delay: 0.0s; }
+    #zzz span:nth-child(2) { font-size: 1.05rem; animation-delay: 0.35s; }
+    #zzz span:nth-child(3) { font-size: 1.30rem; animation-delay: 0.70s; }
+    #zzz span:nth-child(4) { font-size: 1.05rem; animation-delay: 1.05s; }
+    #zzz span:nth-child(5) { font-size: 0.90rem; animation-delay: 1.40s; }
+    #zzz span:nth-child(6) { font-size: 0.80rem; animation-delay: 1.75s; }
+    #zzz span:nth-child(7) { font-size: 0.85rem; animation-delay: 2.10s; }
+
+    @keyframes floatZ {
+      0%   { opacity: 0;   transform: translateY(0px)   translateX(0px);  }
+      18%  { opacity: 0.9;                                                  }
+      80%  { opacity: 0.5;                                                  }
+      100% { opacity: 0;   transform: translateY(-38px) translateX(6px);   }
+    }
+
+    /* ── Erfolgs-Screen ─────────────────────── */
     #success {
       position: fixed;
       inset: 0;
@@ -134,12 +166,18 @@
   <div class="dot" id="d8"></div><div class="dot" id="d9"></div>
 </div>
 
-<div id="hint">Monster in die Höhle ziehen ✦</div>
+<div id="hint">Tippe auf ein Monster ✦</div>
+
+<!-- Zzz-Animation über der Höhle -->
+<div id="zzz">
+  <span>z</span><span>z</span><span>z</span><span>z</span>
+  <span>h</span><span>h</span><span>h</span>
+</div>
 
 <div id="success">
   <div id="success-star">🌟</div>
   <div id="success-title">Geschafft! 10 / 10</div>
-  <div id="success-sub">Alle Monster sind jetzt in der Höhle!</div>
+  <div id="success-sub">Alle Monster schlafen jetzt in der Höhle!</div>
   <button id="restart-btn" onclick="restartGame()">Nochmal spielen ↩</button>
 </div>
 
@@ -165,13 +203,16 @@ window.addEventListener('resize', function() {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
+  updateZzzPos();
 });
 
 // ── LIGHTS ───────────────────────────────
-var ambient = new THREE.AmbientLight(0xfff8f0, 0.75);
+// Ambient niedrig → Toon-Schritt bleibt sichtbar, kein Ausblenden
+var ambient = new THREE.AmbientLight(0xffffff, 0.70);
 scene.add(ambient);
 
-var sun = new THREE.DirectionalLight(0xfff5e4, 1.0);
+// Etwas stärkeres Direktlicht → klare Licht/Schatten-Kante auf den Kugeln
+var sun = new THREE.DirectionalLight(0xfff8f0, 0.52);
 sun.position.set(6, 14, 9);
 sun.castShadow = true;
 sun.shadow.mapSize.width  = 1024;
@@ -184,35 +225,13 @@ sun.shadow.camera.near   =   1;
 sun.shadow.camera.far    =  40;
 sun.shadow.bias = -0.001;
 scene.add(sun);
+// Kein Fill-Licht mehr nötig
 
-var fill = new THREE.DirectionalLight(0xddeeff, 0.30);
-fill.position.set(-6, 4, 6);
-scene.add(fill);
-
-// ── GROUND ───────────────────────────────
-var ground = new THREE.Mesh(
-  new THREE.PlaneGeometry(36, 36),
-  new THREE.MeshLambertMaterial({ color: 0xece5da })
-);
-ground.rotation.x = -Math.PI / 2;
-ground.position.y = -0.92;
-ground.receiveShadow = true;
-scene.add(ground);
-
-// Soft ground spots
-for (var gi = 0; gi < 10; gi++) {
-  var spot = new THREE.Mesh(
-    new THREE.CircleGeometry(0.5 + Math.random() * 0.6, 14),
-    new THREE.MeshLambertMaterial({ color: 0xe8e0d4 })
-  );
-  spot.rotation.x = -Math.PI / 2;
-  spot.position.set((Math.random()-0.5)*18, -0.915, (Math.random()-0.5)*14);
-  scene.add(spot);
-}
+// (kein Boden – Blob-Schatten wird nach buildCave gesetzt)
 
 // ── CAVE ─────────────────────────────────
 var CAVE_POS   = new THREE.Vector3(0, 0, -4.0);
-var CAVE_RZONE = 2.0; // drop-detection radius
+var CAVE_RZONE = 2.0;
 
 function buildCave() {
   var g = new THREE.Group();
@@ -222,42 +241,35 @@ function buildCave() {
   var darkMat  = new THREE.MeshLambertMaterial({ color: 0x110c18 });
   var floorMat = new THREE.MeshLambertMaterial({ color: 0x342c3e });
 
-  // Dark back wall
   var back = new THREE.Mesh(new THREE.PlaneGeometry(2.8, 2.8), darkMat);
   back.position.set(0, 0.30, -0.62);
   g.add(back);
 
-  // Cave floor
   var cf = new THREE.Mesh(new THREE.PlaneGeometry(2.8, 1.3), floorMat);
   cf.rotation.x = -Math.PI / 2;
   cf.position.set(0, -0.91, -0.25);
   g.add(cf);
 
-  // Left pillar
   var lp = new THREE.Mesh(new THREE.CylinderGeometry(0.46, 0.60, 2.9, 12), rockMat);
   lp.position.set(-1.35, 0.35, 0);
   lp.castShadow = true; lp.receiveShadow = true;
   g.add(lp);
 
-  // Right pillar (clone)
   var rp = lp.clone();
   rp.position.set(1.35, 0.35, 0);
   g.add(rp);
 
-  // Arch
   var arch = new THREE.Mesh(new THREE.TorusGeometry(1.35, 0.50, 10, 28, Math.PI), rockMat);
   arch.position.set(0, 1.80, 0);
   arch.castShadow = true;
   g.add(arch);
 
-  // Top rock blob
   var topRock = new THREE.Mesh(new THREE.SphereGeometry(1.05, 12, 12), rock2Mat);
   topRock.scale.set(1.8, 0.9, 0.8);
   topRock.position.set(0, 2.50, -0.1);
   topRock.castShadow = true;
   g.add(topRock);
 
-  // Side pebbles
   var pebPos = [[-2.0,-0.60,0.30],[2.0,-0.70,0.30],[-1.5,-0.75,0.65],[1.5,-0.72,0.72],[0.0,-0.80,0.82]];
   for (var pi = 0; pi < pebPos.length; pi++) {
     var p = pebPos[pi];
@@ -268,7 +280,6 @@ function buildCave() {
     g.add(peb);
   }
 
-  // Sparkle dots at entrance
   var sparkMat = new THREE.MeshBasicMaterial({ color: 0xecd8f0 });
   var sparkPos = [[-1.0,2.0,0.3],[0.6,2.2,0.3],[-0.3,2.4,0.2],[1.1,1.7,0.4]];
   for (var si = 0; si < sparkPos.length; si++) {
@@ -283,6 +294,16 @@ function buildCave() {
 
 scene.add(buildCave());
 
+// ── BLOB-SCHATTEN unter der Höhle (Cartoon-Stil) ──────
+var caveShadow = new THREE.Mesh(
+  new THREE.CircleGeometry(1.9, 40),
+  new THREE.MeshBasicMaterial({ color: 0xa89888, transparent: true, opacity: 0.42 })
+);
+caveShadow.rotation.x = -Math.PI / 2;
+caveShadow.scale.set(1.35, 0.72, 1.0);   // breiter als tief → ovaler Abdruck
+caveShadow.position.set(CAVE_POS.x, -0.87, CAVE_POS.z + 0.10);
+scene.add(caveShadow);
+
 // Cave slots (world space)
 var SLOTS = [];
 var sx = [-1.0, -0.5, 0.0, 0.5, 1.0];
@@ -296,10 +317,11 @@ for (var row = 0; row < 2; row++) {
 }
 
 // ── SHARED MATS ──────────────────────────
-var DARK_MAT  = new THREE.MeshLambertMaterial({ color: 0x28183a });
-var WHITE_MAT = new THREE.MeshLambertMaterial({ color: 0xffffff });
+// MeshToonMaterial = Cel-Shading: flache Farbflächen, kein Glanzlicht
+var DARK_MAT  = new THREE.MeshToonMaterial({ color: 0x28183a });
+var WHITE_MAT = new THREE.MeshToonMaterial({ color: 0xffffff });
 
-function cMat(hex) { return new THREE.MeshLambertMaterial({ color: hex }); }
+function cMat(hex) { return new THREE.MeshToonMaterial({ color: hex }); }
 
 // ── MONSTER PARTS ────────────────────────
 function addEyes(g) {
@@ -458,18 +480,17 @@ function fPointyEars(g, bMat) {
 }
 
 // ── MONSTER FACTORY ──────────────────────
-//  [color, featureFn, name]
 var DEFS = [
-  [0xf4a7b9, fCatEars,    'Rosie' ],  // f1 – rosa ♀
-  [0xc5b8ec, fBunnyEars,  'Lila'  ],  // f2 – lavender ♀
-  [0xa8d8c0, fBow,        'Minni' ],  // f3 – mint ♀
-  [0xf0d9b5, fSmallHorns, 'Crema' ],  // f4 – cream ♀
-  [0xe8b4b8, fWings,      'Dusti' ],  // f5 – dusty rose ♀
-  [0xa8c4e0, fSingleHorn, 'Blu'   ],  // m1 – blue ♂
-  [0xb8c9a8, fSpikes,     'Sage'  ],  // m2 – sage ♂
-  [0xf0c89a, fRoundNose,  'Ori'   ],  // m3 – orange ♂
-  [0xc8c0cc, fAntenna,    'Grisu' ],  // m4 – gray ♂
-  [0xf0e0a0, fPointyEars, 'Yello' ],  // m5 – yellow ♂
+  [0xd94f7a, fCatEars,    'Rosie' ],   // kräftiges Pink
+  [0x7c56cc, fBunnyEars,  'Lila'  ],   // satte Pflaume
+  [0x3aaa82, fBow,        'Minni' ],   // tiefes Mintgrün
+  [0xe08830, fSmallHorns, 'Crema' ],   // warmes Bernstein
+  [0xc04860, fWings,      'Dusti' ],   // kräftiges Korallrot
+  [0x3a7ec0, fSingleHorn, 'Blu'   ],   // mittleres Blau
+  [0x5e9448, fSpikes,     'Sage'  ],   // sattes Laubgrün
+  [0xe06820, fRoundNose,  'Ori'   ],   // leuchtendes Orange
+  [0x7a5aaa, fAntenna,    'Grisu' ],   // mittleres Lavendel
+  [0xd4a800, fPointyEars, 'Yello' ],   // goldenes Gelb
 ];
 
 function buildMonster(def) {
@@ -484,22 +505,26 @@ function buildMonster(def) {
   addSmile(g);
   addLegs(g, bMat);
   var arms = addArms(g, bMat);
-  def[1](g, bMat);   // feature
+  def[1](g, bMat);
 
   g.userData = {
     name:     def[2],
     isInCave: false,
+    isFlying: false,
     slotIdx:  -1,
     homePos:  new THREE.Vector3(),
+    flyStart: new THREE.Vector3(),
+    flyEnd:   new THREE.Vector3(),
+    flyT:     0,
     arms:     arms,
-    tL:       ARM_REST_L,  // arm rotation targets
+    tL:       ARM_REST_L,
     tR:       ARM_REST_R,
     popAnim:  0,
   };
   return g;
 }
 
-// Home grid: 2 rows × 5 cols
+// Home grid
 var HOME_POS = [];
 for (var row = 0; row < 2; row++) {
   for (var col = 0; col < 5; col++) {
@@ -515,32 +540,70 @@ var MONSTERS = DEFS.map(function(def, i) {
   return m;
 });
 
-// ── DRAG ─────────────────────────────────
-var raycaster  = new THREE.Raycaster();
-var dragPlane  = new THREE.Plane();
-dragPlane.normal.set(0, 1, 0);
-var hitTarget  = new THREE.Vector3();
-var LIFT_Y     = 1.4;
-var dragged    = null;
-var dragOffX   = 0, dragOffZ = 0;
+// ── CLICK / TAP ──────────────────────────
+var raycaster = new THREE.Raycaster();
 
 function ndc(e) {
   var rect = renderer.domElement.getBoundingClientRect();
-  var src  = e.touches ? e.touches[0] : e;
+  var src  = e.touches ? e.touches[0] : (e.changedTouches ? e.changedTouches[0] : e);
   return new THREE.Vector2(
     ((src.clientX - rect.left) / rect.width)  *  2 - 1,
     ((src.clientY - rect.top)  / rect.height) * -2 + 1
   );
 }
 
-function groundPt(v2) {
-  raycaster.setFromCamera(v2, camera);
-  var ok = raycaster.ray.intersectPlane(dragPlane, hitTarget);
-  return ok ? { x: hitTarget.x, z: hitTarget.z } : null;
+function sendToCave(monster) {
+  var ud = monster.userData;
+  if (ud.isInCave || ud.isFlying) return;
+
+  var slot = null, slotIdx = -1;
+  for (var si = 0; si < SLOTS.length; si++) {
+    if (!SLOTS[si].occupied) { slot = SLOTS[si]; slotIdx = si; break; }
+  }
+  if (!slot) return;
+
+  SLOTS[slotIdx].occupied = true;
+  ud.slotIdx  = slotIdx;
+  ud.flyStart.copy(monster.position);
+  ud.flyEnd.copy(slot.pos);
+  ud.flyT     = 0;
+  ud.isFlying = true;
+  ud.tL = -Math.PI / 2.4;
+  ud.tR =  Math.PI / 2.4;
 }
 
-function onDown(e) {
-  e.preventDefault();
+function sendHome(monster) {
+  var ud = monster.userData;
+  if (!ud.isInCave) return;
+  ud.isInCave = false;
+  ud.isFlying = false;
+  if (ud.slotIdx >= 0) { SLOTS[ud.slotIdx].occupied = false; ud.slotIdx = -1; }
+  monster.scale.setScalar(1.0);
+  monster.rotation.y = 0;
+  monster.position.copy(ud.homePos);
+  monster.position.y = 0;
+  ud.tL = ARM_REST_L;
+  ud.tR = ARM_REST_R;
+  decrement();
+}
+
+// Tap detection: track start pos to ignore scrolls
+var ptrDownPos = null;
+var TAP_MAX_DIST = 12;
+
+var cvs = renderer.domElement;
+
+cvs.addEventListener('pointerdown', function(e) {
+  ptrDownPos = { x: e.clientX, y: e.clientY };
+});
+
+cvs.addEventListener('pointerup', function(e) {
+  if (!ptrDownPos) return;
+  var dx = e.clientX - ptrDownPos.x;
+  var dy = e.clientY - ptrDownPos.y;
+  ptrDownPos = null;
+  if (Math.sqrt(dx*dx + dy*dy) > TAP_MAX_DIST) return;  // was a scroll, not a tap
+
   var v = ndc(e);
   raycaster.setFromCamera(v, camera);
   var hits = raycaster.intersectObjects(MONSTERS, true);
@@ -548,89 +611,37 @@ function onDown(e) {
 
   var obj = hits[0].object;
   while (obj.parent && obj.parent !== scene) obj = obj.parent;
-  dragged = obj;
 
-  var ud = dragged.userData;
-  if (ud.isInCave) {
-    ud.isInCave = false;
-    if (ud.slotIdx >= 0) { SLOTS[ud.slotIdx].occupied = false; ud.slotIdx = -1; }
-    dragged.scale.setScalar(1.0);
-    decrement();
-  }
-
-  dragged.position.y = LIFT_Y;
-  dragPlane.constant  = -LIFT_Y;
-
-  var pt = groundPt(v);
-  if (pt) { dragOffX = dragged.position.x - pt.x; dragOffZ = dragged.position.z - pt.z; }
-  else    { dragOffX = 0; dragOffZ = 0; }
-
-  ud.tL = -Math.PI / 2.4;
-  ud.tR =  Math.PI / 2.4;
-}
-
-function onMove(e) {
-  if (!dragged) return;
-  e.preventDefault();
-  var pt = groundPt(ndc(e));
-  if (!pt) return;
-  dragged.position.x = pt.x + dragOffX;
-  dragged.position.z = pt.z + dragOffZ;
-}
-
-function onUp(e) {
-  if (!dragged) return;
-
-  var px = dragged.position.x - CAVE_POS.x;
-  var pz = dragged.position.z - CAVE_POS.z;
-  var inZone = Math.sqrt(px*px + pz*pz) < CAVE_RZONE;
-
-  if (inZone) {
-    var slot = null;
-    for (var si = 0; si < SLOTS.length; si++) {
-      if (!SLOTS[si].occupied) { slot = SLOTS[si]; break; }
-    }
-    if (slot) {
-      SLOTS[SLOTS.indexOf(slot)].occupied = true;
-      dragged.userData.slotIdx  = SLOTS.indexOf(slot);
-      dragged.userData.isInCave = true;
-      dragged.position.copy(slot.pos);
-      dragged.scale.setScalar(0.46);
-      dragged.userData.popAnim = 1;
-      increment();
-    } else {
-      snapHome(dragged);
-    }
+  if (obj.userData.isInCave) {
+    sendHome(obj);           // Tap on cave monster → zurück nach Hause
   } else {
-    snapHome(dragged);
+    sendToCave(obj);         // Tap on free monster → zur Höhle fliegen
   }
+});
 
-  dragged.userData.tL = ARM_REST_L;
-  dragged.userData.tR = ARM_REST_R;
-  dragged = null;
-}
-
-function snapHome(m) {
-  m.position.copy(m.userData.homePos);
-  m.position.y = 0;
-  m.scale.setScalar(1.0);
-}
-
-var cvs = renderer.domElement;
-cvs.addEventListener('mousedown',  onDown);
-cvs.addEventListener('mousemove',  onMove);
-cvs.addEventListener('mouseup',    onUp);
-cvs.addEventListener('mouseleave', onUp);
-cvs.addEventListener('touchstart', onDown, { passive: false });
-cvs.addEventListener('touchmove',  onMove, { passive: false });
-cvs.addEventListener('touchend',   onUp,   { passive: false });
-
-// ── COUNTER ──────────────────────────────
+// ── COUNTER & ZZZ ────────────────────────
 var count   = 0;
 var numEl   = document.getElementById('count-num');
 var sucEl   = document.getElementById('success');
+var zzzEl   = document.getElementById('zzz');
 var dotEls  = [];
 for (var di = 0; di < 10; di++) dotEls.push(document.getElementById('d' + di));
+
+// Position the zzz element above the cave (projected to screen)
+var caveTopWorld = new THREE.Vector3(CAVE_POS.x, CAVE_POS.y + 3.6, CAVE_POS.z);
+
+function updateZzzPos() {
+  var v = caveTopWorld.clone().project(camera);
+  var sx = (v.x + 1) / 2 * window.innerWidth;
+  var sy = (1 - (v.y + 1) / 2) * window.innerHeight;
+  zzzEl.style.left = sx + 'px';
+  zzzEl.style.top  = sy + 'px';
+}
+updateZzzPos();
+
+function showZzz() {
+  zzzEl.style.display = count >= 1 ? 'block' : 'none';
+}
 
 function updateDots() {
   for (var i = 0; i < dotEls.length; i++) {
@@ -649,31 +660,37 @@ function popNum() {
 function increment() {
   count = Math.min(10, count + 1);
   numEl.textContent = count;
-  updateDots(); popNum();
+  updateDots(); popNum(); showZzz();
   if (count >= 10) setTimeout(function() { sucEl.classList.add('show'); }, 700);
 }
 
 function decrement() {
   count = Math.max(0, count - 1);
   numEl.textContent = count;
-  updateDots();
+  updateDots(); showZzz();
   sucEl.classList.remove('show');
 }
 
 function restartGame() {
   count = 0;
   numEl.textContent = 0;
-  updateDots();
+  updateDots(); showZzz();
   sucEl.classList.remove('show');
   for (var si = 0; si < SLOTS.length; si++) SLOTS[si].occupied = false;
   for (var mi = 0; mi < MONSTERS.length; mi++) {
-    var m = MONSTERS[mi];
-    m.userData.isInCave = false;
-    m.userData.slotIdx  = -1;
-    m.userData.popAnim  = 0;
-    m.userData.tL = ARM_REST_L;
-    m.userData.tR = ARM_REST_R;
-    snapHome(m);
+    var m  = MONSTERS[mi];
+    var ud = m.userData;
+    ud.isInCave = false;
+    ud.isFlying = false;
+    ud.flyT     = 0;
+    ud.slotIdx  = -1;
+    ud.popAnim  = 0;
+    ud.tL = ARM_REST_L;
+    ud.tR = ARM_REST_R;
+    m.scale.setScalar(1.0);
+    m.rotation.y = 0;
+    m.position.copy(ud.homePos);
+    m.position.y = 0;
   }
 }
 window.restartGame = restartGame;
@@ -689,17 +706,46 @@ function animate() {
     var m  = MONSTERS[i];
     var ud = m.userData;
 
-    if (m !== dragged && !ud.isInCave) {
+    // ── Flug-Animation ──────────────────
+    if (ud.isFlying) {
+      ud.flyT += 0.028;   // ~36 Frames = ~0.6 Sekunden
+      var ft   = Math.min(ud.flyT, 1.0);
+      // Ease-in-out cubic
+      var ease = ft < 0.5 ? 4*ft*ft*ft : 1 - Math.pow(-2*ft+2, 3) / 2;
+
+      m.position.lerpVectors(ud.flyStart, ud.flyEnd, ease);
+      m.position.y += Math.sin(ft * Math.PI) * 2.6;   // Bogen nach oben
+      m.scale.setScalar(1.0 + (0.46 - 1.0) * ease);  // schrumpft beim Landen
+      m.rotation.y = ft * Math.PI * 1.5;              // dreht sich beim Fliegen
+
+      if (ft >= 1.0) {
+        ud.isFlying = false;
+        ud.isInCave = true;
+        m.position.copy(ud.flyEnd);
+        m.scale.setScalar(0.46);
+        m.rotation.y = 0;
+        ud.popAnim = 1;
+        ud.tL = ARM_REST_L;
+        ud.tR = ARM_REST_R;
+        increment();
+      }
+      continue;  // keine Idle-Animation während des Flugs
+    }
+
+    // ── Idle-Wippe (nur freie Monster) ──
+    if (!ud.isInCave) {
       m.position.y = Math.sin(t * 1.15 + i * 0.82) * 0.09;
       m.rotation.y = Math.sin(t * 0.78 + i * 1.08) * 0.12;
     }
 
+    // ── Pop-Animation beim Landen ───────
     if (ud.popAnim > 0) {
       ud.popAnim -= 0.07;
       if (ud.popAnim < 0) ud.popAnim = 0;
       m.scale.setScalar(0.46 + Math.sin(ud.popAnim * Math.PI) * 0.16);
     }
 
+    // ── Arm-Interpolation ───────────────
     var arms = ud.arms;
     arms.la.rotation.z += (ud.tL - arms.la.rotation.z) * 0.14;
     arms.ra.rotation.z += (ud.tR - arms.ra.rotation.z) * 0.14;
