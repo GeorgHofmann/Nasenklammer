@@ -25,6 +25,13 @@ var NKSearchData = [
     tags:   ['monster', 'höhle', 'zählen', 'mathe', 'zahlen'],
     iconSvg: '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 4v16M20 4v16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="8"  cy="8"  r="1.8" fill="currentColor"/><circle cx="12" cy="8"  r="1.8" fill="currentColor"/><circle cx="16" cy="8"  r="1.8" fill="currentColor"/><circle cx="8"  cy="12" r="1.8" fill="currentColor"/><circle cx="12" cy="12" r="1.8" fill="currentColor"/><circle cx="16" cy="12" r="1.8" fill="currentColor"/><circle cx="8"  cy="16" r="1.8" fill="currentColor"/><circle cx="12" cy="16" r="1.8" fill="currentColor"/></svg>',
   },
+  {
+    label:  'Zählen bis 20',
+    href:   'vorschule-zaehlen-20.html',
+    klasse: 'vorschule',
+    tags:   ['monster', 'höhle', 'zählen', 'mathe', 'zahlen', 'zwanzig'],
+    iconSvg: '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 4v16M20 4v16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="8"  cy="7"  r="1.5" fill="currentColor"/><circle cx="12" cy="7"  r="1.5" fill="currentColor"/><circle cx="16" cy="7"  r="1.5" fill="currentColor"/><circle cx="8"  cy="10.5" r="1.5" fill="currentColor"/><circle cx="12" cy="10.5" r="1.5" fill="currentColor"/><circle cx="16" cy="10.5" r="1.5" fill="currentColor"/><circle cx="8"  cy="14" r="1.5" fill="currentColor"/><circle cx="12" cy="14" r="1.5" fill="currentColor"/><circle cx="16" cy="14" r="1.5" fill="currentColor"/><circle cx="8"  cy="17.5" r="1.5" fill="currentColor"/><circle cx="12" cy="17.5" r="1.5" fill="currentColor"/><circle cx="16" cy="17.5" r="1.5" fill="currentColor"/></svg>',
+  },
 
   /* ── Grundschule ────────────────────────────────────────── */
   {

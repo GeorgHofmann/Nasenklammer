@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Monster und Höhle – Zählen bis 20</title>
+  <link rel="stylesheet" href="../components/fonts.css">
+  <link rel="stylesheet" href="../components/count-display.css">
+  <link rel="stylesheet" href="../components/button.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      overflow: hidden;
+      background: #f4efe8;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+    canvas { display: block; }
+
+    #counter-wrap {
+      position: fixed;
+      top: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    #hint {
+      position: fixed;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(1280px, calc(100vw - 48px));
+      font-family: 'Solway', Georgia, serif;
+      font-size: 36px;
+      font-weight: 400;
+      line-height: 1.55;
+      color: #964f12;
+      text-align: center;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    /* ── Zzz-Schläfer-Animation ─────────────── */
+    #zzz {
+      position: fixed;
+      pointer-events: none;
+      z-index: 10;
+      display: none;
+      white-space: nowrap;
+      transform: translateX(-50%);
+    }
+    #zzz span {
+      display: inline-block;
+      font-weight: 900;
+      color: #9a7ab8;
+      opacity: 0;
+      animation: floatZ 2.8s ease-in-out infinite;
+    }
+    #zzz span:nth-child(1) { font-size: 0.85rem; animation-delay: 0.0s; }
+    #zzz span:nth-child(2) { font-size: 1.05rem; animation-delay: 0.35s; }
+    #zzz span:nth-child(3) { font-size: 1.30rem; animation-delay: 0.70s; }
+    #zzz span:nth-child(4) { font-size: 1.05rem; animation-delay: 1.05s; }
+    #zzz span:nth-child(5) { font-size: 0.90rem; animation-delay: 1.40s; }
+    #zzz span:nth-child(6) { font-size: 0.80rem; animation-delay: 1.75s; }
+    #zzz span:nth-child(7) { font-size: 0.85rem; animation-delay: 2.10s; }
+
+    @keyframes floatZ {
+      0%   { opacity: 0;   transform: translateY(0px)   translateX(0px);  }
+      18%  { opacity: 0.9;                                                  }
+      80%  { opacity: 0.5;                                                  }
+      100% { opacity: 0;   transform: translateY(-38px) translateX(6px);   }
+    }
+
+    /* ── Erfolgs-Screen ─────────────────────── */
+    #success {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba(248,244,252,0.97);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      z-index: 30;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.7s ease;
+    }
+    #success.show { opacity: 1; pointer-events: all; }
+    #success-star {
+      font-size: 5rem;
+      margin-bottom: 10px;
+      animation: floatStar 1.4s ease-in-out infinite alternate;
+    }
+    @keyframes floatStar {
+      from { transform: translateY(0) rotate(-4deg); }
+      to   { transform: translateY(-14px) rotate(4deg); }
+    }
+    #success-title { font-size: 2.4rem; font-weight: 900; color: #4a3a58; margin-bottom: 6px; }
+    #success-sub   { font-size: 1.0rem; color: #9a8aaa; margin-bottom: 36px; }
+  </style>
+</head>
+<body>
+
+<div id="counter-wrap">
+  <div id="counter"></div>
+</div>
+
+<div id="hint">Die Monster sind müde und wollen schlafen. Bring sie in ihre Höhle und zähle die Monster ab, indem du auf sie klickst – am Ende sollten alle zwanzig in der Höhle sein.</div>
+
+<!-- Zzz-Animation über der Höhle -->
+<div id="zzz">
+  <span>z</span><span>z</span><span>z</span><span>z</span>
+  <span>h</span><span>h</span><span>h</span>
+</div>
+
+<div id="success">
+  <div id="success-star">🌟</div>
+  <div id="success-title">Geschafft! 20 / 20</div>
+  <div id="success-sub">Alle Monster schlafen jetzt in der Höhle!</div>
+  <button id="restart-btn" class="nk-btn nk-btn--primary" onclick="restartGame()">
+    <span class="nk-btn__label">Nochmal spielen</span>
+  </button>
+</div>
+
+<script src="../components/count-display.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// ── RENDERER ─────────────────────────────
+var scene    = new THREE.Scene();
+scene.background = new THREE.Color(0xf4efe8);
+scene.fog    = new THREE.Fog(0xf4efe8, 24, 38);
+
+var camera   = new THREE.PerspectiveCamera(54, window.innerWidth / window.innerHeight, 0.1, 60);
+camera.position.set(0, 8, 17);
+camera.lookAt(new THREE.Vector3(0, 0, 0));
+
+var renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type    = THREE.PCFSoftShadowMap;
+document.body.insertBefore(renderer.domElement, document.body.firstChild);
+
+window.addEventListener('resize', function() {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  updateZzzPos();
+});
+
+// ── LIGHTS ───────────────────────────────
+var ambient = new THREE.AmbientLight(0xffffff, 0.70);
+scene.add(ambient);
+
+var sun = new THREE.DirectionalLight(0xfff8f0, 0.52);
+sun.position.set(6, 14, 9);
+sun.castShadow = true;
+sun.shadow.mapSize.width  = 1024;
+sun.shadow.mapSize.height = 1024;
+sun.shadow.camera.left   = -12;
+sun.shadow.camera.right  =  12;
+sun.shadow.camera.top    =  12;
+sun.shadow.camera.bottom = -12;
+sun.shadow.camera.near   =   1;
+sun.shadow.camera.far    =  40;
+sun.shadow.bias = -0.001;
+scene.add(sun);
+
+// ── CAVE ─────────────────────────────────
+var CAVE_POS   = new THREE.Vector3(0, 0, -4.0);
+var CAVE_RZONE = 2.0;
+
+function buildCave() {
+  var g = new THREE.Group();
+
+  var rockMat  = new THREE.MeshLambertMaterial({ color: 0x8c8070 });
+  var rock2Mat = new THREE.MeshLambertMaterial({ color: 0x9a8e80 });
+  var darkMat  = new THREE.MeshLambertMaterial({ color: 0x110c18 });
+  var floorMat = new THREE.MeshLambertMaterial({ color: 0x342c3e });
+
+  var back = new THREE.Mesh(new THREE.PlaneGeometry(2.8, 2.8), darkMat);
+  back.position.set(0, 0.30, -0.62);
+  g.add(back);
+
+  var cf = new THREE.Mesh(new THREE.PlaneGeometry(2.8, 1.3), floorMat);
+  cf.rotation.x = -Math.PI / 2;
+  cf.position.set(0, -0.91, -0.25);
+  g.add(cf);
+
+  var lp = new THREE.Mesh(new THREE.CylinderGeometry(0.46, 0.60, 2.9, 12), rockMat);
+  lp.position.set(-1.35, 0.35, 0);
+  lp.castShadow = true; lp.receiveShadow = true;
+  g.add(lp);
+
+  var rp = lp.clone();
+  rp.position.set(1.35, 0.35, 0);
+  g.add(rp);
+
+  var arch = new THREE.Mesh(new THREE.TorusGeometry(1.35, 0.50, 10, 28, Math.PI), rockMat);
+  arch.position.set(0, 1.80, 0);
+  arch.castShadow = true;
+  g.add(arch);
+
+  var topRock = new THREE.Mesh(new THREE.SphereGeometry(1.05, 12, 12), rock2Mat);
+  topRock.scale.set(1.8, 0.9, 0.8);
+  topRock.position.set(0, 2.50, -0.1);
+  topRock.castShadow = true;
+  g.add(topRock);
+
+  var pebPos = [[-2.0,-0.60,0.30],[2.0,-0.70,0.30],[-1.5,-0.75,0.65],[1.5,-0.72,0.72],[0.0,-0.80,0.82]];
+  for (var pi = 0; pi < pebPos.length; pi++) {
+    var p = pebPos[pi];
+    var peb = new THREE.Mesh(new THREE.SphereGeometry(0.28+Math.random()*0.12, 9, 9), rockMat);
+    peb.position.set(p[0], p[1], p[2]);
+    peb.scale.y = 0.65;
+    peb.castShadow = true;
+    g.add(peb);
+  }
+
+  var sparkMat = new THREE.MeshBasicMaterial({ color: 0xecd8f0 });
+  var sparkPos = [[-1.0,2.0,0.3],[0.6,2.2,0.3],[-0.3,2.4,0.2],[1.1,1.7,0.4]];
+  for (var si = 0; si < sparkPos.length; si++) {
+    var sp = new THREE.Mesh(new THREE.SphereGeometry(0.05, 6, 6), sparkMat);
+    sp.position.set(sparkPos[si][0], sparkPos[si][1], sparkPos[si][2]);
+    g.add(sp);
+  }
+
+  g.position.copy(CAVE_POS);
+  return g;
+}
+
+scene.add(buildCave());
+
+// ── BLOB-SCHATTEN unter der Höhle ─────────
+var caveShadow = new THREE.Mesh(
+  new THREE.CircleGeometry(1.9, 40),
+  new THREE.MeshBasicMaterial({ color: 0xa89888, transparent: true, opacity: 0.42 })
+);
+caveShadow.rotation.x = -Math.PI / 2;
+caveShadow.scale.set(1.35, 0.72, 1.0);
+caveShadow.position.set(CAVE_POS.x, -0.87, CAVE_POS.z + 0.10);
+scene.add(caveShadow);
+
+// Cave slots – 4×5 = 20 Plätze, kompakter als die 10er-Version
+var SLOTS = [];
+var sx = [-1.0, -0.5, 0.0, 0.5, 1.0];
+for (var row = 0; row < 4; row++) {
+  for (var col = 0; col < 5; col++) {
+    SLOTS.push({
+      pos: new THREE.Vector3(CAVE_POS.x + sx[col], CAVE_POS.y + 0.52 - row * 0.36, CAVE_POS.z - 0.38 - row * 0.05),
+      occupied: false
+    });
+  }
+}
+
+// ── SHARED MATS ──────────────────────────
+var DARK_MAT  = new THREE.MeshToonMaterial({ color: 0x28183a });
+var WHITE_MAT = new THREE.MeshToonMaterial({ color: 0xffffff });
+
+function cMat(hex) { return new THREE.MeshToonMaterial({ color: hex }); }
+
+// ── MONSTER PARTS ────────────────────────
+function addEyes(g) {
+  var openParts   = [];
+  var closedParts = [];
+
+  [-0.19, 0.19].forEach(function(x) {
+    var ew = new THREE.Mesh(new THREE.SphereGeometry(0.135, 12, 12), WHITE_MAT);
+    ew.position.set(x, 0.16, 0.43);
+    g.add(ew); openParts.push(ew);
+
+    var pu = new THREE.Mesh(new THREE.SphereGeometry(0.073, 10, 10), DARK_MAT);
+    pu.position.set(x, 0.16, 0.515);
+    g.add(pu); openParts.push(pu);
+
+    var sh = new THREE.Mesh(new THREE.SphereGeometry(0.033, 8, 8), WHITE_MAT);
+    sh.position.set(x + 0.046, 0.200, 0.550);
+    g.add(sh); openParts.push(sh);
+
+    var lid = new THREE.Mesh(
+      new THREE.TorusGeometry(0.09, 0.022, 8, 16, Math.PI),
+      DARK_MAT
+    );
+    lid.position.set(x, 0.16, 0.46);
+    lid.visible = false;
+    g.add(lid); closedParts.push(lid);
+  });
+
+  return { open: openParts, closed: closedParts };
+}
+
+function setEyes(monster, sleeping) {
+  var ud = monster.userData;
+  if (!ud.openEyes) return;
+  ud.openEyes.forEach(function(m)   { m.visible = !sleeping; });
+  ud.closedEyes.forEach(function(m) { m.visible =  sleeping; });
+}
+
+function addSmile(g) {
+  var sm = new THREE.Mesh(
+    new THREE.TorusGeometry(0.092, 0.023, 8, 16, Math.PI),
+    DARK_MAT
+  );
+  sm.position.set(0, -0.068, 0.458);
+  sm.rotation.z = Math.PI;
+  g.add(sm);
+}
+
+function addLegs(g, bMat) {
+  [-0.20, 0.20].forEach(function(x) {
+    var leg = new THREE.Mesh(new THREE.SphereGeometry(0.18, 10, 10), bMat);
+    leg.position.set(x, -0.54, 0.08);
+    leg.castShadow = true;
+    g.add(leg);
+  });
+}
+
+var ARM_REST_L =  Math.PI / 3.6;
+var ARM_REST_R = -Math.PI / 3.6;
+
+function addArms(g, bMat) {
+  var armGeo = new THREE.CylinderGeometry(0.088, 0.072, 0.44, 8);
+
+  var la = new THREE.Mesh(armGeo, bMat);
+  la.position.set(-0.56, 0.02, 0.08);
+  la.rotation.z = ARM_REST_L;
+  la.castShadow = true;
+  g.add(la);
+
+  var ra = new THREE.Mesh(armGeo, bMat);
+  ra.position.set(0.56, 0.02, 0.08);
+  ra.rotation.z = ARM_REST_R;
+  ra.castShadow = true;
+  g.add(ra);
+
+  return { la: la, ra: ra };
+}
+
+// ── FEATURE: Runde Ohren (homogenes Design für alle 20 Monster) ──
+function fRoundEars(g, bMat) {
+  [-0.40, 0.40].forEach(function(x) {
+    var ear = new THREE.Mesh(new THREE.SphereGeometry(0.19, 10, 10), bMat);
+    ear.position.set(x, 0.48, 0.03);
+    g.add(ear);
+  });
+}
+
+// ── MONSTER FACTORY ──────────────────────
+// 20 Monster – alle mit runden Ohren, je eine eigene Farbe
+var DEFS = [
+  [0xd94f7a, 'Rosie' ],
+  [0x7c56cc, 'Lila'  ],
+  [0x3aaa82, 'Minni' ],
+  [0xe08830, 'Crema' ],
+  [0xc04860, 'Dusti' ],
+  [0x3a7ec0, 'Blu'   ],
+  [0x5e9448, 'Sage'  ],
+  [0xe06820, 'Ori'   ],
+  [0x7a5aaa, 'Grisu' ],
+  [0xd4a800, 'Yello' ],
+  [0x2d9bb5, 'Teal'  ],
+  [0xc03870, 'Rosy'  ],
+  [0x6b4cc0, 'Vio'   ],
+  [0x2d8a54, 'Fern'  ],
+  [0xd45010, 'Rust'  ],
+  [0x4a7acc, 'Sky'   ],
+  [0x9cb830, 'Lime'  ],
+  [0xa83060, 'Berry' ],
+  [0x4ab898, 'Foam'  ],
+  [0xe08020, 'Gold'  ],
+];
+
+function buildMonster(def) {
+  var g    = new THREE.Group();
+  var bMat = cMat(def[0]);
+
+  var body = new THREE.Mesh(new THREE.SphereGeometry(0.50, 20, 20), bMat);
+  body.castShadow = true; body.receiveShadow = true;
+  g.add(body);
+
+  var eyeParts = addEyes(g);
+  addSmile(g);
+  addLegs(g, bMat);
+  var arms = addArms(g, bMat);
+  fRoundEars(g, bMat);
+
+  g.userData = {
+    name:       def[1],
+    isInCave:   false,
+    isFlying:   false,
+    slotIdx:    -1,
+    homePos:    new THREE.Vector3(),
+    flyStart:   new THREE.Vector3(),
+    flyEnd:     new THREE.Vector3(),
+    flyT:       0,
+    arms:       arms,
+    tL:         ARM_REST_L,
+    tR:         ARM_REST_R,
+    popAnim:    0,
+    openEyes:   eyeParts.open,
+    closedEyes: eyeParts.closed,
+  };
+  return g;
+}
+
+// Home grid – 4×5 = 20 Positionen
+var HOME_POS = [];
+for (var row = 0; row < 4; row++) {
+  for (var col = 0; col < 5; col++) {
+    HOME_POS.push(new THREE.Vector3(-4 + col * 2, 0, 2.0 + row * 2.4));
+  }
+}
+
+var MONSTERS = DEFS.map(function(def, i) {
+  var m = buildMonster(def);
+  m.position.copy(HOME_POS[i]);
+  m.userData.homePos.copy(HOME_POS[i]);
+  scene.add(m);
+  return m;
+});
+
+// ── CLICK / TAP ──────────────────────────
+var raycaster = new THREE.Raycaster();
+
+function ndc(e) {
+  var rect = renderer.domElement.getBoundingClientRect();
+  var src  = e.touches ? e.touches[0] : (e.changedTouches ? e.changedTouches[0] : e);
+  return new THREE.Vector2(
+    ((src.clientX - rect.left) / rect.width)  *  2 - 1,
+    ((src.clientY - rect.top)  / rect.height) * -2 + 1
+  );
+}
+
+var CAVE_SCALE = 0.32;  // kleiner als die 10er-Version (0.46) → 20 Monster passen rein
+
+function sendToCave(monster) {
+  var ud = monster.userData;
+  if (ud.isInCave || ud.isFlying) return;
+
+  var slot = null, slotIdx = -1;
+  for (var si = 0; si < SLOTS.length; si++) {
+    if (!SLOTS[si].occupied) { slot = SLOTS[si]; slotIdx = si; break; }
+  }
+  if (!slot) return;
+
+  SLOTS[slotIdx].occupied = true;
+  ud.slotIdx  = slotIdx;
+  ud.flyStart.copy(monster.position);
+  ud.flyEnd.copy(slot.pos);
+  ud.flyT     = 0;
+  ud.isFlying = true;
+  ud.tL = -Math.PI / 2.4;
+  ud.tR =  Math.PI / 2.4;
+}
+
+function sendHome(monster) {
+  var ud = monster.userData;
+  if (!ud.isInCave) return;
+  ud.isInCave = false;
+  ud.isFlying = false;
+  if (ud.slotIdx >= 0) { SLOTS[ud.slotIdx].occupied = false; ud.slotIdx = -1; }
+  monster.scale.setScalar(1.0);
+  monster.rotation.y = 0;
+  monster.position.copy(ud.homePos);
+  monster.position.y = 0;
+  ud.tL = ARM_REST_L;
+  ud.tR = ARM_REST_R;
+  setEyes(monster, false);
+  decrement();
+}
+
+// Tap detection
+var ptrDownPos = null;
+var TAP_MAX_DIST = 12;
+
+var cvs = renderer.domElement;
+
+cvs.addEventListener('pointerdown', function(e) {
+  ptrDownPos = { x: e.clientX, y: e.clientY };
+});
+
+cvs.addEventListener('pointerup', function(e) {
+  if (!ptrDownPos) return;
+  var dx = e.clientX - ptrDownPos.x;
+  var dy = e.clientY - ptrDownPos.y;
+  ptrDownPos = null;
+  if (Math.sqrt(dx*dx + dy*dy) > TAP_MAX_DIST) return;
+
+  var v = ndc(e);
+  raycaster.setFromCamera(v, camera);
+  var hits = raycaster.intersectObjects(MONSTERS, true);
+  if (!hits.length) return;
+
+  var obj = hits[0].object;
+  while (obj.parent && obj.parent !== scene) obj = obj.parent;
+
+  if (obj.userData.isInCave) {
+    sendHome(obj);
+  } else {
+    sendToCave(obj);
+  }
+});
+
+// ── COUNTER & ZZZ ────────────────────────
+var count   = 0;
+var countDisplay = new NKCountDisplay(document.getElementById('counter'), { value: 0, total: 20 });
+var sucEl   = document.getElementById('success');
+var zzzEl   = document.getElementById('zzz');
+
+var caveTopWorld = new THREE.Vector3(CAVE_POS.x, CAVE_POS.y + 3.6, CAVE_POS.z);
+
+function updateZzzPos() {
+  var v = caveTopWorld.clone().project(camera);
+  var sx = (v.x + 1) / 2 * window.innerWidth;
+  var sy = (1 - (v.y + 1) / 2) * window.innerHeight;
+  zzzEl.style.left = sx + 'px';
+  zzzEl.style.top  = sy + 'px';
+}
+updateZzzPos();
+
+function showZzz() {
+  zzzEl.style.display = count >= 1 ? 'block' : 'none';
+}
+
+function speakNumber(n) {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  var u = new SpeechSynthesisUtterance(String(n));
+  u.lang = 'de-DE';
+  u.rate = 0.9;
+  window.speechSynthesis.speak(u);
+}
+
+function increment() {
+  count = Math.min(20, count + 1);
+  countDisplay.set(count);
+  showZzz();
+  speakNumber(count);
+  if (count >= 20) setTimeout(function() { sucEl.classList.add('show'); }, 700);
+}
+
+function decrement() {
+  count = Math.max(0, count - 1);
+  countDisplay.set(count);
+  showZzz();
+  sucEl.classList.remove('show');
+}
+
+function restartGame() {
+  count = 0;
+  countDisplay.set(0);
+  showZzz();
+  sucEl.classList.remove('show');
+  for (var si = 0; si < SLOTS.length; si++) SLOTS[si].occupied = false;
+  for (var mi = 0; mi < MONSTERS.length; mi++) {
+    var m  = MONSTERS[mi];
+    var ud = m.userData;
+    ud.isInCave = false;
+    ud.isFlying = false;
+    ud.flyT     = 0;
+    ud.slotIdx  = -1;
+    ud.popAnim  = 0;
+    ud.tL = ARM_REST_L;
+    ud.tR = ARM_REST_R;
+    m.scale.setScalar(1.0);
+    m.rotation.y = 0;
+    m.position.copy(ud.homePos);
+    m.position.y = 0;
+    setEyes(m, false);
+  }
+}
+window.restartGame = restartGame;
+
+// ── ANIMATE ──────────────────────────────
+var clock = new THREE.Clock();
+
+function animate() {
+  requestAnimationFrame(animate);
+  var t = clock.getElapsedTime();
+
+  for (var i = 0; i < MONSTERS.length; i++) {
+    var m  = MONSTERS[i];
+    var ud = m.userData;
+
+    // ── Flug-Animation ──────────────────
+    if (ud.isFlying) {
+      ud.flyT += 0.028;
+      var ft   = Math.min(ud.flyT, 1.0);
+      var ease = ft < 0.5 ? 4*ft*ft*ft : 1 - Math.pow(-2*ft+2, 3) / 2;
+
+      m.position.lerpVectors(ud.flyStart, ud.flyEnd, ease);
+      m.position.y += Math.sin(ft * Math.PI) * 2.6;
+      m.scale.setScalar(1.0 + (CAVE_SCALE - 1.0) * ease);
+      m.rotation.y = ft * Math.PI * 1.5;
+
+      if (ft >= 1.0) {
+        ud.isFlying = false;
+        ud.isInCave = true;
+        m.position.copy(ud.flyEnd);
+        m.scale.setScalar(CAVE_SCALE);
+        m.rotation.y = 0;
+        ud.popAnim = 1;
+        ud.tL = ARM_REST_L;
+        ud.tR = ARM_REST_R;
+        setEyes(m, true);
+        increment();
+      }
+      continue;
+    }
+
+    // ── Idle-Wippe (nur freie Monster) ──
+    if (!ud.isInCave) {
+      m.position.y = Math.sin(t * 1.15 + i * 0.82) * 0.09;
+      m.rotation.y = Math.sin(t * 0.78 + i * 1.08) * 0.12;
+    }
+
+    // ── Pop-Animation beim Landen ───────
+    if (ud.popAnim > 0) {
+      ud.popAnim -= 0.07;
+      if (ud.popAnim < 0) ud.popAnim = 0;
+      m.scale.setScalar(CAVE_SCALE + Math.sin(ud.popAnim * Math.PI) * 0.10);
+    }
+
+    // ── Arm-Interpolation ───────────────
+    var arms = ud.arms;
+    arms.la.rotation.z += (ud.tL - arms.la.rotation.z) * 0.14;
+    arms.ra.rotation.z += (ud.tR - arms.ra.rotation.z) * 0.14;
+  }
+
+  renderer.render(scene, camera);
+}
+
+animate();
+</script>
+</body>
+</html>
