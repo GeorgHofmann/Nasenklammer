@@ -323,6 +323,144 @@ NKAnalytics.track('exercise_complete', {
 
 ---
 
+## ✅ NKSearch (Slide-Up Suchmaske)
+**Dateien:** `components/search.css` · `components/search.js` · `components/search-data.js`  
+**Beschreibung:** Zentrale Sitesuche mit Fuzzy-Matching. Erscheint am Seitenende als Trigger-Pill; beim Tippen oder Klicken fährt ein Panel von unten hoch und zeigt gefilterte Übungsvorschläge. Auf Tablets füllt das Panel den gesamten Bereich unter dem Header.  
+**Verwendet in:** `vorschule.html`, `vorschule-mathe.html`, `grundschule.html`, `grundschule-faecher.html`, `gross.html`
+
+### Einbindung
+
+```html
+<!-- im <head>, vor fab.css -->
+<link rel="stylesheet" href="components/search.css">
+
+<!-- Mount-Point im Body -->
+<div id="siteSearch"></div>
+
+<!-- Scripts: search-data.js MUSS vor search.js stehen -->
+<script src="components/search-data.js"></script>
+<script src="components/search.js"></script>
+```
+
+```js
+new NKSearch(document.getElementById('siteSearch'), {
+  items: NKSearchData,            // zentrale Übungsliste aus search-data.js
+  placeholder: 'Ich suche …',    // optional – Default: 'Ich suche eine Übung …'
+  onSelect: function(item) {      // optional – Default: window.location.href = item.href
+    window.location.href = item.href;
+  },
+});
+```
+
+### Public API
+
+| Methode | Beschreibung |
+|---|---|
+| `open()` | Panel öffnen, Input fokussieren |
+| `close()` | Panel schließen |
+| `setItems(items)` | Übungsliste zur Laufzeit ersetzen (z. B. nach Login) |
+
+### Fuzzy Search
+
+Die interne `fuzzyScore(query, text)`-Funktion priorisiert Treffer in dieser Reihenfolge:
+
+1. **Exakter Teilstring** → Score 100+ (+ Bonus wenn am Wortanfang, + Bonus je Längenanteil)
+2. **Zeichenweise fuzzy** → niedrigerer Score mit Bonus für aufeinanderfolgende Treffer
+3. **Kein Match** → Score 0 (wird nicht angezeigt)
+
+Gefundene Substrings werden mit `<mark>` hervorgehoben; die `--nk-search-accent`-Farbe steuert das visuelle Highlight.
+
+### Suchdaten – `search-data.js`
+
+Die zentrale Datei `components/search-data.js` definiert `window.NKSearchData`. Alle Seiten teilen dieselbe Liste — so ist jede Übung von jeder Seite aus auffindbar.
+
+```js
+// components/search-data.js
+var NKSearchData = [
+
+  /* ── Vorschule ────────────────────────────────── */
+  {
+    label:  'Zählen bis 10',
+    href:   'vorschule-zaehlen.html',
+    klasse: 'vorschule',            // 'vorschule' | 'grundschule' | 'gymnasium'
+    tags:   ['monster', 'höhle', 'zählen', 'mathe'],  // zusätzliche Suchbegriffe
+  },
+
+  /* ── Grundschule ──────────────────────────────── */
+  {
+    label:  'Uhrzeit',
+    href:   'uhr.html',
+    klasse: 'grundschule',
+    tags:   ['uhr', 'zeit', 'mathe'],
+  },
+
+  /* Weitere Übungen hier ergänzen … */
+];
+```
+
+**Neue Übung hinzufügen:** Einen Eintrag in `search-data.js` ergänzen. `label` ist der angezeigte Name; `tags` sind versteckte Suchbegriffe (z. B. Themen, Synonyme). Kein Rebuild nötig — alle Seiten laden die Datei live.
+
+### Theming
+
+Pro Seite werden CSS-Variablen in `:root` gesetzt, um die Farben ans jeweilige Seiten-Theme anzupassen:
+
+```css
+/* Blaue Seiten (Grundschule) */
+:root {
+  --nk-search-panel-bg:    rgba(165,200,230,0.97);
+  --nk-search-trigger-bg:  rgba(200,224,244,0.62);
+  --nk-search-icon-bg:     #963555;
+  --nk-search-text:        #1a3a6c;
+  --nk-search-placeholder: #5a7ea8;
+  --nk-search-accent:      #225a93;
+}
+
+/* Orange Seiten (Vorschule) */
+:root {
+  --nk-search-panel-bg:    rgba(248,212,178,0.97);
+  --nk-search-trigger-bg:  rgba(252,232,200,0.62);
+  --nk-search-icon-bg:     #f4a056;
+  --nk-search-text:        #6a3010;
+  --nk-search-placeholder: #a06040;
+  --nk-search-accent:      #c05010;
+}
+```
+
+**Alle CSS Custom Properties:**
+
+| Property | Default (search.css) | Beschreibung |
+|---|---|---|
+| `--nk-search-panel-bg` | `rgba(195,218,238,0.97)` | Hintergrund des offenen Panels |
+| `--nk-search-trigger-bg` | `rgba(255,255,255,0.52)` | Hintergrund der Trigger-Pill |
+| `--nk-search-bar-bg` | `rgba(255,255,255,0.90)` | Hintergrund der Suchleiste im Panel |
+| `--nk-search-icon-bg` | `#963555` | Farbe des Lupe-Kreises in der Trigger-Pill |
+| `--nk-search-text` | `#1a3a5c` | Eingabe- und Ergebnis-Textfarbe |
+| `--nk-search-placeholder` | `#7a9ab8` | Platzhalterfarbe |
+| `--nk-search-accent` | `var(--color-accent)` | Farbe der `<mark>`-Treffer-Highlights |
+| `--nk-search-panel-height` | `220px` | Panel-Höhe auf Desktop (≥ 901px) |
+
+### FAB-Integration
+
+Wenn das Suchpanel offen ist, wird dem `<body>` die Klasse `nk-search-open` hinzugefügt. `search.css` nutzt das, um den FAB automatisch nach oben zu schieben:
+
+```css
+body.nk-search-open .nk-fab {
+  bottom: calc(var(--nk-search-panel-height) + 20px) !important;
+}
+/* Auf Tablet: FAB verstecken, Panel füllt alles */
+@media (max-width: 900px) {
+  body.nk-search-open .nk-fab { display: none; }
+}
+```
+
+Kein JS-Eingriff nötig — FAB und Search funktionieren automatisch zusammen, solange beide auf derselben Seite eingebunden sind.
+
+### Tablet-Verhalten (≤ 900px)
+
+Das Panel wechselt zu `top: 0; height: auto; border-radius: 0` und füllt den gesamten Viewport unter dem fixierten Header (`padding-top: 76px`). Die native Bildschirmtastatur blendet von unten ein; die Suchleiste bleibt oben im Panel sichtbar. Kein JS für Viewport-Handling nötig.
+
+---
+
 ## ✅ NKBackNav (Zurück-Navigation)
 **Dateien:** `components/back-nav.js` · `components/back-nav.css`  
 **Beschreibung:** Schmale Navigationsleiste direkt unterhalb des Headers mit einem „← Zurück"-Button. Nutzt `history.back()`; fällt auf einen konfigurierbaren Fallback-Link zurück, wenn kein Browser-Verlauf vorhanden ist (z. B. Direktaufruf per Link).  

@@ -1,0 +1,365 @@
+/* ── NKSearch – Slide-Up Suchmaske ─────────────────────────────
+   Zustände:
+   • Geschlossen → Trigger-Pill am Seitenende
+   • Offen (Desktop ≥ 901px) → Panel von unten
+   • Offen (Tablet ≤ 900px)  → Panel füllt alles unter Header
+
+   Animation-System:
+   --nk-ease   Expo-Ease-Out (zügig → abbremsen), alle Elemente
+   --nk-dur    Haupt-Dauer (Panel-Slide)
+   --nk-dur-sm Kurze Dauer (Trigger-Fade, Backdrop)
+   ────────────────────────────────────────────────────────────── */
+
+:root {
+  --nk-ease:   cubic-bezier(0.16, 1, 0.3, 1);
+  --nk-dur:    0.46s;
+  --nk-dur-sm: 0.22s;
+}
+
+/* ── CSS-Variablen (Defaults, überschreibbar je Seite) ──────── */
+:root {
+  --nk-search-panel-bg:      rgba(195,218,238,0.97);
+  --nk-search-trigger-bg:    rgba(255,255,255,0.52);
+  --nk-search-bar-bg:        rgba(255,255,255,0.90);
+  --nk-search-icon-bg:       #963555;
+  --nk-search-text:          #1a3a5c;
+  --nk-search-placeholder:   #7a9ab8;
+  --nk-search-accent:        var(--color-accent, #964f12);
+  --nk-search-panel-height:  360px;
+}
+
+/* ══ 1. TRIGGER ═══════════════════════════════════════════════ */
+.nk-search__trigger {
+  position: fixed;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(640px, calc(100vw - 48px));
+  height: 64px;
+  background: var(--nk-search-trigger-bg);
+  border-radius: 64px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px 10px 10px;
+  box-shadow: 0 2px 20px rgba(0,0,0,0.12);
+  cursor: text;
+  z-index: 180;
+  border: none;
+  text-align: left;
+  transition: opacity var(--nk-dur-sm) var(--nk-ease),
+              transform var(--nk-dur-sm) var(--nk-ease);
+  isolation: isolate;
+}
+
+.nk-search.is-open .nk-search__trigger {
+  opacity: 0;
+  pointer-events: none;
+  /* Trigger zieht nach oben weg — in Richtung des aufsteigenden Panels */
+  transform: translateX(-50%) translateY(-10px);
+}
+
+.nk-search__trigger-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--nk-search-icon-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #fff;
+}
+
+.nk-search__trigger-icon svg { width: 20px; height: 20px; }
+
+.nk-search__trigger-placeholder {
+  font-family: var(--font-body, 'Noto Sans', Arial, sans-serif);
+  font-size: 17px;
+  color: var(--nk-search-placeholder);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ══ 2. BACKDROP ══════════════════════════════════════════════ */
+.nk-search__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 190;
+  background: rgba(0,0,0,0.22);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--nk-dur-sm) var(--nk-ease);
+}
+
+.nk-search.is-open .nk-search__backdrop {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ══ 3. PANEL ═════════════════════════════════════════════════ */
+.nk-search__panel {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 200;
+  background: var(--nk-search-panel-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 0;
+  height: var(--nk-search-panel-height);
+  padding: 0 0 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  transform: translateY(100%);
+  transition: transform var(--nk-dur) var(--nk-ease);
+}
+
+/* ── Schließen-Button (rechtsbündig zum Header-Hamburger) ──────
+   Desktop:  right: 56px  top: 14px  (= Header-Padding)
+   Tablet:   right: 20px  top: 12px
+   ────────────────────────────────────────────────────────────── */
+.nk-search__panel-close {
+  position: absolute;
+  top: 14px;
+  right: 56px;
+  padding: 4px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-home-accent, #225a93);
+  border-radius: 8px;
+  transition: background 0.15s;
+}
+
+.nk-search__panel-close:hover  { background: rgba(0,0,0,0.06); }
+.nk-search__panel-close:active { opacity: 0.6; }
+.nk-search__panel-close svg { width: 26px; height: 26px; display: block; }
+
+@media (max-width: 900px) {
+  .nk-search__panel-close {
+    top: 12px;
+    right: 20px;
+  }
+}
+
+.nk-search.is-open .nk-search__panel {
+  transform: translateY(0);
+}
+
+/* ══ 4. SUCHLEISTE IM PANEL ═══════════════════════════════════ */
+.nk-search__bar {
+  width: min(640px, calc(100% - 48px));
+  height: 64px;
+  background: var(--nk-search-bar-bg);
+  border-radius: 64px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px 10px 10px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+}
+
+.nk-search__search-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: rgba(0,0,0,0.45);
+}
+
+.nk-search__search-icon svg { width: 20px; height: 20px; }
+
+.nk-search__input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-family: var(--font-body, 'Noto Sans', Arial, sans-serif);
+  font-size: 18px;
+  line-height: 28px;
+  color: var(--nk-search-text);
+  outline: none;
+  min-width: 0;
+  /* iOS: kein Input-Stil */
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.nk-search__input::-webkit-search-decoration,
+.nk-search__input::-webkit-search-cancel-button { display: none; }
+
+.nk-search__input::placeholder {
+  color: var(--nk-search-placeholder);
+}
+
+/* ── Clear-Button ────────────────────────────────────────── */
+.nk-search__clear {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.10);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--nk-search-text);
+  opacity: 0;
+  transform: scale(0.70);
+  transition: opacity 0.15s, transform 0.15s;
+  pointer-events: none;
+}
+
+.nk-search__clear.is-visible {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
+}
+
+.nk-search__clear:hover  { background: rgba(0,0,0,0.17); }
+.nk-search__clear:active { transform: scale(0.88); }
+.nk-search__clear svg { width: 16px; height: 16px; }
+
+/* ══ 5. ERGEBNIS-LISTE ════════════════════════════════════════ */
+.nk-search__results {
+  width: min(640px, calc(100% - 48px));
+  overflow: hidden;
+  list-style: none;
+  display: none;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.60);
+}
+
+.nk-search__results.has-content {
+  display: block;
+}
+
+.nk-search__result-item {
+  padding: 8px 14px 8px 10px;
+  cursor: pointer;
+  font-family: var(--font-body, 'Noto Sans', Arial, sans-serif);
+  font-size: 16px;
+  color: var(--nk-search-text);
+  border-radius: 12px;
+  transition: background 0.10s;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.nk-search__result-item:hover,
+.nk-search__result-item.is-active {
+  background: rgba(0,0,0,0.06);
+}
+
+/* ── Icon (40 × 40 px) ───────────────────────────────────────── */
+.nk-search__result-icon {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--nk-search-accent);
+  opacity: 0.80;
+}
+
+.nk-search__result-icon svg {
+  width: 40px;
+  height: 40px;
+}
+
+/* ── Label (einzeilig, kein Zeilenumbruch) ───────────────────── */
+.nk-search__result-label {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.nk-search__result-item mark {
+  background: none;
+  color: var(--nk-search-accent);
+  font-weight: 700;
+}
+
+/* ── Zielgruppen-Chip ────────────────────────────────────────── */
+.nk-search__chip {
+  flex-shrink: 0;
+  font-family: var(--font-body, 'Noto Sans', Arial, sans-serif);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  padding: 4px 8px;
+  border-radius: 20px;
+  white-space: nowrap;
+  /* Platzhalter – wird durch klasse-spezifische Variante überschrieben */
+  background: rgba(0,0,0,0.08);
+  color: var(--nk-search-text);
+}
+
+.nk-search__chip--vorschule {
+  background: /* TODO Farbe Vorschule */ rgba(0,0,0,0.08);
+  color:      /* TODO Farbe Vorschule */ var(--nk-search-text);
+}
+
+.nk-search__chip--grundschule {
+  background: /* TODO Farbe Grundschule */ rgba(0,0,0,0.08);
+  color:      /* TODO Farbe Grundschule */ var(--nk-search-text);
+}
+
+.nk-search__chip--gymnasium {
+  background: /* TODO Farbe Gymnasium */ rgba(0,0,0,0.08);
+  color:      /* TODO Farbe Gymnasium */ var(--nk-search-text);
+}
+
+.nk-search__no-result {
+  padding: 14px 18px;
+  font-family: var(--font-body, 'Noto Sans', Arial, sans-serif);
+  font-size: 15px;
+  color: var(--nk-search-placeholder);
+  text-align: center;
+}
+
+/* ══ 6. FAB – nach oben schieben wenn Panel offen ════════════ */
+body.nk-search-open .nk-fab {
+  bottom: calc(var(--nk-search-panel-height) + 20px) !important;
+  transition: bottom var(--nk-dur) var(--nk-ease) !important;
+}
+
+/* ══ 7. TABLET ≤ 900px ════════════════════════════════════════
+   Panel füllt alles unter dem Header.
+   Das System-Keyboard blendet von unten ein und verkleinert
+   den sichtbaren Bereich – die Suchleiste bleibt oben im Panel.
+   ────────────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .nk-search__panel {
+    top: 0;
+    height: auto;          /* füllt top→bottom */
+    border-radius: 0;
+    justify-content: flex-start;
+    padding-top: 76px;     /* Platz für den fixierten Header */
+  }
+
+  .nk-search__results {
+    max-height: 200px;
+  }
+
+  body.nk-search-open .nk-fab {
+    display: none;
+  }
+}

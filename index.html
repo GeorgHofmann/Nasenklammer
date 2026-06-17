@@ -26,6 +26,7 @@
   <link rel="stylesheet" href="components/header.css">
   <link rel="stylesheet" href="components/menu.css">
   <link rel="stylesheet" href="components/card.css">
+  <link rel="stylesheet" href="components/search.css">
   <link rel="stylesheet" href="components/fab.css">
   <style>
     /* ─────────────────────────────────────────
@@ -41,6 +42,12 @@
       --color-home-fab-text:   #00363d;
       --nk-fab-bg:             #f4a056;
       --nk-fab-color:          #00363d;
+      --nk-search-panel-bg:    rgba(165,200,230,0.97);
+      --nk-search-trigger-bg:  rgba(200,224,244,0.62);
+      --nk-search-icon-bg:     #963555;
+      --nk-search-text:        #1a3a6c;
+      --nk-search-placeholder: #5a7ea8;
+      --nk-search-accent:      #225a93;
 
       --font-logo:    'Alcyone', 'Solway', Georgia, serif;
       --font-heading: 'Solway', Georgia, serif;
@@ -97,74 +104,6 @@
 
     @media (max-width: 900px) {
       .start-monster { display: none; }
-    }
-
-
-    /* ── Unterer Bereich: Suche + FAB ────────── */
-    .start-bottom {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      padding: 20px 68px 32px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      /* leichter Gradient zum Ausblenden des Inhalts darunter */
-      background: linear-gradient(to bottom, transparent, var(--color-home-strip) 40%);
-      pointer-events: none;
-    }
-
-    /* ── Suchleiste ──────────────────────────── */
-    .start-search {
-      width: 560px;
-      height: 64px;
-      background: var(--color-home-search-bg);
-      border-radius: 64px;
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      padding-left: 10px;
-      padding-right: 20px;
-      pointer-events: auto;
-    }
-
-    .start-search__icon-btn {
-      width: 44px;
-      height: 44px;
-      border-radius: 32px;
-      background: var(--color-home-search-icon);
-      border: none;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      color: #fff;
-      transition: opacity 0.15s;
-    }
-
-    .start-search__icon-btn:hover { opacity: 0.85; }
-
-    .start-search__icon-btn svg {
-      width: 20px;
-      height: 20px;
-    }
-
-    .start-search__input {
-      flex: 1;
-      border: none;
-      background: transparent;
-      font-family: var(--font-body);
-      font-size: 18px;
-      line-height: 28px;
-      letter-spacing: 0.25px;
-      color: #4a6267;
-      outline: none;
-    }
-
-    .start-search__input::placeholder {
-      color: #4a6267;
     }
 
 
@@ -237,21 +176,7 @@
     <img class="start-monster" src="img/home-monster.svg" alt="" aria-hidden="true">
   </main>
 
-  <!-- Suchleiste + FAB -->
-  <div class="start-bottom">
-    <div class="start-search">
-      <button class="start-search__icon-btn" aria-label="Suchen">
-        <svg viewBox="0 0 24 24" fill="none">
-          <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/>
-          <path d="M16.5 16.5L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-      </button>
-      <input class="start-search__input" type="text" placeholder="Ich suche eine Übung …" aria-label="Übung suchen">
-    </div>
-
-  </div>
-
-  <!-- FAB – mounted by NKFab component -->
+  <div id="siteSearch"></div>
   <div id="siteFab"></div>
 
   <script src="components/analytics.js"></script>
@@ -263,6 +188,8 @@
   <script src="components/menu.js"></script>
   <script src="components/header.js"></script>
   <script src="components/card.js"></script>
+  <script src="components/search-data.js"></script>
+  <script src="components/search.js"></script>
   <script>
     /* ─── Vorlese-Text ───────────────────────
        Beschreibt die Startseite für den Nutzer.
@@ -312,6 +239,11 @@
           imageSvg: '<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="64" cy="38" r="20" stroke="currentColor" stroke-width="3"/><path d="M28 112c0-19.882 16.118-36 36-36s36 16.118 36 36" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M80 60l8-8M80 52h8v8" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M40 88l-8 12h16M88 88l8 12H80" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'
         }
       ]
+    });
+
+    /* ─── Search ───────────────────────────── */
+    new NKSearch(document.getElementById('siteSearch'), {
+      items: NKSearchData,
     });
 
     /* ─── FAB ───────────────────────────────── */

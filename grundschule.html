@@ -26,6 +26,7 @@
   <link rel="stylesheet" href="components/header.css">
   <link rel="stylesheet" href="components/menu.css">
   <link rel="stylesheet" href="components/card.css">
+  <link rel="stylesheet" href="components/search.css">
   <link rel="stylesheet" href="components/fab.css">
   <style>
     :root {
@@ -38,6 +39,12 @@
       --nk-card-color: #964f12;
       --nk-fab-bg:     #f4a056;
       --nk-fab-color:  #00363d;
+      --nk-search-panel-bg:   rgba(248,212,178,0.97);
+      --nk-search-trigger-bg: rgba(253,220,185,0.62);
+      --nk-search-icon-bg:    #f4a056;
+      --nk-search-text:       #6a3010;
+      --nk-search-placeholder:#b07840;
+      --nk-search-accent:     #964f12;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -83,73 +90,10 @@
       padding: 48px 56px 160px;
     }
 
-    /* ── Unterer Bereich: Suche + FAB ────────── */
-    .gs-bottom {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      padding: 20px 68px 32px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: linear-gradient(to bottom, transparent, var(--color-bg) 40%);
-      pointer-events: none;
-    }
-
-    .gs-search {
-      width: 560px;
-      height: 64px;
-      background: #fde8d0;
-      border-radius: 64px;
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      padding-left: 10px;
-      padding-right: 20px;
-      pointer-events: auto;
-    }
-
-    .gs-search__icon-btn {
-      width: 44px;
-      height: 44px;
-      border-radius: 32px;
-      background: #f4a056;
-      border: none;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      color: #fff;
-      transition: opacity 0.15s;
-    }
-
-    .gs-search__icon-btn:hover { opacity: 0.85; }
-
-    .gs-search__icon-btn svg { width: 20px; height: 20px; }
-
-    .gs-search__input {
-      flex: 1;
-      border: none;
-      background: transparent;
-      font-family: var(--font-body);
-      font-size: 18px;
-      line-height: 28px;
-      letter-spacing: 0.25px;
-      color: #7a4420;
-      outline: none;
-    }
-
-    .gs-search__input::placeholder { color: #7a4420; }
-
-
     @media (max-width: 900px) {
       .gs-strip   { padding: 16px 20px; }
       .gs-strip__text { font-size: 22px; white-space: normal; }
       .gs-main    { padding: 32px 20px 140px; }
-      .gs-bottom  { padding: 16px 20px 24px; }
-      .gs-fab     { right: 20px; }
     }
   </style>
 </head>
@@ -174,21 +118,7 @@
     <div id="cardGrid"></div>
   </main>
 
-  <!-- Suche + FAB -->
-  <div class="gs-bottom">
-    <div class="gs-search">
-      <button class="gs-search__icon-btn" aria-label="Suchen">
-        <svg viewBox="0 0 24 24" fill="none">
-          <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/>
-          <path d="M16.5 16.5L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-      </button>
-      <input class="gs-search__input" type="text" placeholder="Ich suche eine Übung …" aria-label="Übung suchen">
-    </div>
-
-  </div>
-
-  <!-- FAB – mounted by NKFab component -->
+  <div id="siteSearch"></div>
   <div id="siteFab"></div>
 
   <script src="components/analytics.js"></script>
@@ -200,6 +130,8 @@
   <script src="components/menu.js"></script>
   <script src="components/header.js"></script>
   <script src="components/card.js"></script>
+  <script src="components/search-data.js"></script>
+  <script src="components/search.js"></script>
   <script>
     /* ─── Vorlese-Text ───────────────────────
        Beschreibt die Grundschul-Übersicht.
@@ -226,6 +158,10 @@
           imageSvg: '<svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="46" cy="64" r="28" stroke="currentColor" stroke-width="3"/><circle cx="82" cy="64" r="28" stroke="currentColor" stroke-width="3"/></svg>'
         }
       ]
+    });
+
+    new NKSearch(document.getElementById('siteSearch'), {
+      items: NKSearchData,
     });
 
     var menu = new NKMenu(
