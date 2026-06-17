@@ -90,12 +90,10 @@
     'use strict';
 
     var voiceText =
-      'Oh, schau mal! Die kleinen Monster sind ganz müde und wollen schlafen. ' +
-      'Aber die Höhle ist noch leer — kein einziges Monster liegt drin. ' +
-      'Kannst du ihnen helfen? ' +
-      'Wenn du auf ein Monster tippst, kuschelt es sich in die Höhle. ' +
-      'Zähl einfach mit, bis alle zehn drin sind und friedlich schlafen. ' +
-      'Los geht\'s!';
+      'Die Monster sind müde und wollen schlafen. ' +
+      'Bring sie in ihre Höhle und zähle die Monster ab, ' +
+      'indem du auf sie klickst – ' +
+      'am Ende sollten alle in der Höhle sein.';
 
     var menu = new NKMenu(
       document.getElementById('siteMenu'),
@@ -122,7 +120,7 @@
         themaConnector: 'das',
         slots: {
           klasse: { label: 'Vorschulkind',   href: 'vorschule.html' },
-          fach:   { label: 'Meine Welte',    href: 'vorschule-meine-welt.html' },
+          fach:   { label: 'Meine Welt',      href: 'vorschule-mathe.html' },
           thema:  { label: 'Zählen bis 10',  href: null },
         },
         onSlotClick: function(key, slot) {
