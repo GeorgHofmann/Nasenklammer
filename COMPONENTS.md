@@ -720,6 +720,32 @@ NKBreadcrumb.THEMES.sachkunde
 NKBreadcrumb.THEMES.vorschule
 ```
 
+### Navigationsregel – Pflicht für alle Übungsseiten
+
+Jeder Slot muss auf genau die richtige Ebene der Seitenhierarchie zeigen:
+
+| Slot | Ziel | Beschreibung |
+|---|---|---|
+| `klasse` | `index.html` | Startseite – Nutzer wählt erneut Vorschulkind / Grundschulkind / … |
+| `fach` | Fächerübersicht der Klasse | Seite, auf der die Fächer aufgelistet sind |
+| `thema` | Übungsauswahl des Fachs | Seite, auf der die Übungen des Fachs aufgelistet sind |
+
+**Konkrete Zuordnung:**
+
+| Klasse | `fach` zeigt auf | `thema` zeigt auf |
+|---|---|---|
+| Vorschulkind | `vorschule.html` | `vorschule-mathe.html` (o. a. Fach-Auswahl) |
+| Grundschulkind | `grundschule-faecher.html` | `grundschule.html` (o. a. Fach-Auswahl) |
+
+**`onSlotClick` muss immer gesetzt sein** – ohne Handler passiert beim Klick nichts:
+```js
+onSlotClick: function(key, slot) {
+  if (slot.href) window.location.href = slot.href;
+}
+```
+
+**Unterstrichen = navigierbar.** Ein Slot mit `href: null` sieht aus wie ein Link, tut aber nichts — das ist ein Fehler. Jeder sichtbare Slot bekommt einen echten `href`.
+
 ---
 
 ## ✅ Menu (Push-down)
