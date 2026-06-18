@@ -177,7 +177,10 @@
         slots: {
           klasse: { label: 'Grundschulkind', href: 'grundschule-faecher.html' },
           fach:   { label: 'Mathematik',     href: 'grundschule.html' },
-          thema:  { label: 'Zählen',         href: null },
+          thema:  { label: 'Zählen',         href: 'grundschule.html' },
+        },
+        onSlotClick: function(key, slot) {
+          if (slot.href) window.location.href = slot.href;
         }
       })
     );

@@ -671,10 +671,10 @@
         slots: {
           klasse: { label: 'Grundschulkind', href: 'grundschule-faecher.html' },
           fach:   { label: 'Mathematik',     href: 'grundschule.html' },
-          thema:  { label: 'Uhrzeit',        href: null },
+          thema:  { label: 'Uhrzeit',        href: 'grundschule.html' },
         },
-        onSlotClick: function(key, label) {
-          console.log('Slot geklickt:', key, label);
+        onSlotClick: function(key, slot) {
+          if (slot.href) window.location.href = slot.href;
         }
       })
     );
