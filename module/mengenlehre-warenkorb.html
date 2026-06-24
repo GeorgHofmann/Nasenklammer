@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Warenkorb – Mengen zählen</title>
+  <style>
+    :root {
+      --c-bg:       #fdf6ee;
+      --c-panel:    #fff9f3;
+      --c-shelf:    #f0e6d8;
+      --c-accent:   #964f12;
+      --c-accent2:  #c07020;
+      --c-success:  #4f8e33;
+      --c-warning:  #d23030;
+      --c-muted:    #a07850;
+      --c-border:   #d4956a;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Noto Sans', 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--c-bg);
+      height: 100dvh;
+      overflow: hidden;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+    }
+
+    /* ── Game root ───────────────────────────────── */
+    .game {
+      height: 100dvh;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: clamp(6px, 1.5vmin, 12px);
+      padding: clamp(8px, 2vmin, 16px);
+    }
+
+    /* ── Task bar ────────────────────────────────── */
+    .task {
+      background: var(--c-panel);
+      border-radius: 20px;
+      padding: clamp(10px, 2vmin, 16px) clamp(14px, 3vmin, 22px);
+      display: flex;
+      align-items: center;
+      gap: clamp(10px, 2.5vmin, 18px);
+      box-shadow: 0 2px 14px rgba(0,0,0,0.07);
+    }
+
+    .task-num {
+      font-size: clamp(2.4rem, 10vmin, 5.5rem);
+      font-weight: 900;
+      color: var(--c-accent);
+      line-height: 1;
+      flex-shrink: 0;
+      min-width: 1.6ch;
+      text-align: center;
+    }
+
+    .task-desc {
+      font-size: clamp(0.9rem, 2.8vmin, 1.45rem);
+      color: #4a2e10;
+      line-height: 1.35;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .task-desc b { color: var(--c-accent); }
+
+    /* Progress dots */
+    .dots {
+      display: flex;
+      flex-wrap: wrap;
+      gap: clamp(4px, 1vmin, 7px);
+      justify-content: flex-end;
+      align-items: center;
+      flex-shrink: 0;
+      max-width: clamp(80px, 16vmin, 130px);
+    }
+
+    .dot {
+      width:  clamp(9px, 2vmin, 15px);
+      height: clamp(9px, 2vmin, 15px);
+      border-radius: 50%;
+      background: #e4cfba;
+      transition: background 0.22s, transform 0.18s;
+      flex-shrink: 0;
+    }
+    .dot.on   { background: var(--c-accent);  transform: scale(1.3); }
+    .dot.over { background: var(--c-warning); transform: scale(1.3); }
+
+    /* ── Play area ───────────────────────────────── */
+    .play {
+      display: flex;
+      gap: clamp(6px, 1.5vmin, 12px);
+      min-height: 0;
+    }
+
+    /* Portrait: shelf on top, basket below */
+    @media (orientation: portrait) {
+      .play { flex-direction: column; }
+      .shelf { flex: 1.6 !important; }
+      .basket-wrap { flex: 1 !important; }
+    }
+
+    /* ── Shelf ───────────────────────────────────── */
+    .shelf {
+      flex: 3;
+      background: var(--c-shelf);
+      border-radius: 20px;
+      padding: clamp(10px, 2vmin, 16px);
+      display: flex;
+      flex-wrap: wrap;
+      align-content: flex-start;
+      gap: clamp(6px, 1.4vmin, 11px);
+      overflow: hidden;
+      position: relative;
+      transition: background 0.2s;
+    }
+
+    .shelf.is-over {
+      background: #e8ddd0;
+    }
+
+    .shelf-lbl {
+      width: 100%;
+      font-size: clamp(0.62rem, 1.5vmin, 0.8rem);
+      color: var(--c-muted);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      flex-shrink: 0;
+    }
+
+    /* ── Basket area ─────────────────────────────── */
+    .basket-wrap {
+      flex: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: clamp(6px, 1.2vmin, 10px);
+    }
+
+    .basket-lbl {
+      font-size: clamp(0.62rem, 1.5vmin, 0.8rem);
+      color: var(--c-muted);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+
+    .basket {
+      width:  min(210px, 44vmin);
+      height: min(210px, 44vmin);
+      background: var(--c-panel);
+      border: 3px dashed var(--c-border);
+      border-radius: 24px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: clamp(3px, 0.8vmin, 6px);
+      padding: clamp(8px, 1.8vmin, 14px);
+      align-content: flex-start;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.2s, background 0.2s, transform 0.15s;
+    }
+
+    .basket.is-over {
+      border-color: var(--c-success);
+      background: rgba(79,142,51,0.05);
+      transform: scale(1.04);
+    }
+
+    /* Watermark icon */
+    .basket-bg {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+
+    .basket-bg svg {
+      opacity: 0.09;
+      width: min(80px, 22vmin);
+      height: min(80px, 22vmin);
+    }
+
+    .basket-count {
+      font-size: clamp(0.9rem, 2.5vmin, 1.35rem);
+      font-weight: 700;
+      color: var(--c-accent);
+      flex-shrink: 0;
+    }
+
+    /* ── Items ───────────────────────────────────── */
+    .item {
+      --sz: clamp(48px, 10vmin, 82px);
+      width: var(--sz);
+      height: var(--sz);
+      flex-shrink: 0;
+      touch-action: none;
+      cursor: grab;
+      position: relative;
+      transition: transform 0.12s, opacity 0.12s;
+    }
+
+    .item:hover { transform: scale(1.1) rotate(3deg); }
+    .item:active { cursor: grabbing; }
+    .item.ghost { opacity: 0.25; pointer-events: none; }
+
+    .item.basket-item {
+      --sz: clamp(34px, 7vmin, 58px);
+    }
+
+    .item svg {
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      display: block;
+    }
+
+    /* Pop-in animation when item arrives in basket */
+    @keyframes popIn {
+      0%   { transform: scale(0) rotate(-15deg); opacity: 0; }
+      65%  { transform: scale(1.18) rotate(4deg); }
+      100% { transform: scale(1) rotate(0); opacity: 1; }
+    }
+    .item.arrive { animation: popIn 0.32s ease forwards; }
+
+    /* ── Drag ghost ──────────────────────────────── */
+    #ghost {
+      position: fixed;
+      pointer-events: none;
+      z-index: 9000;
+      transform: translate(-50%, -50%) scale(1.22) rotate(5deg);
+      filter: drop-shadow(0 10px 22px rgba(0,0,0,0.28));
+      display: none;
+    }
+
+    #ghost svg { display: block; }
+
+    /* ── Feedback bar ────────────────────────────── */
+    .feedback {
+      background: var(--c-panel);
+      border-radius: 16px;
+      padding: clamp(8px, 1.8vmin, 14px) clamp(14px, 3vmin, 22px);
+      text-align: center;
+      font-size: clamp(0.85rem, 2.5vmin, 1.3rem);
+      font-weight: 600;
+      color: var(--c-accent);
+      box-shadow: 0 2px 14px rgba(0,0,0,0.07);
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.3s;
+    }
+
+    /* ── Success overlay ─────────────────────────── */
+    .success {
+      position: fixed;
+      inset: 0;
+      background: rgba(253,246,238,0.96);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: clamp(10px, 2.5vmin, 18px);
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.45s;
+    }
+
+    .success.show { opacity: 1; pointer-events: all; }
+
+    @keyframes starSpin {
+      0%   { transform: scale(0.5) rotate(-20deg); opacity: 0; }
+      60%  { transform: scale(1.12) rotate(8deg); opacity: 1; }
+      100% { transform: scale(1) rotate(0); opacity: 1; }
+    }
+    @keyframes starFloat {
+      0%   { transform: translateY(0) rotate(-4deg); }
+      100% { transform: translateY(-14px) rotate(4deg); }
+    }
+
+    .success-star {
+      font-size: clamp(3.5rem, 14vmin, 7rem);
+      animation: starSpin 0.6s ease forwards, starFloat 1.4s 0.6s ease-in-out infinite alternate;
+    }
+
+    .success-title {
+      font-size: clamp(1.4rem, 5.5vmin, 3rem);
+      font-weight: 900;
+      color: #4a3010;
+    }
+
+    .success-sub {
+      font-size: clamp(0.85rem, 2.6vmin, 1.3rem);
+      color: var(--c-muted);
+      text-align: center;
+      padding: 0 16px;
+    }
+
+    .next-btn {
+      margin-top: clamp(4px, 1vmin, 10px);
+      padding: clamp(12px,2.2vmin,18px) clamp(28px,6vmin,52px);
+      background: var(--c-accent);
+      color: #fff;
+      border: none;
+      border-radius: 50px;
+      font-size: clamp(0.95rem, 2.8vmin, 1.4rem);
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: transform 0.14s, background 0.14s;
+    }
+
+    .next-btn:hover  { background: #7a3e0a; transform: scale(1.06); }
+    .next-btn:active { transform: scale(0.97); }
+    .next-btn:focus  { outline: 3px solid #f4a056; outline-offset: 3px; }
+  </style>
+</head>
+<body>
+
+<div class="game">
+  <!-- Task bar -->
+  <div class="task">
+    <div class="task-num" id="taskNum">5</div>
+    <div class="task-desc" id="taskDesc">Leg genau <b>5</b> Äpfel in den Warenkorb!</div>
+    <div class="dots" id="dots"></div>
+  </div>
+
+  <!-- Play area: shelf + basket -->
+  <div class="play">
+    <div class="shelf" id="shelf">
+      <div class="shelf-lbl">Regal – ziehe Dinge in den Warenkorb</div>
+    </div>
+    <div class="basket-wrap">
+      <div class="basket-lbl">Warenkorb</div>
+      <div class="basket" id="basket">
+        <div class="basket-bg">
+          <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M8 27h64l-9 38H17L8 27z" stroke="#964f12" stroke-width="3.5" stroke-linejoin="round"/>
+            <path d="M4 27h72" stroke="#964f12" stroke-width="3.5" stroke-linecap="round"/>
+            <path d="M22 27 L30 6M58 27 L50 6" stroke="#964f12" stroke-width="3.5" stroke-linecap="round"/>
+            <circle cx="32" cy="52" r="4" stroke="#964f12" stroke-width="2.5"/>
+            <circle cx="48" cy="52" r="4" stroke="#964f12" stroke-width="2.5"/>
+          </svg>
+        </div>
+      </div>
+      <div class="basket-count" id="basketCount">0 / 5</div>
+    </div>
+  </div>
+
+  <!-- Feedback -->
+  <div class="feedback" id="feedback">Leg los! Ziehe die Gegenstände in den Warenkorb. 🛒</div>
+</div>
+
+<!-- Drag ghost -->
+<div id="ghost"></div>
+
+<!-- Success overlay -->
+<div class="success" id="success">
+  <div class="success-star" id="successStar">⭐</div>
+  <div class="success-title">Super gemacht!</div>
+  <div class="success-sub" id="successSub">Der Einkauf ist komplett!</div>
+  <button class="next-btn" id="nextBtn">Neue Aufgabe →</button>
+</div>
+
+<script>
+'use strict';
+
+/* ──────────────────────────────────────────
+   Object types – inline SVG, viewBox 0 0 60 60
+   ────────────────────────────────────────── */
+var OBJECTS = [
+  {
+    name: 'Äpfel', sing: 'Apfel',
+    color: '#e84040',
+    svg: '<svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+      '<path d="M11 33C11 20 19 12 30 12C41 12 49 20 49 33C49 46 41 53 30 53C19 53 11 46 11 33Z" fill="#e84040"/>' +
+      '<path d="M11 33C11 26 15 18 23 16" stroke="rgba(255,255,255,0.22)" stroke-width="7" stroke-linecap="round" fill="none"/>' +
+      '<path d="M30 12Q32 4 40 3" stroke="#7a4020" stroke-width="2.8" stroke-linecap="round"/>' +
+      '<ellipse cx="42" cy="4" rx="7" ry="4" fill="#54b040" transform="rotate(-25 42 4)"/>' +
+    '</svg>'
+  },
+  {
+    name: 'Brote', sing: 'Brot',
+    color: '#c07830',
+    svg: '<svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+      '<ellipse cx="30" cy="40" rx="24" ry="12" fill="#a86828"/>' +
+      '<ellipse cx="30" cy="30" rx="23" ry="15" fill="#c88840"/>' +
+      '<ellipse cx="30" cy="27" rx="19" ry="11" fill="#dca860"/>' +
+      '<path d="M15 28Q30 22 45 28" stroke="#c88840" stroke-width="2" stroke-linecap="round" fill="none"/>' +
+      '<path d="M18 34Q30 29 42 34" stroke="#c88840" stroke-width="1.5" stroke-linecap="round" fill="none"/>' +
+    '</svg>'
+  },
+  {
+    name: 'Bananen', sing: 'Banane',
+    color: '#e8c000',
+    svg: '<svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+      '<path d="M10 50C10 50 12 22 40 10" stroke="#e8c000" stroke-width="16" stroke-linecap="round" fill="none"/>' +
+      '<path d="M10 50C10 50 12 22 40 10" stroke="#f8e030" stroke-width="8" stroke-linecap="round" fill="none"/>' +
+      '<path d="M10 50C12 48 14 50 12 52" stroke="#b89000" stroke-width="3" stroke-linecap="round" fill="none"/>' +
+      '<path d="M40 10 Q48 5 50 11" stroke="#b89000" stroke-width="2.5" stroke-linecap="round" fill="none"/>' +
+    '</svg>'
+  },
+  {
+    name: 'Kekse', sing: 'Keks',
+    color: '#c09050',
+    svg: '<svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+      '<circle cx="30" cy="30" r="24" fill="#c09050"/>' +
+      '<circle cx="30" cy="30" r="21" fill="#d4a86a"/>' +
+      '<ellipse cx="20" cy="25" rx="4"   ry="3.5" fill="#7a4010"/>' +
+      '<ellipse cx="36" cy="22" rx="3.5" ry="4"   fill="#7a4010"/>' +
+      '<ellipse cx="16" cy="37" rx="3.5" ry="3"   fill="#7a4010"/>' +
+      '<ellipse cx="35" cy="39" rx="4"   ry="3"   fill="#7a4010"/>' +
+      '<ellipse cx="27" cy="33" rx="3"   ry="3.5" fill="#7a4010"/>' +
+      '<ellipse cx="42" cy="33" rx="3"   ry="3"   fill="#7a4010"/>' +
+    '</svg>'
+  },
+  {
+    name: 'Erdbeeren', sing: 'Erdbeere',
+    color: '#e83050',
+    svg: '<svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+      '<path d="M14 30C11 42 19 54 30 55C41 54 49 42 46 30C42 17 18 17 14 30Z" fill="#e83050"/>' +
+      '<path d="M14 30C13 37 16 46 23 51" stroke="rgba(255,255,255,0.18)" stroke-width="6" stroke-linecap="round" fill="none"/>' +
+      '<ellipse cx="22" cy="35" rx="2.2" ry="2.8" fill="#ffd0d8"/>' +
+      '<ellipse cx="30" cy="31" rx="2.2" ry="2.8" fill="#ffd0d8"/>' +
+      '<ellipse cx="38" cy="35" rx="2.2" ry="2.8" fill="#ffd0d8"/>' +
+      '<ellipse cx="26" cy="45" rx="2.2" ry="2.8" fill="#ffd0d8"/>' +
+      '<ellipse cx="34" cy="45" rx="2.2" ry="2.8" fill="#ffd0d8"/>' +
+      '<path d="M22 23C22 23 20 13 30 11C40 13 38 23 38 23" fill="#54b040"/>' +
+      '<path d="M30 11 L30 23" stroke="#3a8030" stroke-width="2.5" stroke-linecap="round"/>' +
+    '</svg>'
+  },
+  {
+    name: 'Karotten', sing: 'Karotte',
+    color: '#e87020',
+    svg: '<svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+      '<path d="M30 14 L42 50 Q30 56 18 50 Z" fill="#e87020"/>' +
+      '<path d="M30 14 L35 45" stroke="rgba(255,255,255,0.2)" stroke-width="5" stroke-linecap="round" fill="none"/>' +
+      '<path d="M22 24 L38 24" stroke="rgba(255,255,255,0.15)" stroke-width="2.5" stroke-linecap="round"/>' +
+      '<path d="M20 33 L40 33" stroke="rgba(255,255,255,0.12)" stroke-width="2" stroke-linecap="round"/>' +
+      '<path d="M23 8 Q30 14 28 20" stroke="#54b040" stroke-width="3.5" stroke-linecap="round" fill="none"/>' +
+      '<path d="M30 6 Q30 14 30 20" stroke="#3a8030" stroke-width="3" stroke-linecap="round" fill="none"/>' +
+      '<path d="M37 8 Q30 14 32 20" stroke="#54b040" stroke-width="3.5" stroke-linecap="round" fill="none"/>' +
+    '</svg>'
+  }
+];
+
+/* ──────────────────────────────────────────
+   State
+   ────────────────────────────────────────── */
+var G = {
+  target: 0,
+  objIdx: 0,
+  items: [],   /* [{id, inBasket}] */
+};
+
+/* DOM */
+var shelfEl   = document.getElementById('shelf');
+var basketEl  = document.getElementById('basket');
+var dotsEl    = document.getElementById('dots');
+var taskNumEl = document.getElementById('taskNum');
+var taskDescEl= document.getElementById('taskDesc');
+var feedbackEl= document.getElementById('feedback');
+var countEl   = document.getElementById('basketCount');
+var successEl = document.getElementById('success');
+var successSub= document.getElementById('successSub');
+var ghostEl   = document.getElementById('ghost');
+
+/* ──────────────────────────────────────────
+   Game logic
+   ────────────────────────────────────────── */
+function newRound() {
+  G.target = Math.floor(Math.random() * 10) + 1;
+  G.objIdx = Math.floor(Math.random() * OBJECTS.length);
+
+  /* Always ≥ 1 extra item so the child can make mistakes; max 10 total */
+  var maxExtra = Math.min(3, 10 - G.target);
+  var extra    = G.target < 10
+    ? (Math.floor(Math.random() * maxExtra) + 1)
+    : 0;
+  var total = G.target + extra;
+
+  G.items = [];
+  for (var i = 0; i < total; i++) G.items.push({ id: i, inBasket: false });
+
+  render();
+}
+
+function basketCount() {
+  var n = 0;
+  for (var i = 0; i < G.items.length; i++) if (G.items[i].inBasket) n++;
+  return n;
+}
+
+/* ──────────────────────────────────────────
+   Render
+   ────────────────────────────────────────── */
+function render() {
+  var obj   = OBJECTS[G.objIdx];
+  var count = basketCount();
+
+  /* Task bar */
+  taskNumEl.textContent = G.target;
+  taskDescEl.innerHTML  = 'Leg genau <b>' + G.target + '</b> '
+    + obj.name + ' in den Warenkorb!';
+
+  /* Dots */
+  dotsEl.innerHTML = '';
+  var dotMax = Math.min(G.target, 10);
+  for (var i = 0; i < dotMax; i++) {
+    var d = document.createElement('div');
+    var on   = count > G.target ? true : i < count;
+    var over = count > G.target;
+    d.className = 'dot' + (on ? (over ? ' over' : ' on') : '');
+    dotsEl.appendChild(d);
+  }
+
+  /* Shelf */
+  renderZone(shelfEl, false, 'shelf-lbl', false);
+
+  /* Basket */
+  renderZone(basketEl, true, null, true);
+
+  /* Count */
+  countEl.textContent = count + ' / ' + G.target;
+
+  /* Feedback */
+  updateFeedback(count);
+}
+
+function renderZone(container, inBasket, labelClass, hasWatermark) {
+  var label = labelClass   ? container.querySelector('.' + labelClass) : null;
+  var bg    = hasWatermark ? container.querySelector('.basket-bg')     : null;
+  container.innerHTML = '';
+  if (label) container.appendChild(label);
+  if (bg)    container.appendChild(bg);
+
+  for (var i = 0; i < G.items.length; i++) {
+    var item = G.items[i];
+    if (item.inBasket === inBasket) {
+      container.appendChild(makeItemEl(item.id, inBasket));
+    }
+  }
+}
+
+function makeItemEl(id, inBasket) {
+  var obj = OBJECTS[G.objIdx];
+  var el  = document.createElement('div');
+  el.className     = 'item' + (inBasket ? ' basket-item arrive' : '');
+  el.dataset.id     = id;
+  el.dataset.basket = inBasket ? '1' : '0';
+  el.innerHTML      = obj.svg;
+  el.addEventListener('pointerdown', startDrag);
+  /* Tap = toggle (for kids who don't drag) */
+  el.addEventListener('click', onTap);
+  return el;
+}
+
+/* ──────────────────────────────────────────
+   Feedback
+   ────────────────────────────────────────── */
+var successPending = false;
+
+function updateFeedback(count) {
+  var obj = OBJECTS[G.objIdx];
+
+  if (count === 0) {
+    feedbackEl.style.color = 'var(--c-accent)';
+    feedbackEl.textContent = 'Ziehe ' + obj.name + ' in den Warenkorb! 🛒';
+    successPending = false;
+  } else if (count < G.target) {
+    var need = G.target - count;
+    feedbackEl.style.color = '#b06020';
+    feedbackEl.textContent = 'Prima! Du brauchst noch '
+      + need + (need === 1 ? ' mehr.' : ' weitere. Weiter so!');
+    successPending = false;
+  } else if (count > G.target) {
+    var over = count - G.target;
+    feedbackEl.style.color = 'var(--c-warning)';
+    feedbackEl.textContent = 'Ups, ein bisschen zu viel! Nimm '
+      + over + (over === 1 ? ' heraus.' : ' heraus.');
+    successPending = false;
+  } else {
+    /* Exact match */
+    feedbackEl.style.color = 'var(--c-success)';
+    feedbackEl.textContent = '🎉 Genau richtig! Der Einkauf ist komplett!';
+    if (!successPending) {
+      successPending = true;
+      setTimeout(showSuccess, 600);
+    }
+  }
+}
+
+function showSuccess() {
+  if (!successPending) return;
+  var obj  = OBJECTS[G.objIdx];
+  var word = G.target === 1 ? obj.sing : obj.name;
+  successSub.textContent = 'Du hast ' + G.target + ' ' + word + ' eingekauft! 🎊';
+  successEl.classList.add('show');
+}
+
+document.getElementById('nextBtn').addEventListener('click', function() {
+  successEl.classList.remove('show');
+  successPending = false;
+  newRound();
+});
+
+/* ──────────────────────────────────────────
+   Tap (toggle) – simpler than drag for young kids
+   ────────────────────────────────────────── */
+function onTap(e) {
+  /* Only fire if the pointer didn't move (i.e. it wasn't a drag) */
+  if (drag.moved) return;
+  var id     = parseInt(e.currentTarget.dataset.id);
+  var item   = findItem(id);
+  if (item) {
+    item.inBasket = !item.inBasket;
+    render();
+  }
+}
+
+/* ──────────────────────────────────────────
+   Drag & Drop (pointer events)
+   ────────────────────────────────────────── */
+var drag = {
+  active:    false,
+  itemId:    -1,
+  wasBasket: false,
+  moved:     false,
+  startX:    0,
+  startY:    0,
+};
+
+var MOVE_THRESHOLD = 6; /* px before we call it a drag */
+
+function startDrag(e) {
+  e.preventDefault();
+  drag.active    = true;
+  drag.itemId    = parseInt(e.currentTarget.dataset.id);
+  drag.wasBasket = e.currentTarget.dataset.basket === '1';
+  drag.moved     = false;
+  drag.startX    = e.clientX;
+  drag.startY    = e.clientY;
+
+  e.currentTarget.setPointerCapture(e.pointerId);
+
+  /* Build ghost */
+  var sz  = e.currentTarget.getBoundingClientRect().width;
+  ghostEl.innerHTML = OBJECTS[G.objIdx].svg;
+  ghostEl.style.width  = sz + 'px';
+  ghostEl.style.height = sz + 'px';
+
+  e.currentTarget.classList.add('ghost');
+  e.currentTarget.addEventListener('pointermove',   onMove);
+  e.currentTarget.addEventListener('pointerup',     onUp);
+  e.currentTarget.addEventListener('pointercancel', onUp);
+}
+
+function onMove(e) {
+  if (!drag.active) return;
+
+  var dx = e.clientX - drag.startX;
+  var dy = e.clientY - drag.startY;
+
+  if (!drag.moved && (Math.abs(dx) > MOVE_THRESHOLD || Math.abs(dy) > MOVE_THRESHOLD)) {
+    drag.moved = true;
+    ghostEl.style.display = 'block';
+  }
+
+  if (drag.moved) {
+    ghostEl.style.left = e.clientX + 'px';
+    ghostEl.style.top  = e.clientY + 'px';
+
+    /* Highlight drop zones */
+    var overBasket = isOver(basketEl, e.clientX, e.clientY);
+    var overShelf  = isOver(shelfEl,  e.clientX, e.clientY);
+    basketEl.classList.toggle('is-over', overBasket && !drag.wasBasket);
+    shelfEl.classList.toggle('is-over',  overShelf  &&  drag.wasBasket);
+  }
+}
+
+function onUp(e) {
+  if (!drag.active) return;
+  var el = e.currentTarget;
+  el.removeEventListener('pointermove',   onMove);
+  el.removeEventListener('pointerup',     onUp);
+  el.removeEventListener('pointercancel', onUp);
+
+  drag.active = false;
+  ghostEl.style.display = 'none';
+  basketEl.classList.remove('is-over');
+  shelfEl.classList.remove('is-over');
+
+  var item = findItem(drag.itemId);
+
+  if (drag.moved && item) {
+    var inBasket = isOver(basketEl, e.clientX, e.clientY);
+    var inShelf  = isOver(shelfEl,  e.clientX, e.clientY);
+
+    if (!drag.wasBasket && inBasket) {
+      item.inBasket = true;
+      render();
+    } else if (drag.wasBasket && (inShelf || !inBasket)) {
+      item.inBasket = false;
+      render();
+    } else {
+      /* Dropped nowhere useful – snap back */
+      el.classList.remove('ghost');
+    }
+  } else if (!drag.moved) {
+    /* Short touch without move → handled by click/tap listener */
+    el.classList.remove('ghost');
+  } else {
+    el.classList.remove('ghost');
+  }
+}
+
+/* ──────────────────────────────────────────
+   Helpers
+   ────────────────────────────────────────── */
+function findItem(id) {
+  for (var i = 0; i < G.items.length; i++) {
+    if (G.items[i].id === id) return G.items[i];
+  }
+  return null;
+}
+
+function isOver(el, x, y) {
+  var r = el.getBoundingClientRect();
+  return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
+}
+
+/* ── Start ── */
+newRound();
+</script>
+</body>
+</html>

@@ -49,6 +49,9 @@
       --nk-search-placeholder: #5a7ea8;
       --nk-search-accent:      #225a93;
 
+      /* Karussell: Seitenabstand passend zu .start-main (68px) */
+      --nk-inset: 68px;
+
       --font-logo:    'Alcyone', 'Solway', Georgia, serif;
       --font-heading: 'Solway', Georgia, serif;
       --font-body:    'Noto Sans', Arial, sans-serif;
@@ -86,20 +89,26 @@
       display: flex;
       align-items: flex-start;
       position: relative;
-      overflow: hidden;
+      overflow: clip; /* clip statt hidden: Monster-SVG wird geclippt,
+                          aber NKCarousel kann per neg. Margin full-bleed werden */
     }
 
     /* ── Monster-Illustration ────────────────── */
     .start-monster {
       position: absolute;
       right: -7px;
-      bottom: 60px;   /* etwas Abstand zur Suchleiste */
+      bottom: 60px;
       width: 210px;
       height: 386px;
       opacity: 0.5;
       pointer-events: none;
       user-select: none;
       display: block;
+      transition: transform var(--nk-dur) var(--nk-ease);
+    }
+
+    body.nk-search-open .start-monster {
+      transform: translateY(calc(-1 * var(--nk-search-panel-height)));
     }
 
     @media (max-width: 900px) {

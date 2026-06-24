@@ -2,16 +2,58 @@
    NKCard – Kategorie- / Übungskarte
    Verwendung auf index.html und Unterseiten.
 
-   Theming über CSS Custom Property:
-     --nk-card-color   (default: --color-home-accent)
+   Theming:
+     --nk-card-color   Farbe der Karten (Standard: --color-home-accent)
+     --nk-inset        Seitenabstand des Karussells (Standard: 56px)
    ───────────────────────────────────────────── */
 
-/* ── Karten-Grid ─────────────────────────────── */
+/* ── Carousel-Wrapper ────────────────────────
+   Bricht aus dem Eltern-Padding aus (full-bleed).
+   --nk-inset entspricht dem horizontalen Padding
+   des jeweiligen .gs-main / .start-main.          */
+.nk-carousel {
+  position: relative;
+  margin-left:  calc(-1 * var(--nk-inset, 56px));
+  margin-right: calc(-1 * var(--nk-inset, 56px));
+}
+
+/* ── Scroll-Track ────────────────────────────
+   overflow-x:scroll + scroll-snap = native Touch-
+   Scroll mit automatischem Snap.
+   Maus-Drag: pointer events in card.js.          */
+.nk-carousel__track {
+  overflow-x: scroll;
+  overflow-y: visible;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  touch-action: pan-x;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.nk-carousel__track::-webkit-scrollbar { display: none; }
+
+/* Snap deaktivieren während Maus-Drag
+   (damit scrollen smooth ist; snap greift nach mouseup) */
+.nk-carousel__track.nk-is-dragging {
+  cursor: grabbing;
+  scroll-snap-type: none;
+}
+
+/* ── Karten-Reihe ────────────────────────────
+   kein wrap; Inset-Padding sorgt dafür, dass die
+   erste Karte an der Inhalts-Kante beginnt.      */
 .nk-cards {
   display: flex;
+  flex-wrap: nowrap;
   gap: 58px;
   align-items: flex-start;
-  flex-wrap: wrap;
+  padding-left:  var(--nk-inset, 56px);
+  padding-right: var(--nk-inset, 56px);
+  /* min-width verhindert flex-shrink der Reihe    */
+  min-width: max-content;
 }
 
 /* ── Einzelne Karte ──────────────────────────── */
@@ -20,14 +62,17 @@
   flex-direction: column;
   align-items: center;
   width: 265px;
+  flex-shrink: 0;
+  scroll-snap-align: start;
   cursor: pointer;
   text-decoration: none;
   transition: opacity 0.18s;
+  /* Verhindert versehentliche Textauswahl
+     beim Drag                                    */
+  -webkit-user-drag: none;
 }
 
-.nk-card:hover {
-  opacity: 0.72;
-}
+.nk-card:hover { opacity: 0.72; }
 
 /* ── Bild-Platzhalter ────────────────────────── */
 .nk-card__image {
@@ -39,6 +84,7 @@
   flex-shrink: 0;
   color: var(--nk-card-color, var(--color-home-accent, #225a93));
   opacity: 0.55;
+  pointer-events: none;
 }
 
 .nk-card__image svg {
@@ -64,6 +110,7 @@
   color: var(--nk-card-color, var(--color-home-accent, #225a93));
   text-align: center;
   padding-top: 20px;
+  pointer-events: none;
 }
 
 /* ── Disabled-Karte ──────────────────────────── */
@@ -73,23 +120,59 @@
   cursor: default;
 }
 
+/* ── Pagination-Pills ────────────────────────
+   Eine Pille pro Karte.
+   Aktiv (Karte sichtbar) = länger + dunkler.    */
+.nk-carousel__pills {
+  display: flex;
+  gap: 8px;
+  padding: 24px 0 0 var(--nk-inset, 56px);
+  /* Wird via JS ausgeblendet wenn kein Overflow   */
+}
+
+.nk-carousel__pill {
+  height: 4px;
+  width: 14px;
+  border-radius: 2px;
+  background: var(--nk-card-color, var(--color-home-accent, #225a93));
+  opacity: 0.22;
+  flex-shrink: 0;
+  transition: width 0.28s ease, opacity 0.28s ease;
+}
+
+.nk-carousel__pill--active {
+  width: 30px;
+  opacity: 0.70;
+}
+
 /* ── Responsive ──────────────────────────────── */
 @media (max-width: 900px) {
+  /* Auf Mobilgeräten nutzen alle Seiten 20px Rand */
+  .nk-carousel {
+    margin-left:  -20px;
+    margin-right: -20px;
+  }
+
   .nk-cards {
-    gap: 32px;
-    justify-content: center;
+    gap: 28px;
+    padding-left:  20px;
+    padding-right: 20px;
   }
 
   .nk-card {
-    width: 200px;
+    width: 180px;
   }
 
   .nk-card__image {
-    width: 160px;
-    height: 160px;
+    width: 140px;
+    height: 140px;
   }
 
   .nk-card__label {
-    font-size: 18px;
+    font-size: 17px;
+  }
+
+  .nk-carousel__pills {
+    padding-left: 20px;
   }
 }
