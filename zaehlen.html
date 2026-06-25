@@ -152,6 +152,7 @@
 
   <div id="siteFab"></div>
 
+  <script src="components/worksheet-pdf.js"></script>
   <script src="components/analytics.js"></script>
   <script src="components/voice.js"></script>
   <script src="components/fab.js"></script>
@@ -164,6 +165,133 @@
   <script src="components/slider.js"></script>
   <script src="components/count-display.js"></script>
   <script>
+    /* ─── Übungsblatt: Zählen ──────────────────────────
+       6 Aufgaben gemischt: Punkte zählen + Zahl zeichnen */
+    function generateWorksheetPDF() {
+      function build() {
+        var doc = NKWorksheetPDF.create();
+        var W = 210;
+
+        /* Kopfzeile */
+        doc.setFillColor(251, 212, 176);
+        doc.rect(0, 0, W, 22, 'F');
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(8);
+        doc.setTextColor(150, 79, 18);
+        doc.text('nasenklammer.de', 14, 8);
+        doc.setFontSize(13);
+        doc.text('Zählen – Zähle und zeichne!', W / 2, 14, { align: 'center' });
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        doc.setTextColor(120, 80, 40);
+        doc.text('Oben: Zähle die Punkte und schreibe die Zahl. Unten: Zeichne so viele Punkte wie die Zahl zeigt.', W / 2, 20, { align: 'center' });
+
+        /* Name / Datum */
+        doc.setDrawColor(150, 79, 18);
+        doc.setLineWidth(0.3);
+        doc.setTextColor(100, 60, 20);
+        doc.setFontSize(9);
+        doc.text('Name:', 14, 30);
+        doc.line(28, 30, 110, 30);
+        doc.text('Datum:', 118, 30);
+        doc.line(133, 30, 196, 30);
+        doc.setLineWidth(0.5);
+        doc.line(14, 34, W - 14, 34);
+
+        /* ── Teil A: Punkte zählen (3 Aufgaben) ─────── */
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(10);
+        doc.setTextColor(150, 79, 18);
+        doc.text('A  Wie viele Punkte?', 14, 42);
+
+        var numsA = [];
+        while (numsA.length < 3) {
+          var v = Math.floor(Math.random() * 10) + 1;
+          if (numsA.indexOf(v) < 0) numsA.push(v);
+        }
+
+        var colXA = [22, 84, 146];
+        for (var i = 0; i < 3; i++) {
+          var cx = colXA[i];
+          var cy = 46;
+          var n  = numsA[i];
+
+          doc.setDrawColor(150, 79, 18);
+          doc.setLineWidth(0.4);
+          doc.setFillColor(255, 250, 245);
+          doc.roundedRect(cx, cy, 56, 52, 3, 3, 'FD');
+
+          doc.setFillColor(150, 79, 18);
+          var cols2 = Math.ceil(Math.sqrt(n));
+          var gap2  = 8;
+          var r2    = 2.8;
+          var sx    = cx + (56 - (cols2 - 1) * gap2) / 2;
+          var sy    = cy + 8;
+          for (var d = 0; d < n; d++) {
+            var dc2 = d % cols2;
+            var dr2 = Math.floor(d / cols2);
+            doc.circle(sx + dc2 * gap2, sy + dr2 * gap2, r2, 'F');
+          }
+
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(9);
+          doc.setTextColor(150, 79, 18);
+          doc.text((i + 1) + '.', cx + 2, cy + 46);
+          doc.setDrawColor(150, 79, 18);
+          doc.setLineWidth(0.4);
+          doc.line(cx + 10, cy + 48, cx + 52, cy + 48);
+        }
+
+        /* Trennlinie */
+        doc.setDrawColor(200, 160, 120);
+        doc.setLineWidth(0.3);
+        doc.line(14, 106, W - 14, 106);
+
+        /* ── Teil B: Punkte zeichnen (3 Aufgaben) ───── */
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(10);
+        doc.setTextColor(150, 79, 18);
+        doc.text('B  Zeichne so viele Punkte!', 14, 114);
+
+        var numsB = [];
+        while (numsB.length < 3) {
+          var v2 = Math.floor(Math.random() * 10) + 1;
+          if (numsB.indexOf(v2) < 0) numsB.push(v2);
+        }
+
+        for (var j = 0; j < 3; j++) {
+          var cx2 = colXA[j];
+          var cy2 = 118;
+
+          doc.setDrawColor(150, 79, 18);
+          doc.setLineWidth(0.4);
+          doc.setFillColor(255, 250, 245);
+          doc.roundedRect(cx2, cy2, 56, 52, 3, 3, 'FD');
+
+          /* Große Zahl in der Box */
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(28);
+          doc.setTextColor(150, 79, 18);
+          doc.text(String(numsB[j]), cx2 + 28, cy2 + 32, { align: 'center', baseline: 'middle' });
+
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(9);
+          doc.setTextColor(150, 79, 18);
+          doc.text((j + 4) + '.', cx2 + 2, cy2 + 46);
+        }
+
+        /* Fußzeile */
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(7);
+        doc.setTextColor(190, 190, 190);
+        doc.text('Automatisch generiert von nasenklammer.de – kostenlos und werbefrei.', W / 2, 291, { align: 'center' });
+
+        NKWorksheetPDF.preview(doc, 'nasenklammer-zaehlen-uebungsblatt.pdf');
+      }
+
+      NKWorksheetPDF.load(build);
+    }
+
     /* ─── Seiten-Komponenten ─────────────────────────── */
     var voiceText =
       'Willkommen beim Zählen! ' +
@@ -181,7 +309,8 @@
         },
         onSlotClick: function(key, slot) {
           if (slot.href) window.location.href = slot.href;
-        }
+        },
+        menuItems: [{ label: 'Übungsblatt ausdrucken', icon: 'print', onClick: function() { generateWorksheetPDF(); } }]
       })
     );
 

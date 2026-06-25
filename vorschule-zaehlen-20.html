@@ -77,6 +77,7 @@
 
   <div id="siteFab"></div>
 
+  <script src="components/worksheet-pdf.js"></script>
   <script src="components/analytics.js"></script>
   <script src="components/voice.js"></script>
   <script src="components/fab.js"></script>
@@ -88,6 +89,101 @@
   <script src="components/breadcrumb.js"></script>
   <script>
     'use strict';
+
+    /* ─── Übungsblatt: Zählen bis 20 ─────────────
+       6 Aufgaben: Punktmuster zählen, Zahl eintragen */
+    function generateWorksheetPDF() {
+      function build() {
+        var doc = NKWorksheetPDF.create();
+        var W = 210;
+
+        /* Kopfzeile */
+        doc.setFillColor(251, 212, 176);
+        doc.rect(0, 0, W, 22, 'F');
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(8);
+        doc.setTextColor(150, 79, 18);
+        doc.text('nasenklammer.de', 14, 8);
+        doc.setFontSize(13);
+        doc.text('Zählen bis 20 – Wie viele Punkte siehst du?', W / 2, 14, { align: 'center' });
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        doc.setTextColor(120, 80, 40);
+        doc.text('Zähle die Punkte und schreibe die richtige Zahl in das Kästchen.', W / 2, 20, { align: 'center' });
+
+        /* Name / Datum */
+        doc.setDrawColor(150, 79, 18);
+        doc.setLineWidth(0.3);
+        doc.setTextColor(100, 60, 20);
+        doc.setFontSize(9);
+        doc.text('Name:', 14, 30);
+        doc.line(28, 30, 110, 30);
+        doc.text('Datum:', 118, 30);
+        doc.line(133, 30, 196, 30);
+        doc.setLineWidth(0.5);
+        doc.line(14, 34, W - 14, 34);
+
+        /* Zufällige Zahlen 11–20, keine Wiederholung */
+        var pool = [11,12,13,14,15,16,17,18,19,20];
+        for (var s = pool.length - 1; s > 0; s--) {
+          var r = Math.floor(Math.random() * (s + 1));
+          var t = pool[s]; pool[s] = pool[r]; pool[r] = t;
+        }
+        var nums = pool.slice(0, 6);
+
+        /* Zwei Spalten × 3 Zeilen */
+        var colX  = [22, 118];
+        var rowY  = [44, 130, 216];
+        var cellW = 82;
+        var cellH = 78;
+
+        for (var i = 0; i < 6; i++) {
+          var col = i % 2;
+          var row = Math.floor(i / 2);
+          var cx  = colX[col];
+          var cy  = rowY[row];
+          var n   = nums[i];
+
+          /* Rahmen */
+          doc.setDrawColor(150, 79, 18);
+          doc.setLineWidth(0.4);
+          doc.setFillColor(255, 250, 245);
+          doc.roundedRect(cx, cy, cellW, cellH, 3, 3, 'FD');
+
+          /* Punktmuster: 5er-Reihen */
+          doc.setFillColor(150, 79, 18);
+          var cols5 = 5;
+          var r2 = 2.4;
+          var gap2 = 7;
+          var startX2 = cx + (cellW - (cols5 - 1) * gap2) / 2;
+          var startY2 = cy + 8;
+          for (var d = 0; d < n; d++) {
+            var dc = d % cols5;
+            var dr = Math.floor(d / cols5);
+            doc.circle(startX2 + dc * gap2, startY2 + dr * gap2, r2, 'F');
+          }
+
+          /* Schreiblinie + Nummer */
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(9);
+          doc.setTextColor(150, 79, 18);
+          doc.text((i + 1) + '.', cx + 2, cy + cellH - 14);
+          doc.setDrawColor(150, 79, 18);
+          doc.setLineWidth(0.4);
+          doc.line(cx + 12, cy + cellH - 10, cx + cellW - 4, cy + cellH - 10);
+        }
+
+        /* Fußzeile */
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(7);
+        doc.setTextColor(190, 190, 190);
+        doc.text('Automatisch generiert von nasenklammer.de – kostenlos und werbefrei.', W / 2, 291, { align: 'center' });
+
+        NKWorksheetPDF.preview(doc, 'nasenklammer-zaehlen-20-uebungsblatt.pdf');
+      }
+
+      NKWorksheetPDF.load(build);
+    }
 
     var voiceText =
       'Die Monster sind müde und wollen schlafen. ' +
@@ -125,7 +221,8 @@
         },
         onSlotClick: function(key, slot) {
           if (slot.href) window.location.href = slot.href;
-        }
+        },
+        menuItems: [{ label: 'Übungsblatt ausdrucken', icon: 'print', onClick: function() { generateWorksheetPDF(); } }]
       })
     );
 

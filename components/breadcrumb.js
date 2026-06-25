@@ -88,7 +88,10 @@
     this.homeHref       = o.homeHref       || 'index.html';
     this.themaConnector = o.themaConnector || 'das';
     this.onSlotClick    = o.onSlotClick    || null;
-    this.menuItems      = Array.isArray(o.menuItems) ? o.menuItems : [];
+    /* menuItems: falls nicht angegeben, automatisch Print-Item einblenden */
+    this.menuItems = o.menuItems !== undefined
+      ? (Array.isArray(o.menuItems) ? o.menuItems : [])
+      : [{ label: 'Übungsblatt ausdrucken', icon: 'print', onClick: function() { window.print(); } }];
 
     /* Slot-Daten: { klasse, fach, thema } */
     var s = o.slots || {};
@@ -168,8 +171,10 @@
         ' ' + this.themaConnector + ' ' + this._slotBtn('thema') +
       '</p>' +
       (hasMenu
-        ? '<button class="nk-breadcrumb__more" aria-label="Mehr Optionen" aria-expanded="false">' + moreIconSvg() + '</button>' +
-          '<button class="nk-breadcrumb__close" aria-label="Menü schließen">' + closeIconSvg() + '</button>'
+        ? '<span class="nk-breadcrumb__toggle">' +
+            '<button class="nk-breadcrumb__more" aria-label="Mehr Optionen" aria-expanded="false">' + moreIconSvg() + '</button>' +
+            '<button class="nk-breadcrumb__close" aria-label="Menü schließen">' + closeIconSvg() + '</button>' +
+          '</span>'
         : '') +
       panelHtml;
 

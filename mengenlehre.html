@@ -77,6 +77,7 @@
 
   <div id="siteFab"></div>
 
+  <script src="components/worksheet-pdf.js"></script>
   <script src="components/analytics.js"></script>
   <script src="components/voice.js"></script>
   <script src="components/fab.js"></script>
@@ -88,6 +89,112 @@
   <script src="components/breadcrumb.js"></script>
   <script>
     'use strict';
+
+    /* ─── Übungsblatt: Mengenlehre (Vergleichen) ──
+       6 Aufgaben: zwei Punktmengen, Schüler schreibt
+       das richtige Zeichen (>, <, =) in die Lücke.  */
+    function generateWorksheetPDF() {
+      function build() {
+        var doc = NKWorksheetPDF.create();
+        var W = 210;
+
+        /* ── Kopfzeile ──────────────────────────── */
+        doc.setFillColor(251, 212, 176);
+        doc.rect(0, 0, W, 22, 'F');
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(8);
+        doc.setTextColor(150, 79, 18);
+        doc.text('nasenklammer.de', 14, 8);
+        doc.setFontSize(13);
+        doc.text('Mengenlehre – Vergleiche die Mengen', W / 2, 14, { align: 'center' });
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        doc.setTextColor(120, 80, 40);
+        doc.text('Schreibe >, < oder = in das Kästchen.', W / 2, 20, { align: 'center' });
+
+        /* Name / Datum */
+        doc.setDrawColor(150, 79, 18);
+        doc.setLineWidth(0.3);
+        doc.setTextColor(100, 60, 20);
+        doc.setFontSize(9);
+        doc.text('Name:', 14, 30);
+        doc.line(28, 30, 110, 30);
+        doc.text('Datum:', 118, 30);
+        doc.line(133, 30, 196, 30);
+
+        /* Trennlinie */
+        doc.setLineWidth(0.5);
+        doc.setDrawColor(150, 79, 18);
+        doc.line(14, 34, W - 14, 34);
+
+        /* ── Hilfsfunktion: Punkte zeichnen ─────── */
+        function drawDots(x, y, n, color) {
+          doc.setFillColor(color[0], color[1], color[2]);
+          doc.setDrawColor(color[0], color[1], color[2]);
+          var cols = Math.ceil(Math.sqrt(n));
+          var rows = Math.ceil(n / cols);
+          var r = 2.2;
+          var gap = 6;
+          for (var i = 0; i < n; i++) {
+            var col = i % cols;
+            var row = Math.floor(i / cols);
+            doc.circle(x + col * gap, y + row * gap, r, 'F');
+          }
+          return rows * gap;
+        }
+
+        /* ── 6 Aufgaben ─────────────────────────── */
+        var rowH = 38;
+        var startY = 42;
+
+        /* Paare (links, rechts) – zufällig aber sinnvoll */
+        var pairs = [
+          [3, 5], [7, 4], [6, 6], [2, 8], [9, 3], [5, 5]
+        ];
+
+        for (var i = 0; i < 6; i++) {
+          var cy = startY + i * rowH;
+          var left  = pairs[i][0];
+          var right = pairs[i][1];
+
+          /* Aufgabennummer */
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(11);
+          doc.setTextColor(150, 79, 18);
+          doc.text((i + 1) + '.', 14, cy + 8);
+
+          /* Linke Menge */
+          drawDots(26, cy, left, [150, 79, 18]);
+
+          /* Kästchen für Zeichen */
+          doc.setDrawColor(150, 79, 18);
+          doc.setLineWidth(0.5);
+          doc.setFillColor(255, 255, 255);
+          doc.rect(82, cy - 2, 14, 14, 'FD');
+
+          /* Rechte Menge */
+          drawDots(104, cy, right, [45, 95, 50]);
+
+          /* Trennlinie zwischen Aufgaben */
+          if (i < 5) {
+            doc.setLineWidth(0.2);
+            doc.setDrawColor(200, 160, 120);
+            doc.line(14, cy + rowH - 3, W - 14, cy + rowH - 3);
+          }
+        }
+
+        /* Fußzeile */
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(7);
+        doc.setTextColor(190, 190, 190);
+        doc.text('Automatisch generiert von nasenklammer.de – kostenlos und werbefrei.', W / 2, 291, { align: 'center' });
+
+        NKWorksheetPDF.preview(doc, 'nasenklammer-mengenlehre-uebungsblatt.pdf');
+      }
+
+      NKWorksheetPDF.load(build);
+    }
 
     var voiceText =
       'Willkommen bei der Mengenlehre! ' +
@@ -122,12 +229,10 @@
           fach:   { label: 'Mathematik',     href: 'grundschule-faecher.html' },
           thema:  { label: 'Mengenlehre',    href: 'grundschule.html' },
         },
-        menuItems: [
-          { label: 'Übungsblatt ausdrucken', icon: 'print', onClick: function() { window.print(); } }
-        ],
         onSlotClick: function(key, slot) {
           if (slot.href) window.location.href = slot.href;
-        }
+        },
+        menuItems: [{ label: 'Übungsblatt ausdrucken', icon: 'print', onClick: function() { generateWorksheetPDF(); } }]
       })
     );
 

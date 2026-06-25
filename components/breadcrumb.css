@@ -13,6 +13,7 @@
   column-gap: 12px;
   row-gap: 0;
   flex-shrink: 0;
+  transition: background-color 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .nk-breadcrumb__icon {
@@ -66,42 +67,77 @@
   pointer-events: none;
 }
 
-/* ── Drei-Punkte-Button & Schließen-Button ──── */
+/* ── Toggle-Wrapper (⋮ / ✕ überlagern sich) ─── */
+.nk-breadcrumb__toggle {
+  flex-shrink: 0;
+  position: relative;
+  width: 34px;   /* = 26px Icon + 4px Padding × 2 → bündig mit Header-Menü-Button */
+  height: 34px;
+}
+
 .nk-breadcrumb__more,
 .nk-breadcrumb__close {
-  flex-shrink: 0;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   background: none;
   border: none;
   cursor: pointer;
   color: var(--breadcrumb-color, #964f12);
   padding: 4px;
   line-height: 0;
-  transition: opacity 0.15s;
-}
-
-.nk-breadcrumb__more:hover,
-.nk-breadcrumb__close:hover {
-  opacity: 0.75;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .nk-breadcrumb__more svg,
 .nk-breadcrumb__close svg {
-  width: 20px;
-  height: 20px;
+  width: 26px;   /* = Header-Menü-Button Icon-Größe */
+  height: 26px;
   display: block;
 }
 
-/* Schließen-Button erst sichtbar wenn Menü offen */
-.nk-breadcrumb__close { display: none; }
-.nk-breadcrumb--open .nk-breadcrumb__more { display: none; }
-.nk-breadcrumb--open .nk-breadcrumb__close { display: block; }
+/* Default: More sichtbar, Close rotiert/unsichtbar */
+.nk-breadcrumb__close {
+  opacity: 0;
+  transform: rotate(45deg) scale(0.7);
+  pointer-events: none;
+}
+
+/* Offen: More rotiert/unsichtbar, Close sichtbar */
+.nk-breadcrumb--open .nk-breadcrumb__more {
+  opacity: 0;
+  transform: rotate(-45deg) scale(0.7);
+  pointer-events: none;
+}
+
+.nk-breadcrumb--open .nk-breadcrumb__close {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
 
 /* ── Dropdown-Panel ──────────────────────────── */
 .nk-breadcrumb__panel {
   flex-basis: 100%;
-  display: none;
+  display: flex;
   flex-direction: column;
-  padding: 4px 0 6px;
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transform: translateY(-5px);
+  pointer-events: none;
+  padding: 0;
+  /* Schließ-Animation: zügig */
+  transition:
+    max-height 0.18s ease-in,
+    opacity    0.14s ease-in,
+    transform  0.14s ease-in,
+    padding    0.18s ease-in;
 }
 
 .nk-breadcrumb--open {
@@ -109,7 +145,17 @@
 }
 
 .nk-breadcrumb--open .nk-breadcrumb__panel {
-  display: flex;
+  max-height: 80px;
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+  padding: 4px 0 6px;
+  /* Öffnungs-Animation: schnell starten, dann abbremsen */
+  transition:
+    max-height 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity    0.4s  cubic-bezier(0.16, 1, 0.3, 1),
+    transform  0.45s cubic-bezier(0.16, 1, 0.3, 1),
+    padding    0.3s  cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* ── Menüpunkt ───────────────────────────────── */
@@ -158,5 +204,29 @@
 @media (max-width: 600px) {
   .nk-breadcrumb {
     display: none;
+  }
+}
+
+/* ── Druck-Stile ─────────────────────────────
+   Beim Drucken nur den Übungsinhalt zeigen.
+   Navigation, Breadcrumb, FAB und Menü werden
+   ausgeblendet.                               */
+@media print {
+  .nk-breadcrumb,
+  #siteHeader,
+  #siteMenu,
+  #siteFab,
+  #siteSearch {
+    display: none !important;
+  }
+
+  body {
+    background: #fff !important;
+  }
+
+  /* Iframes: voll aufklappen */
+  .ml-iframe {
+    min-height: 100vh;
+    border: none;
   }
 }

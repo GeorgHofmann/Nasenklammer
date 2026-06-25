@@ -368,6 +368,7 @@
     </div>
   </div>
 
+  <script src="components/worksheet-pdf.js"></script>
   <script src="components/analytics.js"></script>
   <script src="components/voice.js"></script>
   <script src="components/fab.js"></script>
@@ -623,8 +624,6 @@
        Zeichnet 5 Uhren (passend zum aktuellen Level)
        mit je 4 Multiple-Choice-Antworten auf A4.   */
     function generateWorksheetPDF() {
-      var JSPDF_CDN = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
-
       function build() {
         var JsPDF = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF;
         if (!JsPDF) { return; }
@@ -801,106 +800,10 @@
           'Automatisch generiert von nasenklammer.de – kostenlos und werbefrei.',
           W / 2, 291, { align: 'center' });
 
-        /* ── Vorschau-Modal anzeigen ──────────── */
-        var blob    = doc.output('blob');
-        var blobUrl = URL.createObjectURL(blob);
-
-        /* Backdrop */
-        var overlay = document.createElement('div');
-        overlay.style.cssText =
-          'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.62);' +
-          'display:flex;align-items:center;justify-content:center;' +
-          'padding:20px;box-sizing:border-box;';
-
-        /* Weißer Container */
-        var box = document.createElement('div');
-        box.style.cssText =
-          'background:#fff;border-radius:20px;width:100%;max-width:700px;' +
-          'max-height:calc(100vh - 40px);display:flex;flex-direction:column;' +
-          'overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,0.38);';
-
-        /* Titelleiste */
-        var topBar = document.createElement('div');
-        topBar.style.cssText =
-          'display:flex;align-items:center;justify-content:space-between;' +
-          'padding:14px 20px;flex-shrink:0;' +
-          'border-bottom:1px solid rgba(150,79,18,0.15);';
-
-        var title = document.createElement('span');
-        title.textContent = 'Vorschau – Übungsblatt';
-        title.style.cssText =
-          'font-family:Solway,Georgia,serif;font-size:17px;' +
-          'font-weight:600;color:#964f12;';
-
-        var xBtn = document.createElement('button');
-        xBtn.innerHTML =
-          '<svg viewBox="0 0 24 24" fill="none" width="20" height="20">' +
-          '<path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
-        xBtn.style.cssText =
-          'background:none;border:none;cursor:pointer;color:#964f12;' +
-          'padding:4px;line-height:0;border-radius:8px;';
-        xBtn.setAttribute('aria-label', 'Schließen');
-
-        topBar.appendChild(title);
-        topBar.appendChild(xBtn);
-
-        /* PDF iframe */
-        var frame = document.createElement('iframe');
-        frame.src = blobUrl;
-        frame.style.cssText = 'flex:1;border:none;width:100%;min-height:420px;';
-
-        /* Button-Leiste */
-        var btmBar = document.createElement('div');
-        btmBar.style.cssText =
-          'display:flex;justify-content:flex-end;gap:12px;' +
-          'padding:14px 20px;flex-shrink:0;' +
-          'border-top:1px solid rgba(150,79,18,0.15);';
-
-        var btnClose = document.createElement('button');
-        btnClose.textContent = 'Schließen';
-        btnClose.style.cssText =
-          'height:44px;padding:0 24px;border:2px solid #964f12;border-radius:12px;' +
-          'background:transparent;color:#964f12;font-family:inherit;font-size:16px;cursor:pointer;';
-
-        var btnDl = document.createElement('button');
-        btnDl.textContent = 'Herunterladen';
-        btnDl.style.cssText =
-          'height:44px;padding:0 24px;border:none;border-radius:12px;' +
-          'background:#f4a056;color:#00363d;font-family:inherit;font-size:16px;' +
-          'font-weight:600;cursor:pointer;';
-
-        function closeModal() {
-          URL.revokeObjectURL(blobUrl);
-          document.body.removeChild(overlay);
-        }
-
-        xBtn.addEventListener('click', closeModal);
-        btnClose.addEventListener('click', closeModal);
-        overlay.addEventListener('click', function(e) {
-          if (e.target === overlay) closeModal();
-        });
-        btnDl.addEventListener('click', function() {
-          doc.save('nasenklammer-uhrzeit-uebungsblatt.pdf');
-        });
-
-        btmBar.appendChild(btnClose);
-        btmBar.appendChild(btnDl);
-        box.appendChild(topBar);
-        box.appendChild(frame);
-        box.appendChild(btmBar);
-        overlay.appendChild(box);
-        document.body.appendChild(overlay);
+        NKWorksheetPDF.preview(doc, 'nasenklammer-uhrzeit-uebungsblatt.pdf');
       }
 
-      if (window.jspdf) {
-        build();
-      } else {
-        var s = document.createElement('script');
-        s.src = JSPDF_CDN;
-        s.onload = build;
-        s.onerror = function() { console.error('jsPDF konnte nicht geladen werden.'); };
-        document.head.appendChild(s);
-      }
+      NKWorksheetPDF.load(build);
     }
 
     /* ─── FAB (Lasche) ──────────────────────── */
