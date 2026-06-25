@@ -619,6 +619,290 @@
       nextQuestion();
     });
 
+    /* ─── Übungsblatt als PDF generieren ───────
+       Zeichnet 5 Uhren (passend zum aktuellen Level)
+       mit je 4 Multiple-Choice-Antworten auf A4.   */
+    function generateWorksheetPDF() {
+      var JSPDF_CDN = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+
+      function build() {
+        var JsPDF = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF;
+        if (!JsPDF) { return; }
+        var doc = new JsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
+        var W = 210;
+
+        /* ── Uhr auf PDF zeichnen ─────────────── */
+        function drawClockPDF(cx, cy, r, h, m) {
+          doc.setFillColor(255, 255, 255);
+          doc.setDrawColor(150, 79, 18);
+          doc.setLineWidth(0.55);
+          doc.circle(cx, cy, r, 'FD');
+
+          for (var i = 0; i < 60; i++) {
+            var major = (i % 5 === 0);
+            var ang = (i / 60) * 2 * Math.PI;
+            var ir = major ? r * 0.82 : r * 0.905;
+            doc.setLineWidth(major ? 0.44 : 0.17);
+            doc.setDrawColor(150, 79, 18);
+            doc.line(cx + ir * Math.sin(ang), cy - ir * Math.cos(ang),
+                     cx + r  * Math.sin(ang), cy - r  * Math.cos(ang));
+          }
+
+          doc.setFontSize(5.5);
+          doc.setFont('helvetica', 'normal');
+          doc.setTextColor(34, 27, 0);
+          for (var n = 1; n <= 12; n++) {
+            var na = (n / 12) * 2 * Math.PI;
+            doc.text(String(n),
+              cx + (r * 0.70) * Math.sin(na),
+              cy - (r * 0.70) * Math.cos(na),
+              { align: 'center', baseline: 'middle' });
+          }
+
+          /* Stundenzeiger – kurz, dick, dunkelgrün */
+          var ha = ((h % 12) / 12 + m / 720) * 2 * Math.PI;
+          doc.setLineWidth(1.1);  doc.setDrawColor(45, 79, 56);
+          doc.line(cx, cy, cx + (r * 0.52) * Math.sin(ha), cy - (r * 0.52) * Math.cos(ha));
+
+          /* Minutenzeiger – lang, dünner, rot */
+          var ma = (m / 60) * 2 * Math.PI;
+          doc.setLineWidth(0.65); doc.setDrawColor(179, 38, 30);
+          doc.line(cx, cy, cx + (r * 0.79) * Math.sin(ma), cy - (r * 0.79) * Math.cos(ma));
+
+          doc.setFillColor(34, 27, 0);
+          doc.circle(cx, cy, 0.85, 'F');
+        }
+
+        /* ── 5 Aufgaben generieren ────────────── */
+        var pools = { 1: [0], 2: [0, 30], 3: [0, 15, 30, 45],
+                      4: [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55] };
+        var pool = pools[level] || pools[3];
+        var exercises = [], used = {};
+
+        for (var e = 0; e < 5; e++) {
+          var eh, em, key, att = 0;
+          do {
+            eh = Math.floor(Math.random() * 12) + 1;
+            em = pool[Math.floor(Math.random() * pool.length)];
+            key = eh + '_' + em;
+            att++;
+          } while (used[key] && att < 40);
+          used[key] = true;
+
+          var useWord = Math.random() < 0.5;
+          var correct = formatTime({ hours: eh, minutes: em }, useWord);
+
+          /* 3 Distraktoren – gleiche Wortform */
+          var wrongAll = [], wh, wi;
+          for (wh = 1; wh <= 12; wh++) {
+            for (wi = 0; wi < pool.length; wi++) {
+              if (wh === eh && pool[wi] === em) continue;
+              wrongAll.push(formatTime({ hours: wh, minutes: pool[wi] }, useWord));
+            }
+          }
+          for (var si = wrongAll.length - 1; si > 0; si--) {
+            var sj = Math.floor(Math.random() * (si + 1));
+            var st = wrongAll[si]; wrongAll[si] = wrongAll[sj]; wrongAll[sj] = st;
+          }
+          var opts = [correct, wrongAll[0], wrongAll[1], wrongAll[2]];
+          for (var oi = opts.length - 1; oi > 0; oi--) {
+            var oj = Math.floor(Math.random() * (oi + 1));
+            var ot = opts[oi]; opts[oi] = opts[oj]; opts[oj] = ot;
+          }
+          exercises.push({ h: eh, m: em, opts: opts });
+        }
+
+        /* ── Kopfzeile ────────────────────────── */
+        var ML = 18;
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(190, 130, 70);
+        doc.text('nasenklammer.de', W - ML, 11, { align: 'right' });
+
+        doc.setFontSize(20);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(34, 27, 0);
+        doc.text('Uhrzeit üben', W / 2, 21, { align: 'center' });
+
+        var lvlLabel = ['', 'Ganze Stunden', 'Halbe Stunden',
+                         'Viertelstunden', 'Gemischt'][level] || '';
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(110, 110, 110);
+        doc.text('Welche Zeit zeigt die Uhr? Kreise die richtige Antwort ein. · ' + lvlLabel,
+          W / 2, 28, { align: 'center' });
+
+        doc.setFontSize(10);
+        doc.setTextColor(80, 80, 80);
+        doc.text('Name: _________________________', ML, 34);
+        doc.text('Datum: _____________', 148, 34);
+
+        doc.setDrawColor(210, 210, 210);
+        doc.setLineWidth(0.3);
+        doc.line(ML, 38, W - ML, 38);
+
+        /* ── Aufgabenzeilen ───────────────────── */
+        var rowH   = 48;
+        var startY = 40;
+        var clkCX  = ML + 24;       /* Uhr-Mittelpunkt x */
+        var clkR   = 18;            /* Radius in mm      */
+        var divX   = ML + 48;       /* Trennlinie x      */
+        var cX1    = divX + 7;      /* Antwortspalte 1   */
+        var cX2    = cX1  + 65;     /* Antwortspalte 2   */
+
+        for (var r = 0; r < 5; r++) {
+          var ex   = exercises[r];
+          var rowY = startY + r * rowH;
+
+          if (r > 0) {
+            doc.setDrawColor(220, 220, 220);
+            doc.setLineWidth(0.25);
+            doc.line(ML, rowY, W - ML, rowY);
+          }
+
+          /* Aufgabennummer */
+          doc.setFontSize(9);
+          doc.setFont('helvetica', 'bold');
+          doc.setTextColor(150, 79, 18);
+          doc.text(String(r + 1) + '.', ML, rowY + rowH / 2 + 1);
+
+          /* Uhr */
+          drawClockPDF(clkCX, rowY + rowH / 2, clkR, ex.h, ex.m);
+
+          /* Vertikale Trennlinie */
+          doc.setDrawColor(220, 220, 220);
+          doc.setLineWidth(0.25);
+          doc.line(divX, rowY + 6, divX, rowY + rowH - 6);
+
+          /* 4 Antworten im 2×2-Raster */
+          var positions = [
+            { x: cX1, y: rowY + 14 },
+            { x: cX2, y: rowY + 14 },
+            { x: cX1, y: rowY + 34 },
+            { x: cX2, y: rowY + 34 }
+          ];
+          for (var ci = 0; ci < 4; ci++) {
+            var cp = positions[ci];
+            doc.setDrawColor(150, 79, 18);
+            doc.setLineWidth(0.38);
+            doc.circle(cp.x + 3, cp.y - 0.5, 2.8);
+            doc.setFontSize(10.5);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(25, 28, 29);
+            doc.text(ex.opts[ci], cp.x + 9.5, cp.y, { baseline: 'middle' });
+          }
+        }
+
+        /* ── Fußzeile ─────────────────────────── */
+        doc.setFontSize(7.5);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(190, 190, 190);
+        doc.text(
+          'Automatisch generiert von nasenklammer.de – kostenlos und werbefrei.',
+          W / 2, 291, { align: 'center' });
+
+        /* ── Vorschau-Modal anzeigen ──────────── */
+        var blob    = doc.output('blob');
+        var blobUrl = URL.createObjectURL(blob);
+
+        /* Backdrop */
+        var overlay = document.createElement('div');
+        overlay.style.cssText =
+          'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.62);' +
+          'display:flex;align-items:center;justify-content:center;' +
+          'padding:20px;box-sizing:border-box;';
+
+        /* Weißer Container */
+        var box = document.createElement('div');
+        box.style.cssText =
+          'background:#fff;border-radius:20px;width:100%;max-width:700px;' +
+          'max-height:calc(100vh - 40px);display:flex;flex-direction:column;' +
+          'overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,0.38);';
+
+        /* Titelleiste */
+        var topBar = document.createElement('div');
+        topBar.style.cssText =
+          'display:flex;align-items:center;justify-content:space-between;' +
+          'padding:14px 20px;flex-shrink:0;' +
+          'border-bottom:1px solid rgba(150,79,18,0.15);';
+
+        var title = document.createElement('span');
+        title.textContent = 'Vorschau – Übungsblatt';
+        title.style.cssText =
+          'font-family:Solway,Georgia,serif;font-size:17px;' +
+          'font-weight:600;color:#964f12;';
+
+        var xBtn = document.createElement('button');
+        xBtn.innerHTML =
+          '<svg viewBox="0 0 24 24" fill="none" width="20" height="20">' +
+          '<path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+        xBtn.style.cssText =
+          'background:none;border:none;cursor:pointer;color:#964f12;' +
+          'padding:4px;line-height:0;border-radius:8px;';
+        xBtn.setAttribute('aria-label', 'Schließen');
+
+        topBar.appendChild(title);
+        topBar.appendChild(xBtn);
+
+        /* PDF iframe */
+        var frame = document.createElement('iframe');
+        frame.src = blobUrl;
+        frame.style.cssText = 'flex:1;border:none;width:100%;min-height:420px;';
+
+        /* Button-Leiste */
+        var btmBar = document.createElement('div');
+        btmBar.style.cssText =
+          'display:flex;justify-content:flex-end;gap:12px;' +
+          'padding:14px 20px;flex-shrink:0;' +
+          'border-top:1px solid rgba(150,79,18,0.15);';
+
+        var btnClose = document.createElement('button');
+        btnClose.textContent = 'Schließen';
+        btnClose.style.cssText =
+          'height:44px;padding:0 24px;border:2px solid #964f12;border-radius:12px;' +
+          'background:transparent;color:#964f12;font-family:inherit;font-size:16px;cursor:pointer;';
+
+        var btnDl = document.createElement('button');
+        btnDl.textContent = 'Herunterladen';
+        btnDl.style.cssText =
+          'height:44px;padding:0 24px;border:none;border-radius:12px;' +
+          'background:#f4a056;color:#00363d;font-family:inherit;font-size:16px;' +
+          'font-weight:600;cursor:pointer;';
+
+        function closeModal() {
+          URL.revokeObjectURL(blobUrl);
+          document.body.removeChild(overlay);
+        }
+
+        xBtn.addEventListener('click', closeModal);
+        btnClose.addEventListener('click', closeModal);
+        overlay.addEventListener('click', function(e) {
+          if (e.target === overlay) closeModal();
+        });
+        btnDl.addEventListener('click', function() {
+          doc.save('nasenklammer-uhrzeit-uebungsblatt.pdf');
+        });
+
+        btmBar.appendChild(btnClose);
+        btmBar.appendChild(btnDl);
+        box.appendChild(topBar);
+        box.appendChild(frame);
+        box.appendChild(btmBar);
+        overlay.appendChild(box);
+        document.body.appendChild(overlay);
+      }
+
+      if (window.jspdf) {
+        build();
+      } else {
+        var s = document.createElement('script');
+        s.src = JSPDF_CDN;
+        s.onload = build;
+        s.onerror = function() { console.error('jsPDF konnte nicht geladen werden.'); };
+        document.head.appendChild(s);
+      }
+    }
+
     /* ─── FAB (Lasche) ──────────────────────── */
     var fab = new NKFab(document.getElementById('siteFab'), {
       mode: 'module',
@@ -674,6 +958,10 @@
           fach:   { label: 'Mathematik',     href: 'grundschule-faecher.html' },
           thema:  { label: 'Uhrzeit',        href: 'grundschule.html' },
         },
+        menuItems: [
+          { label: 'Übungsblatt ausdrucken', icon: 'print',
+            onClick: function() { generateWorksheetPDF(); } }
+        ],
         onSlotClick: function(key, slot) {
           if (slot.href) window.location.href = slot.href;
         }

@@ -122,6 +122,9 @@
           fach:   { label: 'Mathematik',     href: 'grundschule-faecher.html' },
           thema:  { label: 'Mengenlehre',    href: 'grundschule.html' },
         },
+        menuItems: [
+          { label: 'Übungsblatt ausdrucken', icon: 'print', onClick: function() { window.print(); } }
+        ],
         onSlotClick: function(key, slot) {
           if (slot.href) window.location.href = slot.href;
         }

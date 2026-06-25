@@ -35,7 +35,7 @@
     vorschule:  { bgColor: '#fde8cc', textColor: '#7a4010', borderColor: 'rgba(122,64,16,0.15)'  },
   };
 
-  /* ── Haus-Icon SVG – erbt Farbe via currentColor ── */
+  /* ── Icon-Helfer (erben Farbe via currentColor) ── */
   function houseIconSvg() {
     return (
       '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">' +
@@ -45,6 +45,36 @@
       '</svg>'
     );
   }
+
+  function moreIconSvg() {
+    return (
+      '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">' +
+      '<circle cx="12" cy="5"  r="1.5"/>' +
+      '<circle cx="12" cy="12" r="1.5"/>' +
+      '<circle cx="12" cy="19" r="1.5"/>' +
+      '</svg>'
+    );
+  }
+
+  function closeIconSvg() {
+    return (
+      '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">' +
+      '<path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>' +
+      '</svg>'
+    );
+  }
+
+  function printIconSvg() {
+    return (
+      '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">' +
+      '<path d="M6 9V2h12v7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '<path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '<rect x="6" y="14" width="12" height="8" rx="1" stroke="currentColor" stroke-width="1.8"/>' +
+      '</svg>'
+    );
+  }
+
+  var ICONS = { print: printIconSvg };
 
   /* ── Constructor ───────────────────────────── */
   function NKBreadcrumb(el, opts) {
@@ -58,6 +88,7 @@
     this.homeHref       = o.homeHref       || 'index.html';
     this.themaConnector = o.themaConnector || 'das';
     this.onSlotClick    = o.onSlotClick    || null;
+    this.menuItems      = Array.isArray(o.menuItems) ? o.menuItems : [];
 
     /* Slot-Daten: { klasse, fach, thema } */
     var s = o.slots || {};
@@ -66,6 +97,8 @@
       fach:   { label: (s.fach   && s.fach.label)   || 'Mathematik',     href: (s.fach   && s.fach.href)   || '#' },
       thema:  { label: (s.thema  && s.thema.label)  || 'Uhrzeit',        href: (s.thema  && s.thema.href)  || '#' },
     };
+
+    this._isOpen = false;
 
     this.el.classList.add('nk-breadcrumb');
     this._applyColors();
@@ -100,8 +133,31 @@
     );
   };
 
+  /* ── Private: Menüpunkt-HTML ─────────────────── */
+  NKBreadcrumb.prototype._itemHtml = function (item, idx) {
+    var iconFn = item.icon && ICONS[item.icon] ? ICONS[item.icon] : null;
+    return (
+      '<button class="nk-breadcrumb__item" data-item-idx="' + idx + '">' +
+        (iconFn ? iconFn() : '') +
+        this._esc(item.label || '') +
+      '</button>'
+    );
+  };
+
   /* ── Private: inner HTML rendern ───────────── */
   NKBreadcrumb.prototype._render = function () {
+    var hasMenu = this.menuItems.length > 0;
+
+    var panelHtml = '';
+    if (hasMenu) {
+      var itemsHtml = '';
+      for (var k = 0; k < this.menuItems.length; k++) {
+        itemsHtml += this._itemHtml(this.menuItems[k], k);
+      }
+      panelHtml =
+        '<div class="nk-breadcrumb__panel">' + itemsHtml + '</div>';
+    }
+
     this.el.innerHTML =
       '<a class="nk-breadcrumb__icon" href="' + this.homeHref + '" aria-label="Startseite">' +
         houseIconSvg() +
@@ -110,9 +166,14 @@
         'Ich bin ein ' + this._slotBtn('klasse') +
         ' und übe in ' + this._slotBtn('fach') +
         ' ' + this.themaConnector + ' ' + this._slotBtn('thema') +
-      '</p>';
+      '</p>' +
+      (hasMenu
+        ? '<button class="nk-breadcrumb__more" aria-label="Mehr Optionen" aria-expanded="false">' + moreIconSvg() + '</button>' +
+          '<button class="nk-breadcrumb__close" aria-label="Menü schließen">' + closeIconSvg() + '</button>'
+        : '') +
+      panelHtml;
 
-    /* Slot-Klick-Wiring: navigiert wenn href gesetzt, sonst Callback */
+    /* Slot-Klick-Wiring */
     var self = this;
     var btns = this.el.querySelectorAll('.nk-breadcrumb__slot');
     for (var i = 0; i < btns.length; i++) {
@@ -128,6 +189,53 @@
         });
       })(btns[i]);
     }
+
+    /* Menü-Wiring */
+    if (hasMenu) {
+      var moreBtn  = this.el.querySelector('.nk-breadcrumb__more');
+      var closeBtn = this.el.querySelector('.nk-breadcrumb__close');
+      var itemBtns = this.el.querySelectorAll('.nk-breadcrumb__item');
+
+      moreBtn.addEventListener('click', function () { self._openMenu(); });
+      closeBtn.addEventListener('click', function () { self._closeMenu(); });
+
+      for (var j = 0; j < itemBtns.length; j++) {
+        (function (btn) {
+          btn.addEventListener('click', function () {
+            var idx  = parseInt(btn.getAttribute('data-item-idx'), 10);
+            var item = self.menuItems[idx];
+            self._closeMenu();
+            if (item && typeof item.onClick === 'function') {
+              item.onClick(item);
+            }
+          });
+        })(itemBtns[j]);
+      }
+    }
+  };
+
+  /* ── Private: Menü öffnen / schließen ─────── */
+  NKBreadcrumb.prototype._openMenu = function () {
+    this._isOpen = true;
+    this.el.classList.add('nk-breadcrumb--open');
+    var more = this.el.querySelector('.nk-breadcrumb__more');
+    if (more) more.setAttribute('aria-expanded', 'true');
+  };
+
+  NKBreadcrumb.prototype._closeMenu = function () {
+    this._isOpen = false;
+    this.el.classList.remove('nk-breadcrumb--open');
+    var more = this.el.querySelector('.nk-breadcrumb__more');
+    if (more) more.setAttribute('aria-expanded', 'false');
+  };
+
+  /* ── Private: HTML escapen ───────────────────── */
+  NKBreadcrumb.prototype._esc = function (str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/"/g, '&quot;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
   };
 
   /* ── Public: einen Slot zur Laufzeit ändern ── */

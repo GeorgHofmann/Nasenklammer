@@ -8,8 +8,10 @@
   background: var(--breadcrumb-bg, #fbd4b0);
   padding: 10px 56px;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 12px;
+  column-gap: 12px;
+  row-gap: 0;
   flex-shrink: 0;
 }
 
@@ -32,6 +34,7 @@
 }
 
 .nk-breadcrumb__text {
+  flex: 1;
   font-family: var(--font-heading, 'Solway', Georgia, serif);
   font-size: 20px;
   line-height: 32px;
@@ -63,12 +66,91 @@
   pointer-events: none;
 }
 
+/* ── Drei-Punkte-Button & Schließen-Button ──── */
+.nk-breadcrumb__more,
+.nk-breadcrumb__close {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--breadcrumb-color, #964f12);
+  padding: 4px;
+  line-height: 0;
+  transition: opacity 0.15s;
+}
+
+.nk-breadcrumb__more:hover,
+.nk-breadcrumb__close:hover {
+  opacity: 0.75;
+}
+
+.nk-breadcrumb__more svg,
+.nk-breadcrumb__close svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
+/* Schließen-Button erst sichtbar wenn Menü offen */
+.nk-breadcrumb__close { display: none; }
+.nk-breadcrumb--open .nk-breadcrumb__more { display: none; }
+.nk-breadcrumb--open .nk-breadcrumb__close { display: block; }
+
+/* ── Dropdown-Panel ──────────────────────────── */
+.nk-breadcrumb__panel {
+  flex-basis: 100%;
+  display: none;
+  flex-direction: column;
+  padding: 4px 0 6px;
+}
+
+.nk-breadcrumb--open {
+  background: #fde5cd;
+}
+
+.nk-breadcrumb--open .nk-breadcrumb__panel {
+  display: flex;
+}
+
+/* ── Menüpunkt ───────────────────────────────── */
+.nk-breadcrumb__item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 36px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--breadcrumb-color, #964f12);
+  font-family: var(--font-heading, 'Solway', Georgia, serif);
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 32px;
+  text-align: left;
+  padding: 0;
+  transition: opacity 0.15s;
+  text-decoration: none;
+}
+
+.nk-breadcrumb__item:hover {
+  opacity: 0.75;
+}
+
+.nk-breadcrumb__item svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
 /* ── Responsive ─────────────────────────────── */
 @media (max-width: 900px) {
   .nk-breadcrumb {
     padding: 10px 20px;
   }
   .nk-breadcrumb__text {
+    font-size: 17px;
+  }
+  .nk-breadcrumb__item {
     font-size: 17px;
   }
 }
