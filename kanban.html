@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nasenklammer – Board</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      background: #EDE9E1;
+      color: #1a1a1a;
+      overflow-x: hidden;
+    }
+
+    /* ── Board Header ──────────────────────────── */
+    .board-header {
+      padding: 28px 32px 0;
+      display: flex;
+      align-items: baseline;
+      gap: 16px;
+    }
+    .board-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #1a1a1a;
+      letter-spacing: -0.2px;
+    }
+    .board-meta {
+      font-size: 12px;
+      color: #aaa;
+      font-weight: 400;
+      letter-spacing: 0.2px;
+    }
+
+    /* ── Board Layout ──────────────────────────── */
+    .board {
+      display: flex;
+      gap: 18px;
+      padding: 22px 32px 48px;
+      align-items: flex-start;
+      overflow-x: auto;
+    }
+
+    /* ── Column ────────────────────────────────── */
+    .column {
+      width: 272px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      max-height: calc(100vh - 100px);
+    }
+
+    .col-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      padding: 0 2px;
+    }
+    .col-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #888;
+    }
+    .col-count {
+      font-size: 11px;
+      font-weight: 700;
+      color: #bbb;
+    }
+
+    /* ── Cards Dropzone ────────────────────────── */
+    .cards {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 4px 3px 4px 2px;
+      border-radius: 10px;
+      transition: background 160ms, outline 160ms;
+      min-height: 48px;
+    }
+    .cards::-webkit-scrollbar { width: 4px; }
+    .cards::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 4px; }
+
+    .cards.drag-over {
+      background: rgba(0,0,0,0.04);
+      outline: 2px dashed rgba(0,0,0,0.16);
+      outline-offset: 2px;
+    }
+
+    /* ── Card ──────────────────────────────────── */
+    .card {
+      background: #FDFCF8;
+      border-radius: 8px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.07), 0 2px 8px rgba(0,0,0,0.05);
+      cursor: grab;
+      overflow: hidden;
+      transition: transform 140ms, box-shadow 140ms;
+      position: relative;
+    }
+    .card:active { cursor: grabbing; }
+    .card:not(.editing):hover {
+      transform: translateY(-1px);
+      box-shadow: 0 3px 10px rgba(0,0,0,0.11), 0 1px 4px rgba(0,0,0,0.06);
+    }
+    .card.dragging {
+      opacity: 0.35;
+      pointer-events: none;
+    }
+    .card.drag-placeholder {
+      opacity: 0;
+      height: 60px;
+    }
+
+    /* Card top — colored Monopoly section */
+    .card-top {
+      padding: 13px 38px 12px 14px;
+      position: relative;
+      min-height: 48px;
+    }
+    .card-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: rgba(0,0,0,0.75);
+      line-height: 1.38;
+      word-break: break-word;
+    }
+
+    /* Card controls (shown on hover) */
+    .card-controls {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      display: flex;
+      gap: 4px;
+      opacity: 0;
+      transition: opacity 140ms;
+    }
+    .card:hover .card-controls { opacity: 1; }
+    .card.editing .card-controls { opacity: 0; pointer-events: none; }
+    .card-btn {
+      width: 22px;
+      height: 22px;
+      border: none;
+      background: rgba(0,0,0,0.12);
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #333;
+      font-size: 12px;
+      line-height: 1;
+      transition: background 140ms, color 140ms;
+      flex-shrink: 0;
+    }
+    .card-btn:hover { background: rgba(0,0,0,0.22); }
+    .card-btn.btn-del:hover { background: rgba(180,30,30,0.2); color: #b41e1e; }
+    .card-btn svg { display: block; }
+
+    /* Card bottom — items */
+    .card-bottom {
+      padding: 8px 14px 11px;
+      background: rgba(255,255,255,0.55);
+      border-top: 1px solid rgba(0,0,0,0.05);
+    }
+    .card-items {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .card-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+      font-size: 11.5px;
+      font-weight: 400;
+      color: #666;
+      line-height: 1.42;
+    }
+    .card-item-dot {
+      flex-shrink: 0;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: #bbb;
+      margin-top: 5px;
+    }
+
+    /* ── Edit form (inline) ─────────────────────── */
+    .card-edit-form {
+      padding: 12px 14px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .edit-title-input {
+      width: 100%;
+      border: none;
+      outline: none;
+      font-size: 14px;
+      font-weight: 700;
+      font-family: inherit;
+      color: rgba(0,0,0,0.75);
+      background: transparent;
+      resize: none;
+      line-height: 1.38;
+      min-height: 38px;
+    }
+    .edit-title-input::placeholder { color: #bbb; font-weight: 400; }
+
+    .edit-divider {
+      height: 1px;
+      background: rgba(0,0,0,0.07);
+      margin: 0 -14px;
+    }
+
+    .edit-items-section {
+      background: rgba(255,255,255,0.55);
+      margin: 0 -14px -12px;
+      padding: 8px 14px 10px;
+      border-top: 1px solid rgba(0,0,0,0.05);
+    }
+    .edit-items-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      margin-bottom: 6px;
+    }
+    .edit-item-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .edit-item-dot-sm {
+      flex-shrink: 0;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: #bbb;
+    }
+    .edit-item-input {
+      flex: 1;
+      border: none;
+      border-bottom: 1px solid rgba(0,0,0,0.1);
+      outline: none;
+      font-size: 11.5px;
+      font-family: inherit;
+      font-weight: 400;
+      color: #555;
+      background: transparent;
+      padding: 2px 0;
+      transition: border-color 140ms;
+    }
+    .edit-item-input:focus { border-color: rgba(0,0,0,0.28); }
+    .edit-item-remove {
+      border: none;
+      background: none;
+      cursor: pointer;
+      color: #ccc;
+      font-size: 14px;
+      line-height: 1;
+      padding: 0 2px;
+      transition: color 140ms;
+      flex-shrink: 0;
+    }
+    .edit-item-remove:hover { color: #c44; }
+
+    .edit-add-item {
+      font-size: 11px;
+      font-family: inherit;
+      color: #bbb;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 2px 0 0;
+      transition: color 140ms;
+      text-align: left;
+    }
+    .edit-add-item:hover { color: #888; }
+
+    .edit-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px 12px;
+      background: rgba(245,243,238,0.9);
+      margin: 0 -14px -12px;
+      border-top: 1px solid rgba(0,0,0,0.06);
+    }
+    .edit-actions-left { display: flex; gap: 8px; }
+    .btn-primary {
+      padding: 7px 16px;
+      background: #1a1a1a;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      letter-spacing: 0.2px;
+      transition: opacity 140ms;
+    }
+    .btn-primary:hover { opacity: 0.78; }
+    .btn-secondary {
+      padding: 7px 12px;
+      background: transparent;
+      color: #999;
+      border: none;
+      border-radius: 6px;
+      font-size: 12px;
+      font-family: inherit;
+      cursor: pointer;
+      transition: color 140ms;
+    }
+    .btn-secondary:hover { color: #444; }
+    .btn-danger {
+      padding: 7px 12px;
+      background: transparent;
+      color: #cc4444;
+      border: none;
+      border-radius: 6px;
+      font-size: 12px;
+      font-family: inherit;
+      cursor: pointer;
+      transition: color 140ms;
+      margin-left: auto;
+    }
+    .btn-danger:hover { color: #991111; }
+
+    /* ── Color picker ───────────────────────────── */
+    .color-row {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .color-dot {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: transform 130ms, border-color 130ms;
+      flex-shrink: 0;
+    }
+    .color-dot:hover { transform: scale(1.2); }
+    .color-dot.selected { border-color: rgba(0,0,0,0.45); transform: scale(1.15); }
+
+    /* ── Add card button ────────────────────────── */
+    .add-card-btn {
+      margin-top: 8px;
+      width: 100%;
+      padding: 9px;
+      background: transparent;
+      border: 1.5px dashed rgba(0,0,0,0.16);
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: inherit;
+      color: #bbb;
+      letter-spacing: 0.3px;
+      transition: background 140ms, border-color 140ms, color 140ms;
+      flex-shrink: 0;
+    }
+    .add-card-btn:hover {
+      background: rgba(0,0,0,0.03);
+      border-color: rgba(0,0,0,0.28);
+      color: #888;
+    }
+
+    /* ── New card form ──────────────────────────── */
+    .new-card-form {
+      background: #FDFCF8;
+      border-radius: 8px;
+      box-shadow: 0 2px 14px rgba(0,0,0,0.13);
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .new-card-top {
+      padding: 12px 14px 11px;
+    }
+    .new-title-input {
+      width: 100%;
+      border: none;
+      outline: none;
+      font-size: 14px;
+      font-weight: 700;
+      font-family: inherit;
+      color: rgba(0,0,0,0.75);
+      background: transparent;
+      resize: none;
+      line-height: 1.38;
+      min-height: 32px;
+    }
+    .new-title-input::placeholder { color: #ccc; font-weight: 400; }
+    .new-card-colors {
+      padding: 6px 14px 8px;
+      border-top: 1px solid rgba(0,0,0,0.05);
+      background: rgba(255,255,255,0.55);
+    }
+    .new-card-items {
+      padding: 8px 14px 6px;
+      border-top: 1px solid rgba(0,0,0,0.05);
+      background: rgba(255,255,255,0.55);
+    }
+    .new-items-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      margin-bottom: 5px;
+    }
+    .new-actions {
+      display: flex;
+      gap: 8px;
+      padding: 8px 14px 11px;
+      border-top: 1px solid rgba(0,0,0,0.05);
+      background: rgba(245,243,238,0.9);
+    }
+
+    /* ── Empty hint ─────────────────────────────── */
+    .empty-hint {
+      font-size: 12px;
+      color: #ccc;
+      text-align: center;
+      padding: 18px 8px;
+      letter-spacing: 0.2px;
+    }
+
+    /* ── Scrollbar styling for board ────────────── */
+    .board::-webkit-scrollbar { height: 6px; }
+    .board::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.14); border-radius: 6px; }
+  </style>
+</head>
+<body>
+
+  <div class="board-header">
+    <div class="board-title">Nasenklammer · Board</div>
+    <div class="board-meta">Aufgaben nach Seiten verwalten</div>
+  </div>
+
+  <div class="board" id="board"></div>
+
+  <script>
+  'use strict';
+
+  /* ── Konstanten ─────────────────────────────── */
+  var STORAGE_KEY = 'nk-kanban-v2';
+
+  var COLUMNS = [
+    { id: 'geplant',  title: 'Geplant'   },
+    { id: 'inarbeit', title: 'In Arbeit'  },
+    { id: 'erledigt', title: 'Erledigt'   },
+    { id: 'geparkt',  title: 'Geparkt'    },
+  ];
+
+  var COLORS = [
+    '#FFBCCA', '#FFD49E', '#FFEEA0', '#B4EBC4',
+    '#A4D9F4', '#C6B8F7', '#F5B8E6', '#B8F0DC',
+    '#F8C8A8', '#C8E4F5', '#E4C8F5', '#D2F4A4',
+  ];
+
+  /* ── Hilfsfunktionen ────────────────────────── */
+  function uid() {
+    return 'k' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+  }
+
+  function randomColor() {
+    return COLORS[Math.floor(Math.random() * COLORS.length)];
+  }
+
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text !== undefined) e.textContent = text;
+    return e;
+  }
+
+  function svgIcon(path, vb) {
+    var s = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    s.setAttribute('viewBox', vb || '0 0 16 16');
+    s.setAttribute('width', '12');
+    s.setAttribute('height', '12');
+    s.setAttribute('fill', 'none');
+    s.setAttribute('stroke', 'currentColor');
+    s.setAttribute('stroke-width', '1.8');
+    s.setAttribute('stroke-linecap', 'round');
+    s.setAttribute('stroke-linejoin', 'round');
+    s.innerHTML = path;
+    return s;
+  }
+
+  /* ── Datenverwaltung ─────────────────────────── */
+  function loadData() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    return { geplant: [], inarbeit: [], erledigt: [], geparkt: [] };
+  }
+
+  function save() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (e) {}
+  }
+
+  var data = loadData();
+
+  /* ── Drag State ──────────────────────────────── */
+  var drag = {
+    active: false,
+    cardId: null,
+    fromCol: null,
+    ghostEl: null,
+    placeholderEl: null,
+    startX: 0,
+    startY: 0,
+    offX: 0,
+    offY: 0,
+  };
+
+  /* ══════════════════════════════════════════════
+     RENDER
+  ══════════════════════════════════════════════ */
+  function render() {
+    var board = document.getElementById('board');
+    board.innerHTML = '';
+    COLUMNS.forEach(function (col) {
+      board.appendChild(buildColumn(col));
+    });
+  }
+
+  /* ── Column ─────────────────────────────────── */
+  function buildColumn(col) {
+    var colEl = el('div', 'column');
+    colEl.dataset.col = col.id;
+
+    var cards = data[col.id] || [];
+
+    // Header
+    var hdr = el('div', 'col-header');
+    hdr.appendChild(el('span', 'col-title', col.title));
+    hdr.appendChild(el('span', 'col-count', String(cards.length)));
+    colEl.appendChild(hdr);
+
+    // Cards dropzone
+    var zone = el('div', 'cards');
+    zone.dataset.col = col.id;
+
+    if (cards.length === 0) {
+      zone.appendChild(el('div', 'empty-hint', 'Noch leer'));
+    } else {
+      cards.forEach(function (card) {
+        zone.appendChild(buildCard(card, col.id));
+      });
+    }
+
+    attachDropzone(zone, col.id);
+    colEl.appendChild(zone);
+
+    // Add button
+    var addBtn = el('button', 'add-card-btn', '+ Karte hinzufügen');
+    addBtn.addEventListener('click', function () {
+      openNewCardForm(colEl, zone, col.id);
+    });
+    colEl.appendChild(addBtn);
+
+    return colEl;
+  }
+
+  /* ── Card ───────────────────────────────────── */
+  function buildCard(card, colId) {
+    var cardEl = el('div', 'card');
+    cardEl.dataset.id  = card.id;
+    cardEl.dataset.col = colId;
+
+    // Top section
+    var top = el('div', 'card-top');
+    top.style.background = card.color || COLORS[0];
+
+    var title = el('div', 'card-title', card.title);
+    top.appendChild(title);
+
+    // Controls
+    var ctrls = el('div', 'card-controls');
+    var editBtn = el('button', 'card-btn btn-edit');
+    editBtn.title = 'Bearbeiten';
+    editBtn.appendChild(svgIcon('<path d="M11.5 2.5l2 2-8 8H3.5v-2l8-8zM10 4l2 2"/>'));
+    editBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      openCardEdit(cardEl, card, colId);
+    });
+    ctrls.appendChild(editBtn);
+    top.appendChild(ctrls);
+    cardEl.appendChild(top);
+
+    // Bottom section (items)
+    if (card.items && card.items.length > 0) {
+      var bottom = el('div', 'card-bottom');
+      var list   = el('ul', 'card-items');
+      card.items.forEach(function (item) {
+        if (!item.trim()) return;
+        var li  = el('li', 'card-item');
+        var dot = el('span', 'card-item-dot');
+        li.appendChild(dot);
+        li.appendChild(document.createTextNode(item));
+        list.appendChild(li);
+      });
+      bottom.appendChild(list);
+      cardEl.appendChild(bottom);
+    }
+
+    attachDrag(cardEl, card.id, colId);
+    return cardEl;
+  }
+
+  /* ── Inline edit ─────────────────────────────── */
+  function openCardEdit(cardEl, card, colId) {
+    if (cardEl.classList.contains('editing')) return;
+    cardEl.classList.add('editing');
+
+    // Remember original color
+    var selectedColor = card.color || COLORS[0];
+    var origHTML = cardEl.innerHTML;
+
+    cardEl.innerHTML = '';
+    cardEl.style.background = selectedColor;
+
+    var form = el('div', 'card-edit-form');
+    form.style.background = selectedColor;
+
+    // Color row
+    var colorRow = buildColorPicker(selectedColor, function (c) {
+      selectedColor = c;
+      cardEl.style.background = c;
+      form.style.background = c;
+      titleTA.style.background = 'transparent';
+    });
+    form.appendChild(colorRow);
+
+    // Title textarea
+    var titleTA = el('textarea', 'edit-title-input');
+    titleTA.placeholder = 'Aufgabe …';
+    titleTA.value = card.title;
+    titleTA.style.background = 'transparent';
+    titleTA.addEventListener('input', function () {
+      this.style.height = 'auto';
+      this.style.height = this.scrollHeight + 'px';
+    });
+    form.appendChild(titleTA);
+
+    // Items section
+    var itemsSec = el('div', 'edit-items-section');
+    var itemsList = el('ul', 'edit-items-list');
+
+    function addItemRow(val) {
+      var li  = el('li');
+      var row = el('div', 'edit-item-row');
+      var dot = el('span', 'edit-item-dot-sm');
+      var inp = el('input', 'edit-item-input');
+      inp.type = 'text';
+      inp.placeholder = 'Schritt hinzufügen …';
+      inp.value = val || '';
+      var rmBtn = el('button', 'edit-item-remove', '×');
+      rmBtn.type = 'button';
+      rmBtn.addEventListener('click', function () { li.remove(); });
+      inp.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); addItemRow(''); }
+      });
+      row.appendChild(dot);
+      row.appendChild(inp);
+      row.appendChild(rmBtn);
+      li.appendChild(row);
+      itemsList.appendChild(li);
+      inp.focus();
+    }
+
+    (card.items || []).forEach(function (v) { if (v.trim()) addItemRow(v); });
+
+    var addItemBtn = el('button', 'edit-add-item', '+ Schritt hinzufügen');
+    addItemBtn.type = 'button';
+    addItemBtn.addEventListener('click', function () { addItemRow(''); });
+
+    itemsSec.appendChild(itemsList);
+    itemsSec.appendChild(addItemBtn);
+    form.appendChild(itemsSec);
+
+    // Actions
+    var actions = el('div', 'edit-actions');
+    var left    = el('div', 'edit-actions-left');
+
+    var saveBtn = el('button', 'btn-primary', 'Speichern');
+    saveBtn.type = 'button';
+    saveBtn.addEventListener('click', function () {
+      var t = titleTA.value.trim();
+      if (!t) { titleTA.focus(); return; }
+      var items = [];
+      itemsList.querySelectorAll('.edit-item-input').forEach(function (inp) {
+        var v = inp.value.trim();
+        if (v) items.push(v);
+      });
+      card.title = t;
+      card.color = selectedColor;
+      card.items = items;
+      save();
+      cardEl.classList.remove('editing');
+      cardEl.style.background = '';
+      var newCardEl = buildCard(card, colId);
+      cardEl.parentNode.replaceChild(newCardEl, cardEl);
+      refreshCount(colId);
+    });
+
+    var cancelBtn = el('button', 'btn-secondary', 'Abbrechen');
+    cancelBtn.type = 'button';
+    cancelBtn.addEventListener('click', function () {
+      cardEl.classList.remove('editing');
+      cardEl.style.background = '';
+      cardEl.innerHTML = origHTML;
+      // Re-attach drag and controls
+      var rebuiltEl = buildCard(card, colId);
+      cardEl.parentNode.replaceChild(rebuiltEl, cardEl);
+    });
+
+    var delBtn = el('button', 'btn-danger', 'Löschen');
+    delBtn.type = 'button';
+    delBtn.addEventListener('click', function () {
+      if (confirm('Karte "' + card.title + '" löschen?')) {
+        deleteCard(card.id, colId);
+      }
+    });
+
+    left.appendChild(saveBtn);
+    left.appendChild(cancelBtn);
+    actions.appendChild(left);
+    actions.appendChild(delBtn);
+    form.appendChild(actions);
+
+    cardEl.appendChild(form);
+
+    // Auto-resize title
+    setTimeout(function () {
+      titleTA.style.height = 'auto';
+      titleTA.style.height = titleTA.scrollHeight + 'px';
+      titleTA.focus();
+      titleTA.setSelectionRange(titleTA.value.length, titleTA.value.length);
+    }, 10);
+  }
+
+  /* ── Color picker ────────────────────────────── */
+  function buildColorPicker(selected, onChange) {
+    var row = el('div', 'color-row');
+    COLORS.forEach(function (c) {
+      var dot = el('div', 'color-dot' + (c === selected ? ' selected' : ''));
+      dot.style.background = c;
+      dot.addEventListener('click', function () {
+        row.querySelectorAll('.color-dot').forEach(function (d) {
+          d.classList.toggle('selected', d === dot);
+        });
+        if (onChange) onChange(c);
+      });
+      row.appendChild(dot);
+    });
+    return row;
+  }
+
+  /* ── New card form ───────────────────────────── */
+  function openNewCardForm(colEl, zone, colId) {
+    if (colEl.querySelector('.new-card-form')) return;
+
+    var selectedColor = randomColor();
+    var form = el('div', 'new-card-form');
+
+    // Top (title)
+    var top = el('div', 'new-card-top');
+    top.style.background = selectedColor;
+
+    var titleTA = el('textarea', 'new-title-input');
+    titleTA.placeholder = 'Aufgabe …';
+    titleTA.rows = 1;
+    titleTA.style.background = 'transparent';
+    titleTA.addEventListener('input', function () {
+      this.style.height = 'auto';
+      this.style.height = this.scrollHeight + 'px';
+    });
+    top.appendChild(titleTA);
+    form.appendChild(top);
+
+    // Color picker
+    var colorSec = el('div', 'new-card-colors');
+    colorSec.style.background = selectedColor;
+    var colorRow = buildColorPicker(selectedColor, function (c) {
+      selectedColor = c;
+      top.style.background = c;
+      colorSec.style.background = c;
+    });
+    colorSec.appendChild(colorRow);
+    form.appendChild(colorSec);
+
+    // Items
+    var itemsSec = el('div', 'new-card-items');
+    var itemsList = el('ul', 'new-items-list');
+
+    function addItemRow(val) {
+      var li  = el('li');
+      var row = el('div', 'edit-item-row');
+      var dot = el('span', 'edit-item-dot-sm');
+      var inp = el('input', 'edit-item-input');
+      inp.type = 'text';
+      inp.placeholder = 'Schritt hinzufügen …';
+      inp.value = val || '';
+      var rmBtn = el('button', 'edit-item-remove', '×');
+      rmBtn.type = 'button';
+      rmBtn.addEventListener('click', function () { li.remove(); });
+      inp.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); addItemRow(''); }
+      });
+      row.appendChild(dot);
+      row.appendChild(inp);
+      row.appendChild(rmBtn);
+      li.appendChild(row);
+      itemsList.appendChild(li);
+      inp.focus();
+    }
+
+    var addItemBtn = el('button', 'edit-add-item', '+ Schritt hinzufügen');
+    addItemBtn.type = 'button';
+    addItemBtn.addEventListener('click', function () { addItemRow(''); });
+
+    itemsSec.appendChild(itemsList);
+    itemsSec.appendChild(addItemBtn);
+    form.appendChild(itemsSec);
+
+    // Actions
+    var actions = el('div', 'new-actions');
+    var saveBtn = el('button', 'btn-primary', 'Speichern');
+    saveBtn.type = 'button';
+    saveBtn.addEventListener('click', function () {
+      var t = titleTA.value.trim();
+      if (!t) { titleTA.focus(); return; }
+      var items = [];
+      itemsList.querySelectorAll('.edit-item-input').forEach(function (inp) {
+        var v = inp.value.trim();
+        if (v) items.push(v);
+      });
+      var card = { id: uid(), title: t, color: selectedColor, items: items };
+      data[colId].push(card);
+      save();
+      form.remove();
+      // Add card to zone without full re-render
+      var emptyHint = zone.querySelector('.empty-hint');
+      if (emptyHint) emptyHint.remove();
+      zone.appendChild(buildCard(card, colId));
+      refreshCount(colId);
+    });
+
+    var cancelBtn = el('button', 'btn-secondary', 'Abbrechen');
+    cancelBtn.type = 'button';
+    cancelBtn.addEventListener('click', function () { form.remove(); });
+
+    actions.appendChild(saveBtn);
+    actions.appendChild(cancelBtn);
+    form.appendChild(actions);
+
+    titleTA.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') { form.remove(); }
+    });
+
+    var addBtn = colEl.querySelector('.add-card-btn');
+    colEl.insertBefore(form, addBtn);
+    titleTA.focus();
+  }
+
+  /* ══════════════════════════════════════════════
+     DRAG & DROP (Pointer Events)
+  ══════════════════════════════════════════════ */
+  function attachDrag(cardEl, cardId, colId) {
+    cardEl.addEventListener('pointerdown', function (e) {
+      // Ignore clicks inside edit form or on control buttons
+      if (cardEl.classList.contains('editing')) return;
+      if (e.target.closest('.card-btn') || e.target.closest('.card-controls')) return;
+      if (e.button !== 0) return;
+
+      var rect = cardEl.getBoundingClientRect();
+      drag.active    = false; // becomes true on first move > threshold
+      drag.cardId    = cardId;
+      drag.fromCol   = colId;
+      drag.startX    = e.clientX;
+      drag.startY    = e.clientY;
+      drag.offX      = e.clientX - rect.left;
+      drag.offY      = e.clientY - rect.top;
+      drag.sourceEl  = cardEl;
+      drag.width     = rect.width;
+      drag.height    = rect.height;
+      drag.ghostEl   = null;
+      drag.placeholder = null;
+
+      cardEl.setPointerCapture(e.pointerId);
+    });
+
+    cardEl.addEventListener('pointermove', function (e) {
+      if (!drag.cardId || drag.sourceEl !== cardEl) return;
+
+      var dx = e.clientX - drag.startX;
+      var dy = e.clientY - drag.startY;
+
+      if (!drag.active) {
+        if (Math.sqrt(dx * dx + dy * dy) < 5) return;
+        drag.active = true;
+
+        // Create ghost
+        var ghost = cardEl.cloneNode(true);
+        ghost.style.cssText = [
+          'position:fixed',
+          'left:' + (e.clientX - drag.offX) + 'px',
+          'top:' + (e.clientY - drag.offY) + 'px',
+          'width:' + drag.width + 'px',
+          'pointer-events:none',
+          'z-index:9999',
+          'opacity:0.92',
+          'transform:rotate(1.5deg) scale(1.02)',
+          'box-shadow:0 8px 24px rgba(0,0,0,0.18)',
+          'transition:none',
+        ].join(';');
+        document.body.appendChild(ghost);
+        drag.ghostEl = ghost;
+
+        // Placeholder
+        var ph = el('div', 'card drag-placeholder');
+        ph.style.height = drag.height + 'px';
+        cardEl.parentNode.insertBefore(ph, cardEl);
+        drag.placeholder = ph;
+
+        cardEl.classList.add('dragging');
+        document.body.style.userSelect = 'none';
+      }
+
+      drag.ghostEl.style.left = (e.clientX - drag.offX) + 'px';
+      drag.ghostEl.style.top  = (e.clientY - drag.offY) + 'px';
+
+      // Find drop target
+      drag.ghostEl.style.display = 'none';
+      var el2 = document.elementFromPoint(e.clientX, e.clientY);
+      drag.ghostEl.style.display = '';
+
+      var targetZone = el2 && el2.closest('.cards');
+      if (targetZone) {
+        var targetColId = targetZone.dataset.col;
+        // Move placeholder into target zone
+        var afterEl = getDragAfterElement(targetZone, e.clientY);
+        if (afterEl) {
+          targetZone.insertBefore(drag.placeholder, afterEl);
+        } else {
+          targetZone.appendChild(drag.placeholder);
+        }
+        drag.toCol = targetColId;
+      }
+    });
+
+    cardEl.addEventListener('pointerup', function (e) {
+      if (!drag.cardId || drag.sourceEl !== cardEl) return;
+
+      if (drag.active) {
+        // Drop
+        if (drag.ghostEl)   drag.ghostEl.remove();
+        if (drag.placeholder) {
+          var ph = drag.placeholder;
+          var zone = ph.parentNode;
+          var toCol = zone ? zone.dataset.col : drag.fromCol;
+
+          if (toCol && toCol !== drag.fromCol) {
+            // Move card in data
+            var fromArr = data[drag.fromCol];
+            var idx = indexOfCard(fromArr, drag.cardId);
+            if (idx !== -1) {
+              var card = fromArr.splice(idx, 1)[0];
+              // Insert at placeholder position
+              var toArr = data[toCol];
+              var phIdx = getSiblingCardIndex(ph, toCol);
+              if (phIdx >= 0) {
+                toArr.splice(phIdx, 0, card);
+              } else {
+                toArr.push(card);
+              }
+              save();
+            }
+          } else if (toCol === drag.fromCol) {
+            // Reorder within column
+            var arr = data[drag.fromCol];
+            var fromIdx = indexOfCard(arr, drag.cardId);
+            var phIdx2  = getSiblingCardIndex(ph, drag.fromCol);
+            if (fromIdx !== -1 && phIdx2 >= 0 && fromIdx !== phIdx2) {
+              var moved = arr.splice(fromIdx, 1)[0];
+              arr.splice(phIdx2 > fromIdx ? phIdx2 - 1 : phIdx2, 0, moved);
+              save();
+            }
+          }
+          ph.remove();
+        }
+        cardEl.classList.remove('dragging');
+        document.body.style.userSelect = '';
+        render();
+      }
+
+      drag.active      = false;
+      drag.cardId      = null;
+      drag.fromCol     = null;
+      drag.ghostEl     = null;
+      drag.placeholder = null;
+      drag.sourceEl    = null;
+    });
+
+    cardEl.addEventListener('pointercancel', function () {
+      if (drag.ghostEl)     drag.ghostEl.remove();
+      if (drag.placeholder) drag.placeholder.remove();
+      cardEl.classList.remove('dragging');
+      document.body.style.userSelect = '';
+      drag.active = false;
+      drag.cardId = null;
+    });
+  }
+
+  function getDragAfterElement(zone, y) {
+    var els = zone.querySelectorAll('.card:not(.dragging):not(.drag-placeholder)');
+    var closest = null;
+    var closestOffset = Infinity;
+    for (var i = 0; i < els.length; i++) {
+      var box = els[i].getBoundingClientRect();
+      var offset = y - (box.top + box.height / 2);
+      if (offset < 0 && Math.abs(offset) < closestOffset) {
+        closestOffset = Math.abs(offset);
+        closest = els[i];
+      }
+    }
+    return closest;
+  }
+
+  function indexOfCard(arr, cardId) {
+    for (var i = 0; i < arr.length; i++) {
+      if (arr[i].id === cardId) return i;
+    }
+    return -1;
+  }
+
+  function getSiblingCardIndex(ph, colId) {
+    var arr    = data[colId] || [];
+    var zone   = ph.parentNode;
+    if (!zone) return arr.length;
+    var siblings = zone.querySelectorAll('.card:not(.dragging):not(.drag-placeholder)');
+    var phRect = ph.getBoundingClientRect();
+    var phY    = phRect.top;
+    var count  = 0;
+    for (var i = 0; i < siblings.length; i++) {
+      var r = siblings[i].getBoundingClientRect();
+      if (r.top < phY) count++;
+    }
+    return count;
+  }
+
+  /* ── Dropzone (fallback for zones without a card) */
+  function attachDropzone(zone, colId) {
+    // Pointer events are handled per-card. This is just for visual feedback.
+    zone.addEventListener('dragover', function (e) { e.preventDefault(); });
+  }
+
+  /* ── Data mutations ───────────────────────────── */
+  function deleteCard(cardId, colId) {
+    data[colId] = data[colId].filter(function (c) { return c.id !== cardId; });
+    save();
+    render();
+  }
+
+  function refreshCount(colId) {
+    var col = document.querySelector('.column[data-col="' + colId + '"]');
+    if (!col) return;
+    var count = col.querySelector('.col-count');
+    if (count) count.textContent = String(data[colId].length);
+  }
+
+  /* ── Init ─────────────────────────────────────── */
+  render();
+  </script>
+
+</body>
+</html>

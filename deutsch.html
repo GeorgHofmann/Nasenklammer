@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- SEO -->
+  <meta name="description" content="Deutsch üben für die Grundschule – Buchstaben, Anlaute und mehr. Kostenlose interaktive Übungen auf Nasenklammer.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://nasenklammer.de/deutsch.html">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="de_DE">
+  <meta property="og:site_name" content="Nasenklammer">
+  <meta property="og:title" content="Deutsch für Grundschulkinder – Nasenklammer">
+  <meta property="og:description" content="Deutsch üben für die Grundschule – Buchstaben, Anlaute und mehr. Kostenlose interaktive Übungen auf Nasenklammer.">
+  <meta property="og:url" content="https://nasenklammer.de/deutsch.html">
+  <meta property="og:image" content="https://nasenklammer.de/og-image.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Deutsch für Grundschulkinder – Nasenklammer">
+  <meta name="twitter:description" content="Deutsch üben für die Grundschule – Buchstaben, Anlaute und mehr.">
+  <meta name="twitter:image" content="https://nasenklammer.de/og-image.png">
+  <!-- /SEO -->
+  <title>Grundschulkind – Deutsch – Nasenklammer</title>
+  <link rel="stylesheet" href="components/fonts.css">
+  <link rel="stylesheet" href="components/transitions.css">
+  <link rel="stylesheet" href="components/logo.css">
+  <link rel="stylesheet" href="components/header.css">
+  <link rel="stylesheet" href="components/menu.css">
+  <link rel="stylesheet" href="components/card.css">
+  <link rel="stylesheet" href="components/search.css">
+  <link rel="stylesheet" href="components/fab.css">
+  <style>
+    :root {
+      --font-logo:    'Alcyone', 'Solway', Georgia, serif;
+      --font-heading: 'Solway', Georgia, serif;
+      --font-body:    'Noto Sans', Arial, sans-serif;
+
+      --color-bg:      #F5C8D4;
+      --color-accent:  #963555;
+      --nk-card-color: #963555;
+      --nk-fab-bg:     #963555;
+      --nk-fab-color:  #F5C8D4;
+      --nk-search-panel-bg:   rgba(240,200,210,0.97);
+      --nk-search-trigger-bg: rgba(245,200,212,0.62);
+      --nk-search-icon-bg:    #963555;
+      --nk-search-text:       #963555;
+      --nk-search-placeholder:#5a7a50;
+      --nk-search-accent:     #963555;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--color-bg);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Strip ───────────────────────────────── */
+    .gs-strip {
+      background: var(--color-bg);
+      padding: 21px 56px;
+    }
+    .gs-strip__text {
+      font-family: var(--font-heading);
+      font-size: 32px;
+      font-weight: 400;
+      line-height: 40px;
+      color: var(--color-accent);
+      white-space: nowrap;
+    }
+    .gs-strip__link {
+      color: inherit;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      text-decoration-thickness: 1px;
+      cursor: pointer;
+    }
+    .gs-strip__link:hover { opacity: 0.75; }
+
+    /* ── Karten-Bereich ──────────────────────── */
+    .gs-main {
+      flex: 1;
+      padding: 48px 56px 160px;
+    }
+
+    @media (max-width: 900px) {
+      .gs-strip   { padding: 16px 20px; }
+      .gs-strip__text { font-size: 22px; white-space: normal; }
+      .gs-main    { padding: 32px 20px 140px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="siteMenu"></div>
+  <header id="siteHeader"></header>
+
+  <!-- Strip -->
+  <div class="gs-strip">
+    <p class="gs-strip__text">
+      Ich bin ein
+      <a class="gs-strip__link" href="index.html">Grundschulkind</a>
+      und übe in
+      <a class="gs-strip__link" href="grundschule-faecher.html">Deutsch</a>
+      …
+    </p>
+  </div>
+
+  <!-- Übungs-Karten -->
+  <main class="gs-main">
+    <div id="cardGrid"></div>
+  </main>
+
+  <div id="siteSearch"></div>
+  <div id="siteFab"></div>
+
+  <script src="components/analytics.js"></script>
+  <script src="components/voice.js"></script>
+  <script src="components/fab.js"></script>
+  <script src="components/transitions.js"></script>
+  <script src="components/logo.js"></script>
+  <script src="components/icons.js"></script>
+  <script src="components/menu.js"></script>
+  <script src="components/header.js"></script>
+  <script src="components/card.js"></script>
+  <script src="components/search-data.js"></script>
+  <script src="components/search.js"></script>
+  <script>
+    'use strict';
+
+    var DEUTSCH_THEME = { color: '#963555' };
+
+    var voiceText =
+      'Super, dass du hier bist! Das hier sind die Deutsch-Übungen für Grundschulkinder. ' +
+      'Such dir eine Übung aus – welche möchtest du ausprobieren?';
+
+    new NKCardGrid(document.getElementById('cardGrid'), {
+      cards: [
+        {
+          href: 'deutsch-abc.html',
+          label: '… ABC',
+          imageSvg: '<img src="img/deutsch/ABC.svg" alt="ABC" style="width:100%;height:100%;object-fit:contain;">'
+        }
+      ]
+    });
+
+    new NKSearch(document.getElementById('siteSearch'), {
+      items: NKSearchData,
+    });
+
+    var menu = new NKMenu(
+      document.getElementById('siteMenu'),
+      Object.assign({}, NKMenu.THEMES.deutsch, DEUTSCH_THEME, {
+        activeHref: 'deutsch.html',
+        headerEl: document.getElementById('siteHeader'),
+        onItemClick: function(item) {
+          if (item.href && item.href !== '#') window.location.href = item.href;
+        }
+      })
+    );
+
+    var header = new NKHeader(
+      document.getElementById('siteHeader'),
+      Object.assign({}, NKHeader.THEMES.deutsch, {
+        mode: 'brand',
+        subtitle: 'Wissen macht Spaß',
+        homeHref: 'index.html',
+        onMenuClick: function() { menu.toggle(); }
+      })
+    );
+
+    var fab = new NKFab(document.getElementById('siteFab'), {
+      mode: 'page',
+      onSpeak: function() { NKVoice.speak(voiceText, function() { fab.done(); }); },
+      onStop:  function() { NKVoice.stop(); },
+    });
+  </script>
+
+</body>
+</html>

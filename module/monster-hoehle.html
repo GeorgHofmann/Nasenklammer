@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>Monster und Höhle</title>
+  <link rel="stylesheet" href="../components/fonts.css">
   <link rel="stylesheet" href="../components/count-display.css">
   <link rel="stylesheet" href="../components/button.css">
   <style>
@@ -47,11 +48,16 @@
 
     #hint {
       position: fixed;
-      bottom: 20px;
+      bottom: 80px;
       left: 50%;
       transform: translateX(-50%);
-      font-size: 0.88rem;
-      color: #b0a0b8;
+      width: min(1280px, calc(100vw - 48px));
+      font-family: 'Solway', Georgia, serif;
+      font-size: 36px;
+      font-weight: 400;
+      line-height: 1.55;
+      color: #964f12;
+      text-align: center;
       pointer-events: none;
       z-index: 10;
     }
@@ -121,16 +127,9 @@
 
 <div id="counter-wrap">
   <div id="counter"></div>
-  <div id="dots">
-  <div class="dot" id="d0"></div><div class="dot" id="d1"></div>
-  <div class="dot" id="d2"></div><div class="dot" id="d3"></div>
-  <div class="dot" id="d4"></div><div class="dot" id="d5"></div>
-  <div class="dot" id="d6"></div><div class="dot" id="d7"></div>
-  <div class="dot" id="d8"></div><div class="dot" id="d9"></div>
-</div>
 </div>
 
-<div id="hint">Tippe auf ein Monster ✦</div>
+<div id="hint">Die Monster sind müde und wollen schlafen. Bring sie in ihre Höhle und zähle die Monster ab, indem du auf sie klickst – am Ende sollten alle in der Höhle sein.</div>
 
 <!-- Zzz-Animation über der Höhle -->
 <div id="zzz">
@@ -292,17 +291,41 @@ function cMat(hex) { return new THREE.MeshToonMaterial({ color: hex }); }
 
 // ── MONSTER PARTS ────────────────────────
 function addEyes(g) {
+  var openParts   = [];
+  var closedParts = [];
+
   [-0.19, 0.19].forEach(function(x) {
+    // ── Offene Augen ──────────────────────
     var ew = new THREE.Mesh(new THREE.SphereGeometry(0.135, 12, 12), WHITE_MAT);
     ew.position.set(x, 0.16, 0.43);
-    g.add(ew);
+    g.add(ew); openParts.push(ew);
+
     var pu = new THREE.Mesh(new THREE.SphereGeometry(0.073, 10, 10), DARK_MAT);
     pu.position.set(x, 0.16, 0.515);
-    g.add(pu);
+    g.add(pu); openParts.push(pu);
+
     var sh = new THREE.Mesh(new THREE.SphereGeometry(0.033, 8, 8), WHITE_MAT);
     sh.position.set(x + 0.046, 0.200, 0.550);
-    g.add(sh);
+    g.add(sh); openParts.push(sh);
+
+    // ── Geschlossenes Auge (Schlaf-Bogen) ─
+    var lid = new THREE.Mesh(
+      new THREE.TorusGeometry(0.09, 0.022, 8, 16, Math.PI),
+      DARK_MAT
+    );
+    lid.position.set(x, 0.16, 0.46);
+    lid.visible = false;
+    g.add(lid); closedParts.push(lid);
   });
+
+  return { open: openParts, closed: closedParts };
+}
+
+function setEyes(monster, sleeping) {
+  var ud = monster.userData;
+  if (!ud.openEyes) return;
+  ud.openEyes.forEach(function(m)   { m.visible = !sleeping; });
+  ud.closedEyes.forEach(function(m) { m.visible =  sleeping; });
 }
 
 function addSmile(g) {
@@ -468,25 +491,27 @@ function buildMonster(def) {
   body.castShadow = true; body.receiveShadow = true;
   g.add(body);
 
-  addEyes(g);
+  var eyeParts = addEyes(g);
   addSmile(g);
   addLegs(g, bMat);
   var arms = addArms(g, bMat);
   def[1](g, bMat);
 
   g.userData = {
-    name:     def[2],
-    isInCave: false,
-    isFlying: false,
-    slotIdx:  -1,
-    homePos:  new THREE.Vector3(),
-    flyStart: new THREE.Vector3(),
-    flyEnd:   new THREE.Vector3(),
-    flyT:     0,
-    arms:     arms,
-    tL:       ARM_REST_L,
-    tR:       ARM_REST_R,
-    popAnim:  0,
+    name:       def[2],
+    isInCave:   false,
+    isFlying:   false,
+    slotIdx:    -1,
+    homePos:    new THREE.Vector3(),
+    flyStart:   new THREE.Vector3(),
+    flyEnd:     new THREE.Vector3(),
+    flyT:       0,
+    arms:       arms,
+    tL:         ARM_REST_L,
+    tR:         ARM_REST_R,
+    popAnim:    0,
+    openEyes:   eyeParts.open,
+    closedEyes: eyeParts.closed,
   };
   return g;
 }
@@ -551,6 +576,7 @@ function sendHome(monster) {
   monster.position.y = 0;
   ud.tL = ARM_REST_L;
   ud.tR = ARM_REST_R;
+  setEyes(monster, false);
   decrement();
 }
 
@@ -591,8 +617,6 @@ var count   = 0;
 var countDisplay = new NKCountDisplay(document.getElementById('counter'), { value: 0, total: 10 });
 var sucEl   = document.getElementById('success');
 var zzzEl   = document.getElementById('zzz');
-var dotEls  = [];
-for (var di = 0; di < 10; di++) dotEls.push(document.getElementById('d' + di));
 
 // Position the zzz element above the cave (projected to screen)
 var caveTopWorld = new THREE.Vector3(CAVE_POS.x, CAVE_POS.y + 3.6, CAVE_POS.z);
@@ -610,24 +634,28 @@ function showZzz() {
   zzzEl.style.display = count >= 1 ? 'block' : 'none';
 }
 
-function updateDots() {
-  for (var i = 0; i < dotEls.length; i++) {
-    if (i < count) dotEls[i].classList.add('filled');
-    else           dotEls[i].classList.remove('filled');
-  }
+
+function speakNumber(n) {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  var u = new SpeechSynthesisUtterance(String(n));
+  u.lang = 'de-DE';
+  u.rate = 0.9;
+  window.speechSynthesis.speak(u);
 }
 
 function increment() {
   count = Math.min(10, count + 1);
   countDisplay.set(count);
-  updateDots(); showZzz();
+  showZzz();
+  speakNumber(count);
   if (count >= 10) setTimeout(function() { sucEl.classList.add('show'); }, 700);
 }
 
 function decrement() {
   count = Math.max(0, count - 1);
   countDisplay.set(count);
-  updateDots(); showZzz();
+  showZzz();
   sucEl.classList.remove('show');
 }
 
@@ -687,6 +715,7 @@ function animate() {
         ud.popAnim = 1;
         ud.tL = ARM_REST_L;
         ud.tR = ARM_REST_R;
+        setEyes(m, true);
         increment();
       }
       continue;  // keine Idle-Animation während des Flugs

@@ -36,24 +36,21 @@
 
 /* ── Primary ────────────────────────────── */
 .nk-btn--primary {
-  background: #ed4790;     /* action/cta/saisonal/cta-default */
-  color: #f8fdff;          /* font/color/buttons---primary    */
+  background: var(--nk-btn-color, #ed4790);
+  color: var(--nk-btn-text, #f8fdff);
 }
 
-.nk-btn--primary:hover  { background: #8c0044; }  /* cta-hover */
+.nk-btn--primary:hover  { opacity: 0.85; }
 .nk-btn--primary:active { transform: scale(0.98); }
 
 /* ── Secondary (outline) ────────────────── */
 .nk-btn--secondary {
   background: transparent;
-  color: #ed4790;
-  border: 1px solid #ed4790;
+  color: var(--nk-btn-color, #ed4790);
+  border: 1px solid var(--nk-btn-color, #ed4790);
 }
 
-.nk-btn--secondary:hover {
-  color: #8c0044;
-  border-color: #8c0044;
-}
+.nk-btn--secondary:hover { opacity: 0.75; }
 
 /* ── Disabled / Locked ──────────────────── */
 .nk-btn:disabled,

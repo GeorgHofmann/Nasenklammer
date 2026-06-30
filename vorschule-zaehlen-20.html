@@ -27,6 +27,7 @@
   <link rel="stylesheet" href="components/breadcrumb.css">
   <link rel="stylesheet" href="components/menu.css">
   <link rel="stylesheet" href="components/fab.css">
+  <link rel="stylesheet" href="components/button.css">
   <style>
     :root {
       --font-logo:    'Alcyone', 'Solway', Georgia, serif;
@@ -77,6 +78,7 @@
 
   <div id="siteFab"></div>
 
+  <script src="components/button.js"></script>
   <script src="components/worksheet-pdf.js"></script>
   <script src="components/analytics.js"></script>
   <script src="components/voice.js"></script>
@@ -179,7 +181,7 @@
         doc.setTextColor(190, 190, 190);
         doc.text('Automatisch generiert von nasenklammer.de – kostenlos und werbefrei.', W / 2, 291, { align: 'center' });
 
-        NKWorksheetPDF.preview(doc, 'nasenklammer-zaehlen-20-uebungsblatt.pdf');
+        NKWorksheetPDF.preview(doc, 'nasenklammer-zaehlen-20-uebungsblatt.pdf', NKWorksheetPDF.THEMES.vorschule);
       }
 
       NKWorksheetPDF.load(build);

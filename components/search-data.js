@@ -42,6 +42,14 @@ var NKSearchData = [
     iconSvg: '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5"/><path d="M12 7v5l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   },
 
+  {
+    label:  'ABC',
+    href:   'deutsch-abc.html',
+    klasse: 'grundschule',
+    tags:   ['buchstaben', 'anlaute', 'deutsch', 'lesen', 'alphabet', 'abc'],
+    iconSvg: '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 18 L9 6 L14 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><line x1="6" y1="14" x2="12" y2="14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="17" y1="6" x2="17" y2="18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M17 6 Q23 6 23 10.5 Q23 13.5 17 13.5 Q23 13.5 23 16 Q23 18 17 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none"/></svg>',
+  },
+
   /* Weitere Übungen hier ergänzen … */
 
 ];

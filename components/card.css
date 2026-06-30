@@ -83,7 +83,7 @@
   justify-content: center;
   flex-shrink: 0;
   color: var(--nk-card-color, var(--color-home-accent, #225a93));
-  opacity: 0.55;
+  opacity: 1;
   pointer-events: none;
 }
 

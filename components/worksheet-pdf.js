@@ -2,11 +2,19 @@
  * NKWorksheetPDF – gemeinsamer Helfer für PDF-Übungsblätter
  *
  * Stellt bereit:
- *   NKWorksheetPDF.load(callback)     – lädt jsPDF (CDN) falls nötig
- *   NKWorksheetPDF.create(opts)       – neues jsPDF-Dokument
- *   NKWorksheetPDF.preview(doc, name) – Vorschau-Modal + Download-Button
+ *   NKWorksheetPDF.load(callback)              – lädt jsPDF (CDN) falls nötig
+ *   NKWorksheetPDF.create(opts)                – neues jsPDF-Dokument (A4)
+ *   NKWorksheetPDF.preview(doc, name, theme)   – Vorschau-Modal + Download-Button
+ *   NKWorksheetPDF.THEMES                      – vordefinierte Lernbereich-Farben
  *
- * Modal-Design passt zum Nasenklammer-Mathematik-Theme (#964f12).
+ * Verwendung:
+ *   NKWorksheetPDF.load(function() {
+ *     var doc = NKWorksheetPDF.create();
+ *     // … PDF aufbauen …
+ *     NKWorksheetPDF.preview(doc, 'dateiname.pdf', NKWorksheetPDF.THEMES.mathematik);
+ *   });
+ *
+ * Ohne Theme-Angabe wird automatisch mathematik verwendet.
  */
 
 (function (root) {
@@ -14,7 +22,36 @@
 
   var CDN = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
 
-  /* ── jsPDF laden (einmalig) ───────────────── */
+  /* ── Lernbereich-Themes ───────────────────────
+     Farben passend zu NKBreadcrumb.THEMES und den
+     jeweiligen Seitendesigns.
+     color       → CSS-Hex für Modal-Buttons/Rahmen
+     borderColor → halbtransparenter Trennstrich
+     rgb         → [r, g, b] für jsPDF-Zeichenbefehle        */
+  var THEMES = {
+    mathematik: {
+      color:       '#964f12',
+      borderColor: 'rgba(150,79,18,0.15)',
+      rgb:         [150, 79, 18],
+    },
+    vorschule: {
+      color:       '#7a4010',
+      borderColor: 'rgba(122,64,16,0.15)',
+      rgb:         [122, 64, 16],
+    },
+    deutsch: {
+      color:       '#1a3a7a',
+      borderColor: 'rgba(26,58,122,0.15)',
+      rgb:         [26, 58, 122],
+    },
+    sachkunde: {
+      color:       '#1a5c2a',
+      borderColor: 'rgba(26,92,42,0.15)',
+      rgb:         [26, 92, 42],
+    },
+  };
+
+  /* ── jsPDF laden (einmalig) ───────────────────── */
   function load(cb) {
     if (window.jspdf) { cb(); return; }
     var s = document.createElement('script');
@@ -24,15 +61,19 @@
     document.head.appendChild(s);
   }
 
-  /* ── Neues Dokument ───────────────────────── */
+  /* ── Neues Dokument (A4, Hochformat, mm) ──────── */
   function create(opts) {
     var JsPDF = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF;
-    if (!JsPDF) throw new Error('jsPDF nicht geladen');
+    if (!JsPDF) throw new Error('NKWorksheetPDF: jsPDF nicht geladen – load() zuerst aufrufen');
     return new JsPDF(Object.assign({ orientation: 'p', unit: 'mm', format: 'a4' }, opts || {}));
   }
 
-  /* ── Vorschau-Modal ───────────────────────── */
-  function preview(doc, filename) {
+  /* ── Vorschau-Modal ───────────────────────────── */
+  function preview(doc, filename, theme) {
+    var t = theme || THEMES.mathematik;
+    var c = t.color;
+    var b = t.borderColor;
+
     var blob    = doc.output('blob');
     var blobUrl = URL.createObjectURL(blob);
 
@@ -54,22 +95,21 @@
     var topBar = document.createElement('div');
     topBar.style.cssText =
       'display:flex;align-items:center;justify-content:space-between;' +
-      'padding:14px 20px;flex-shrink:0;' +
-      'border-bottom:1px solid rgba(150,79,18,0.15);';
+      'padding:14px 20px;flex-shrink:0;border-bottom:1px solid ' + b + ';';
 
     var titleEl = document.createElement('span');
     titleEl.textContent = 'Vorschau – Übungsblatt';
     titleEl.style.cssText =
-      'font-family:Solway,Georgia,serif;font-size:17px;font-weight:600;color:#964f12;';
+      'font-family:Solway,Georgia,serif;font-size:17px;font-weight:600;color:' + c + ';';
 
-    /* Close-Icon – identisch mit .nk-breadcrumb__close */
+    /* Schließen-Icon – identisch mit .nk-breadcrumb__close */
     var xBtn = document.createElement('button');
     xBtn.innerHTML =
       '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true" width="26" height="26">' +
       '<path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2"' +
       ' stroke-linecap="round"/></svg>';
     xBtn.style.cssText =
-      'background:none;border:none;cursor:pointer;color:#964f12;' +
+      'background:none;border:none;cursor:pointer;color:' + c + ';' +
       'padding:4px;line-height:0;border-radius:8px;' +
       'display:flex;align-items:center;justify-content:center;';
     xBtn.setAttribute('aria-label', 'Schließen');
@@ -82,38 +122,26 @@
     frame.src = blobUrl;
     frame.style.cssText = 'flex:1;border:none;width:100%;min-height:420px;';
 
-    /* Buttons – gleicher Stil wie End-Screen ("Nochmal") */
+    /* Button-Leiste */
     var btmBar = document.createElement('div');
     btmBar.style.cssText =
       'display:flex;justify-content:flex-end;gap:12px;' +
-      'padding:14px 20px;flex-shrink:0;' +
-      'border-top:1px solid rgba(150,79,18,0.15);';
-
-    var btnClose = document.createElement('button');
-    btnClose.textContent = 'Schließen';
-    btnClose.style.cssText =
-      'height:52px;padding:0 32px;border:2px solid #964f12;border-radius:14px;' +
-      'background:transparent;color:#964f12;' +
-      'font-family:\'Noto Sans\',Arial,sans-serif;font-size:18px;cursor:pointer;';
-
-    var btnDl = document.createElement('button');
-    btnDl.textContent = 'Herunterladen';
-    btnDl.style.cssText =
-      'height:52px;padding:0 32px;border:none;border-radius:14px;' +
-      'background:#964f12;color:#fff;' +
-      'font-family:\'Noto Sans\',Arial,sans-serif;font-size:18px;cursor:pointer;';
+      'padding:14px 20px;flex-shrink:0;border-top:1px solid ' + b + ';';
 
     function closeModal() {
       URL.revokeObjectURL(blobUrl);
       document.body.removeChild(overlay);
     }
 
+    /* Buttons via NKButton-Komponente (button.css + button.js erforderlich) */
+    var btnTheme = { color: c };
+    var btnClose = NKButton.create('Schließen',     'secondary', btnTheme, closeModal);
+    var btnDl    = NKButton.create('Herunterladen', 'primary',   btnTheme, function () { doc.save(filename); });
+
     xBtn.addEventListener('click', closeModal);
-    btnClose.addEventListener('click', closeModal);
     overlay.addEventListener('click', function (e) {
       if (e.target === overlay) closeModal();
     });
-    btnDl.addEventListener('click', function () { doc.save(filename); });
 
     btmBar.appendChild(btnClose);
     btmBar.appendChild(btnDl);
@@ -124,6 +152,12 @@
     document.body.appendChild(overlay);
   }
 
-  root.NKWorksheetPDF = { load: load, create: create, preview: preview };
+  /* ── Export ───────────────────────────────────── */
+  root.NKWorksheetPDF = {
+    load:    load,
+    create:  create,
+    preview: preview,
+    THEMES:  THEMES,
+  };
 
 }(window));

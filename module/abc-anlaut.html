@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="../components/fonts.css">
+  <title>ABC – Anlaute</title>
+  <style>
+    :root {
+      --bg:     #F5C8D4;
+      --acc:    #963555;
+      --al:     rgba(31,63,18,.13);
+      --ok:     #2d7d2d;
+      --err:    #c0392b;
+      --fh:     'Solway', Georgia, serif;
+      --fb:     'Noto Sans', Arial, sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; }
+    body {
+      font-family: var(--fb);
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: none;
+    }
+
+    /* ── Navigationsleiste ─────────────────── */
+    .nav {
+      display: flex;
+      align-items: center;
+      padding: 10px 16px 6px;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .nav-btn {
+      width: 40px; height: 40px;
+      border: 2px solid var(--acc);
+      background: transparent;
+      border-radius: 50%;
+      cursor: pointer;
+      color: var(--acc);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      transition: background 180ms, transform 120ms;
+    }
+    .nav-btn:hover:not(:disabled) { background: var(--al); }
+    .nav-btn:active:not(:disabled) { transform: scale(.9); }
+    .nav-btn:disabled { opacity: .2; cursor: default; pointer-events: none; }
+    .nav-progress {
+      flex: 1;
+      text-align: center;
+      font-family: var(--fh);
+      font-size: 15px;
+      color: var(--acc);
+    }
+    .nav-score {
+      font-family: var(--fh);
+      font-size: 15px;
+      color: var(--acc);
+      white-space: nowrap;
+      min-width: 72px;
+      text-align: right;
+    }
+
+    /* ── Spielfläche ───────────────────────── */
+    .game {
+      flex: 1;
+      display: flex;
+      gap: 10px;
+      padding: 6px 16px 14px;
+      min-height: 0;
+    }
+
+    /* Gegenstands-Spalte */
+    .obj-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      justify-content: center;
+      min-width: 0;
+    }
+    .obj-card {
+      background: white;
+      border-radius: 14px;
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: grab;
+      box-shadow: 0 2px 8px rgba(0,0,0,.08);
+      transition: transform 180ms, box-shadow 180ms;
+      touch-action: none;
+      border: 3px solid transparent;
+      flex: 1;
+      min-height: 72px;
+    }
+    .obj-card:hover { transform: translateY(-2px); box-shadow: 0 5px 16px rgba(0,0,0,.13); }
+    .obj-card.dragging { opacity: .28; transform: scale(.95); }
+    .obj-card svg { width: 58px; height: 58px; flex-shrink: 0; }
+    .obj-label {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--acc);
+      flex: 1;
+    }
+
+    /* Buchstaben- und Abwurf-Spalte */
+    .letter-col {
+      width: 138px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .letter-wrap { text-align: center; line-height: 1; }
+    .letter-big {
+      font-family: var(--fh);
+      font-size: 90px;
+      font-weight: 700;
+      color: var(--acc);
+      display: block;
+    }
+    .letter-small {
+      font-family: var(--fh);
+      font-size: 46px;
+      font-weight: 400;
+      color: var(--acc);
+      opacity: .5;
+      display: block;
+      margin-top: -6px;
+    }
+    .drop-zone {
+      width: 118px;
+      min-height: 82px;
+      border: 3px dashed rgba(31,63,18,.38);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 10px 8px;
+      transition: background 180ms, border-color 180ms;
+    }
+    .drop-zone.over {
+      background: var(--al);
+      border-color: var(--acc);
+      border-style: solid;
+    }
+    .drop-zone.ok-flash {
+      background: rgba(45,125,45,.16);
+      border-color: var(--ok);
+      border-style: solid;
+    }
+    .drop-zone.err-flash {
+      background: rgba(192,57,43,.1);
+      border-color: var(--err);
+      border-style: solid;
+    }
+    .drop-hint {
+      font-size: 12px;
+      color: rgba(31,63,18,.42);
+      line-height: 1.45;
+    }
+
+    /* ── Drag-Ghost ────────────────────────── */
+    .ghost {
+      position: fixed;
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%,-50%) scale(1.06);
+      background: white;
+      border-radius: 14px;
+      padding: 8px 14px;
+      box-shadow: 0 8px 28px rgba(0,0,0,.22);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      opacity: .93;
+    }
+    .ghost svg   { width: 50px; height: 50px; }
+    .ghost .obj-label { font-size: 14px; font-weight: 600; color: var(--acc); }
+
+    /* ── Animationen ───────────────────────── */
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      18%      { transform: translateX(-10px); }
+      36%      { transform: translateX(10px); }
+      54%      { transform: translateX(-7px); }
+      72%      { transform: translateX(7px); }
+    }
+    .shake { animation: shake 380ms ease-out; }
+
+    @keyframes star-pop {
+      0%   { transform: translate(-50%,-50%) scale(0); opacity: 1; }
+      55%  { transform: translate(-50%,-100%) scale(1.5); opacity: 1; }
+      100% { transform: translate(-50%,-150%) scale(1.2); opacity: 0; }
+    }
+    .star-pop {
+      position: fixed;
+      pointer-events: none;
+      z-index: 10000;
+      font-size: 38px;
+      animation: star-pop 680ms ease-out forwards;
+    }
+
+    /* ── Abschlussbildschirm ───────────────── */
+    .end-screen {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      z-index: 200;
+    }
+    .end-screen.visible { display: flex; }
+    .end-emoji  { font-size: 56px; }
+    .end-title  {
+      font-family: var(--fh);
+      font-size: 30px;
+      color: var(--acc);
+      text-align: center;
+    }
+    .end-score  {
+      font-family: var(--fh);
+      font-size: 20px;
+      color: var(--acc);
+    }
+    .end-replay {
+      background: var(--acc);
+      color: white;
+      border: none;
+      padding: 16px 40px;
+      font-size: 18px;
+      font-family: var(--fh);
+      border-radius: 12px;
+      cursor: pointer;
+      margin-top: 6px;
+      transition: opacity 180ms;
+    }
+    .end-replay:hover { opacity: .86; }
+
+    /* ── Responsive ────────────────────────── */
+    @media (min-height: 620px) {
+      .obj-card svg  { width: 70px; height: 70px; }
+      .letter-big    { font-size: 104px; }
+      .letter-small  { font-size: 52px; }
+      .letter-col    { width: 150px; }
+      .drop-zone     { width: 130px; min-height: 90px; }
+    }
+    @media (max-height: 480px) {
+      .letter-big   { font-size: 64px; }
+      .letter-small { font-size: 34px; }
+      .nav          { padding: 6px 12px 4px; }
+      .game         { padding: 4px 12px 10px; gap: 8px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigationsleiste -->
+  <div class="nav">
+    <button class="nav-btn" id="btnPrev" title="Vorheriger Buchstabe">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <div class="nav-progress" id="navProgress">Buchstabe 1 · 22</div>
+    <div class="nav-score" id="navScore">⭐ 0</div>
+    <button class="nav-btn" id="btnNext" title="Nächster Buchstabe">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
+    </button>
+  </div>
+
+  <!-- Spielfläche -->
+  <div class="game">
+    <div class="obj-col" id="objCol"></div>
+    <div class="letter-col">
+      <div class="letter-wrap">
+        <span class="letter-big"  id="lBig"></span>
+        <span class="letter-small" id="lSmall"></span>
+      </div>
+      <div class="drop-zone" id="dropZone">
+        <span class="drop-hint">Zieh den<br>richtigen<br>Gegenstand<br>hierhin</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Abschlussbildschirm -->
+  <div class="end-screen" id="endScreen">
+    <div class="end-emoji">🎉</div>
+    <div class="end-title">Toll gemacht!</div>
+    <div class="end-score" id="endScore"></div>
+    <button class="end-replay" id="btnReplay">Nochmal spielen</button>
+  </div>
+
+  <script>
+  'use strict';
+
+  /* ══════════════════════════════════════════════
+     ITEM-DATEN  –  22 Buchstaben + SVG-Illustrationen
+     ══════════════════════════════════════════════ */
+  var ITEMS = [
+
+    /* A – Apfel */
+    {
+      id: 'apfel', letter: 'A', word: 'Apfel',
+      svg: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">' +
+        '<path d="M50 27Q54 16 63 14" stroke="#5D4037" stroke-width="3.2" stroke-linecap="round" fill="none"/>' +
+        '<ellipse cx="60" cy="13" rx="7" ry="4.5" fill="#66BB6A" transform="rotate(-38 60 13)"/>' +
+        '<path d="M50 30C27 30 14 47 14 62 14 80 30 89 50 89 70 89 86 80 86 62 86 47 73 30 50 30Z" fill="#EF5350"/>' +
+        '<ellipse cx="34" cy="48" rx="5" ry="3.5" fill="rgba(255,255,255,.36)" transform="rotate(-25 34 48)"/>' +
+        '</svg>'
+    },
+
+    /* B – Banane */
+    {
+      id: 'banane', letter: 'B', word: 'Banane',
+      svg: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">' +
+        '<path d="M22 79C22 44 36 18 64 14 79 12 87 22 86 37 84 53 70 64 50 73 38 79 28 84 24 87Z" fill="#FDD835"/>' +
+        '<path d="M64 14C79 12 87 22 86 37" stroke="#8D6E63" stroke-width="3.8" stroke-linecap="round" fill="none"/>' +
+        '<path d="M24 87C26 84 30 81 34 79" stroke="#8D6E63" stroke-width="3.8" stroke-linecap="round" fill="none"/>' +
+        '<path d="M26 70C30 55 40 36 62 24" stroke="#F9A825" stroke-width="1.5" fill="none" stroke-linecap="round" opacity=".45"/>' +
+        '</svg>'
+    },
+
+    /* C – Computer */
+    {
+      id: 'computer', letter: 'C', word: 'Computer',
+      svg: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">' +
+        '<rect x="7" y="10" width="86" height="58" rx="7" fill="#455A64"/>' +
+        '<rect x="12" y="15" width="76" height="48" rx="4" fill="#64B5F6"/>' +
+        '<line x1="26" y1="30" x2="74" y2="30" stroke="white" stroke-width="2.5" stroke-linecap="round" opacity=".85"/>' +
+        '<line x1="26" y1="40" x2="74" y2="40" stroke="white" stroke-width="2.5" stroke-linecap="round" opacity=".85"/>' +
+        '<line x1="26" y1="50" x2="56" y2="50" stroke="white" stroke-width="2.5" stroke-linecap="round" opacity=".85"/>' +
+        '<rect x="36" y="68" width="28" height="6" rx="2" fill="#546E7A"/>' +
+        '<rect x="22" y="74" width="56" height="7" rx="3" fill="#37474F"/>' +
+        '</svg>'
+    },
+
+    /* D – Drachen (Kite) */
+    {
+      id: 'drachen', letter: 'D', word: 'Drachen',
+      svg: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">' +
+        '<path d="M50 6 86 46 50 78 14 46Z" fill="#EF5350"/>' +
+        '<line x1="50" y1="6" x2="50" y2="78" stroke="#B71C1C" stroke-width="1.6"/>' +
+        '<line x1="14" y1="46" x2="86" y2="46" stroke="#B71C1C" stroke-width="1.6"/>' +
+        '<path d="M50 78Q58 86 50 93Q42 100 50 100" stroke="#FF8F00" stroke-width="3.5" fill="none" stroke-linecap="round"/>' +
+        '<path d="M50 78Q65 88 73 99" stroke="#795548" stroke-width="1.6" fill="none" stroke-linecap="round"/>' +
+        '</svg>'
+    },
+
+    /* E – Ente */
+    {
+      id: 'ente', letter: 'E', word: 'Ente',
+      svg: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">' +
+        '<ellipse cx="42" cy="66" rx="30" ry="20" fill="#FDD835"/>' +
+        '<circle cx="70" cy="48" r="19" fill="#FDD835"/>' +
+        '<path d="M85 47 97 44 96 54Z" fill="#FF8F00"/>' +
+        '<circle cx="76" cy="41" r="3.8" fill="#1A1A1A"/>' +
+        '<circle cx="75" cy="40" r="1.3" fill="white"/>' +
+        '<path d="M35 82 26 92M50 84 50 94" stroke="#FF8F00" stroke-width="3.2" stroke-linecap="round"/>' +
+        '<path d="M26 92 18 92M26 92 24 98" stroke="#FF8F00" stroke-width="2.5" stroke-linecap="round"/>' +
+        '<path d="M50 94 43 94M50 94 48 100" stroke="#FF8F00" stroke-width="2.5" stroke-linecap="round"/>' +
+        '</svg>'
+    },
+
+    /* F – Fisch */
+    {
+      id: 'fisch', letter: 'F', word: 'Fisch',
+      svg: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">' +
+        '<ellipse cx="44" cy="52" rx="34" ry="22" fill="#42A5F5"/>' +
+        '<path d="M78 52 97 36 97 68Z" fill="#1E88E5"/>' +
+        '<circle cx="17" cy="47" r="6" fill="white"/>' +
+        '<circle cx="17" cy="47" r="3.8" fill="#1A1A1A"/>' +
+        '<circle cx="16" cy="46" r="1.3" fill="white"/>' +
+        '<path d="M9 55Q12 59 9 62" stroke="#1E88E5" stroke-width="2.2" fill="none" stroke-linecap="round"/>' +
+        '<path d="M48 33Q53 40 48 47" stroke="rgba(255,255,255,.55)" stroke-width="1.8" fill="none"/>' +
+        '<path d="M62 34Q67 41 62 47" stroke="rgba(255,255,255,.55)" stroke-width="1.8" fill="none"/>' +
+        '<path d="M42 31Q50 23 58 31 53 38 42 31Z" fill="#1E88E5"/>' +
+        '</svg>'
+    },
+
+    /* G – Gabel */
+    {
+      id: 'gabel', letter: 'G', word: 'Gabel',
+      svg: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">' +
+        '<rect x="43" y="50" width="14" height="43" rx="7" fill="#90A4AE"/>' +
+        '<line x1="31" y1="7" x2="31" y2="38" stroke="#90A4AE" stroke-width="8.5" stroke-linecap="round"/>' +
+        '<line x1="44" y1="7" x2="44" y2="42" stroke="#90A4AE" stroke-width="8.5" stroke-linecap="round"/>' +
+        '<line x1="57" y1="7" x2="57" y2="42" stroke="#90A4AE" stroke-width="8.5" stroke-linecap="round"/>' +
+        '<line x1="69" y1="7" x2="69" y2="38" stroke="#90A4AE" stroke-width="8.5" stroke-linecap="round"/>' +
+        '<path d="M31 38Q31 50 43 50 57 50 69 50Q69 50 69 38" fill="#90A4AE"/>' +
+        '</svg>'
+    },
+
+    /* H – Haus */
+    {
+      id: 'haus', letter: 'H', word: 'Haus',
+      svg: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">' +
+        '<rect x="13" y="48" width="74" height="44" rx="3" fill="#FFCDD2"/>' +
+        '<path d="M5 51 50 11 95 51Z" fill="#C62828"/>' +
+        '<rect x="38" y="66" width="24" height="26" rx="3" fill="#795548"/>' +
+        '<rect x="16" y="54" width="20" height="18" rx="3" fill="#90CAF9"/>' +
+        '<rect x="64" y="54" width="20" height="18" rx="3" fill="#90CAF9"/>' +
+        '<line x1="26" y1="54" x2="26" y2="72" stroke="rgba(0,0,0,.14)" stroke-width="1"/>' +
+        '<line x1="16" y1="63" x2="36" y2="63" stroke="rgba(0,0,0,.14)" stroke-width="1"/>' +
+        '<line x1="74" y1="54" x2="74" y2="72" stroke="rgba(0,0,0,.14)" stroke-width="1"/>' +
+        '<line x1="64" y1="63" x2="84" y2="63" stroke="rgba(0,0,0,.14)" stroke-width="1"/>' +
+        '<circle cx="50" cy="77" r="2.5" fill="#5D4037"/>' +
+        '</svg>'
+    },
+
+    /* I – Igel */
+    {
+      id: 'igel', letter: 'I', word: 'Igel',
+      svg: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">' +
+        '<ellipse cx="44" cy="68" rx="32" ry="22" fill="#795548"/>' +
+        '<ellipse cx="75" cy="60" rx="21" ry="17" fill="#8D6E63"/>' +
+        '<circle cx="83" cy="53" r="3.8" fill="#1A1A1A"/>' +
+        '<circle cx="82" cy="52" r="1.3" fill="white"/>' +
+        '<ellipse cx="93" cy="61" rx="6" ry="4" fill="#5D4037"/>' +
+        '<line x1="26" y1="51" x2="16" y2="36" stroke="#4E342E" stroke-width="3.8" stroke-linecap="round"/>' +
+        '<line x1="35" y1="47" x2="28" y2="31" stroke="#4E342E" stroke-width="3.8" stroke-linecap="round"/>' +
+        '<line x1="45" y1="46" x2="43" y2="29" stroke="#4E342E" stroke-width="3.8" stroke-linecap="round"/>' +
+        '<line x1="56" y1="47" x2="58" y2="30" stroke="#4E342E" stroke-width="3.8" stroke-linecap="round"/>' +
+        '<line x1="65" y1="51" x2="71" y2="36" stroke="#4E342E" stroke-width="3.8" stroke-linecap="round"/>' +
+        '<ellipse cx="30" cy="87" rx="9" ry="4" fill="#6D4C41"/>' +
+        '<ellipse cx="54" cy="89" rx="9" ry="4" fill="#6D4C41"/>' +
+        '</svg>'
+    },
+
+    /* J – Jacke */
+    {
+      id: 'jacke', letter: 'J', word: 'Jacke',
+      svg: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">' +
+        '<path d="M20 30 15 92 85 92 80 30 68 22 60 38 50 40 40 38 32 22Z" fill="#42A5F5"/>' +
+        '<path d="M32 22 40 38 50 33 40 18Z" fill="#1565C0"/>' +
+        '<path d="M68 22 60 38 50 33 60 18Z" fill="#1565C0"/>' +
+        '<path d="M20 30 5 56 16 66 27 47Z" fill="#42A5F5"/>' +
+        '<line x1="5" y1="56" x2="16" y2="66" stroke="#1565C0" stroke-width="1.5"/>' +
+        '<path d="M80 30 95 56 84 66 73 47Z" fill="#42A5F5"/>' +
+        '<line x1="95" y1="56" x2="84" y2="66" stroke="#1565C0" stroke-width="1.5"/>' +
+        '<line x1="50" y1="40" x2="50" y2="88" stroke="#1565C0" stroke-width="1.5" stroke-dasharray="4 3"/>' +
+        '<rect x="19" y="64" width="18" height="12" rx="3" stroke="#1565C0" stroke-width="1.5" fill="rgba(0,0,0,.05)"/>' +
+        '</svg>'
+    },
+
+    /* K – Katze */
+    {
+      id: 'katze', letter: 'K', word: 'Katze',
+      svg: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">' +
+        '<circle cx="50" cy="60" r="32" fill="#FF8F00"/>' +
+        '<path d="M22 36 18 9 40 32Z" fill="#FF8F00"/>' +
+        '<path d="M78 36 82 9 60 32Z" fill="#FF8F00"/>' +
+        '<path d="M24 32 22 13 38 30Z" fill="#F06292"/>' +
+        '<path d="M76 32 78 13 62 30Z" fill="#F06292"/>' +
+        '<ellipse cx="37" cy="55" rx="7" ry="9" fill="#1A1A1A"/>' +
+        '<ellipse cx="63" cy="55" rx="7" ry="9" fill="#1A1A1A"/>' +
+        '<circle cx="35" cy="50" r="3" fill="white"/>' +
+        '<circle cx="61" cy="50" r="3" fill="white"/>' +
+        '<path d="M44 68 50 72 56 68 50 63Z" fill="#F06292"/>' +
+        '<path d="M50 72Q44 78 40 76" stroke="#4A1A1A" stroke-width="2.2" fill="none" stroke-linecap="round"/>' +
+        '<path d="M50 72Q56 78 60 76" stroke="#4A1A1A" stroke-width="2.2" fill="none" stroke-linecap="round"/>' +
+        '<line x1="17" y1="65" x2="40" y2="67" stroke="white" stroke-width="1.8"/>' +
+        '<line x1="17" y1="70" x2="40" y2="71" stroke="white" stroke-width="1.8"/>' +
+        '<line x1="60" y1="67" x2="83" y2="65" stroke="white" stroke-width="1.8"/>' +
+        '<line x1="60" y1="71" x2="83" y2="70" stroke="white" stroke-width="1.8"/>' +
+        '</svg>'
+    },
+
+    /* L – Lampe (Glühbirne) */
+    {
+      id: 'lampe', letter: 'L', word: 'Lampe',
+      svg: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">' +
+        '<circle cx="50" cy="40" r="26" fill="#FFF176"/>' +
+        '<path d="M32 57Q30 68 35 71 65 71 70 68Q75 65 68 57Z" fill="#FFF176"/>' +
+        '<rect x="38" y="71" width="24" height="8" rx="2" fill="#BDBDBD"/>' +
+        '<rect x="40" y="79" width="20" height="6" rx="2" fill="#9E9E9E"/>' +
+        '<line x1="50" y1="10" x2="50" y2="4"  stroke="#FFD600" stroke-width="3.8" stroke-linecap="round"/>' +
+        '<line x1="80" y1="20" x2="84" y2="16" stroke="#FFD600" stroke-width="3.8" stroke-linecap="round"/>' +
+        '<line x1="20" y1="20" x2="16" y2="16" stroke="#FFD600" stroke-width="3.8" stroke-linecap="round"/>' +
+        '<line x1="88" y1="40" x2="94" y2="40" stroke="#FFD600" stroke-width="3.8" stroke-linecap="round"/>' +
+        '<line x1="12" y1="40" x2="6"  y2="40" stroke="#FFD600" stroke-width="3.8" stroke-linecap="round"/>' +
+        '</svg>'
+    },
+
+    /* M – Mond */
+    {
+      id: 'mond', letter: 'M', word: 'Mond',
+      svg: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">' +
+        '<path d="M60 12A38 38 0 1 0 60 88A22 22 0 1 1 60 12Z" fill="#FFF9C4"/>' +
+        '<circle cx="76" cy="28" r="3.2" fill="#FDD835"/>' +
+        '<circle cx="85" cy="50" r="2.2" fill="#FDD835"/>' +
+        '<circle cx="79" cy="70" r="2.8" fill="#FDD835"/>' +
+        '</svg>'
+    },
+
+    /* O – Orange */
+    {
+      id: 'orange', letter: 'O', word: 'Orange',
+      svg: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">' +
+        '<circle cx="50" cy="57" r="33" fill="#FF7043"/>' +
+        '<line x1="50" y1="24" x2="50" y2="90" stroke="#E64A19" stroke-width="1.5" opacity=".5"/>' +
+        '<line x1="17" y1="57" x2="83" y2="57" stroke="#E64A19" stroke-width="1.5" opacity=".5"/>' +
+        '<line x1="27" y1="34" x2="73" y2="80" stroke="#E64A19" stroke-width="1.5" opacity=".5"/>' +
+        '<line x1="73" y1="34" x2="27" y2="80" stroke="#E64A19" stroke-width="1.5" opacity=".5"/>' +
+        '<path d="M50 24Q53 13 60 11" stroke="#388E3C" stroke-width="3.2" fill="none" stroke-linecap="round"/>' +
+        '<ellipse cx="57" cy="10" rx="7" ry="4.2" fill="#66BB6A" transform="rotate(-30 57 10)"/>' +
+        '<ellipse cx="38" cy="41" rx="5" ry="3.5" fill="rgba(255,255,255,.32)" transform="rotate(-30 38 41)"/>' +
+        '</svg>'
+    },
+
+    /* P – Pilz */
+    {
+      id: 'pilz', letter: 'P', word: 'Pilz',
+      svg: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">' +
+        '<path d="M7 57Q7 13 50 10Q93 13 93 57Z" fill="#EF5350"/>' +
+        '<circle cx="31" cy="36" r="6.8" fill="white"/>' +
+        '<circle cx="52" cy="24" r="5.8" fill="white"/>' +
+        '<circle cx="71" cy="38" r="5.8" fill="white"/>' +
+        '<circle cx="43" cy="52" r="4.2" fill="white"/>' +
+        '<path d="M34 57Q32 78 36 88 64 88 64 78Q68 57 66 57Z" fill="#F5F5F5"/>' +
+        '<path d="M34 57Q50 64 66 57" stroke="#E0E0E0" stroke-width="1.6" fill="none"/>' +
+        '</svg>'
+    },
+
+    /* Q – Qualle */
+    {
+      id: 'qualle', letter: 'Q', word: 'Qualle',
+      svg: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">' +
+        '<path d="M13 42Q13 7 50 5Q87 7 87 42Q87 59 50 62Q13 59 13 42Z" fill="#CE93D8" opacity=".92"/>' +
+        '<path d="M23 61Q20 73 25 83Q28 91 22 99" stroke="#AB47BC" stroke-width="3.8" fill="none" stroke-linecap="round"/>' +
+        '<path d="M36 63Q33 76 38 86Q40 93 37 100" stroke="#AB47BC" stroke-width="3.8" fill="none" stroke-linecap="round"/>' +
+        '<path d="M50 64Q50 78 50 89Q50 95 50 100" stroke="#AB47BC" stroke-width="3.8" fill="none" stroke-linecap="round"/>' +
+        '<path d="M64 63Q67 76 62 86Q60 93 63 100" stroke="#AB47BC" stroke-width="3.8" fill="none" stroke-linecap="round"/>' +
+        '<path d="M77 61Q80 73 75 83Q72 91 78 99" stroke="#AB47BC" stroke-width="3.8" fill="none" stroke-linecap="round"/>' +
+        '<circle cx="39" cy="36" r="5.5" fill="white"/>' +
+        '<circle cx="39" cy="36" r="3.2" fill="#7B1FA2"/>' +
+        '<circle cx="61" cy="36" r="5.5" fill="white"/>' +
+        '<circle cx="61" cy="36" r="3.2" fill="#7B1FA2"/>' +
+        '<path d="M42 51Q50 56 58 51" stroke="#7B1FA2" stroke-width="2.2" fill="none" stroke-linecap="round"/>' +
+        '</svg>'
+    },
+
+    /* R – Rakete */
+    {
+      id: 'rakete', letter: 'R', word: 'Rakete',
+      svg: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">' +
+        '<path d="M50 4Q66 18 66 55 50 67 34 55Q34 18 50 4Z" fill="#EF5350"/>' +
+        '<circle cx="50" cy="36" r="11" fill="#B0BEC5"/>' +
+        '<circle cx="50" cy="36" r="8"  fill="#90CAF9"/>' +
+        '<path d="M34 55 19 75 34 71Z" fill="#FF8F00"/>' +
+        '<path d="M66 55 81 75 66 71Z" fill="#FF8F00"/>' +
+        '<path d="M38 71 40 86 50 81 60 86 62 71 50 67Z" fill="#B71C1C"/>' +
+        '<path d="M42 86Q50 100 58 86" fill="#FFD600"/>' +
+        '<path d="M44 86Q50 97 56 86" fill="#FF6F00"/>' +
+        '</svg>'
+    },
+
+    /* S – Sonne */
+    {
+      id: 'sonne', letter: 'S', word: 'Sonne',
+      svg: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">' +
+        '<circle cx="50" cy="50" r="21" fill="#FFD600"/>' +
+        '<line x1="50" y1="6"  x2="50" y2="19" stroke="#FFD600" stroke-width="5.5" stroke-linecap="round"/>' +
+        '<line x1="50" y1="81" x2="50" y2="94" stroke="#FFD600" stroke-width="5.5" stroke-linecap="round"/>' +
+        '<line x1="6"  y1="50" x2="19" y2="50" stroke="#FFD600" stroke-width="5.5" stroke-linecap="round"/>' +
+        '<line x1="81" y1="50" x2="94" y2="50" stroke="#FFD600" stroke-width="5.5" stroke-linecap="round"/>' +
+        '<line x1="19" y1="19" x2="28" y2="28" stroke="#FFD600" stroke-width="5.5" stroke-linecap="round"/>' +
+        '<line x1="72" y1="72" x2="81" y2="81" stroke="#FFD600" stroke-width="5.5" stroke-linecap="round"/>' +
+        '<line x1="81" y1="19" x2="72" y2="28" stroke="#FFD600" stroke-width="5.5" stroke-linecap="round"/>' +
+        '<line x1="19" y1="81" x2="28" y2="72" stroke="#FFD600" stroke-width="5.5" stroke-linecap="round"/>' +
+        '<circle cx="42" cy="46" r="3.5" fill="#FF8F00"/>' +
+        '<circle cx="58" cy="46" r="3.5" fill="#FF8F00"/>' +
+        '<path d="M40 57Q50 64 60 57" stroke="#FF8F00" stroke-width="2.8" fill="none" stroke-linecap="round"/>' +
+        '</svg>'
+    },
+
+    /* T – Tisch */
+    {
+      id: 'tisch', letter: 'T', word: 'Tisch',
+      svg: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">' +
+        '<rect x="5"  y="32" width="90" height="13" rx="5" fill="#8D6E63"/>' +
+        '<rect x="12" y="45" width="13" height="48" rx="5" fill="#795548"/>' +
+        '<rect x="75" y="45" width="13" height="48" rx="5" fill="#795548"/>' +
+        '<rect x="18" y="68" width="64" height="10" rx="4" fill="#6D4C41"/>' +
+        '</svg>'
+    },
+
+    /* U – Uhr */
+    {
+      id: 'uhr', letter: 'U', word: 'Uhr',
+      svg: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">' +
+        '<circle cx="50" cy="52" r="40" fill="white" stroke="#37474F" stroke-width="5"/>' +
+        '<text x="50" y="20" text-anchor="middle" font-size="9.5" font-weight="bold" fill="#37474F" font-family="Arial,sans-serif">12</text>' +
+        '<text x="86" y="56" text-anchor="middle" font-size="9.5" font-weight="bold" fill="#37474F" font-family="Arial,sans-serif">3</text>' +
+        '<text x="50" y="92" text-anchor="middle" font-size="9.5" font-weight="bold" fill="#37474F" font-family="Arial,sans-serif">6</text>' +
+        '<text x="14" y="56" text-anchor="middle" font-size="9.5" font-weight="bold" fill="#37474F" font-family="Arial,sans-serif">9</text>' +
+        '<line x1="50" y1="52" x2="50" y2="24" stroke="#37474F" stroke-width="4.2" stroke-linecap="round"/>' +
+        '<line x1="50" y1="52" x2="70" y2="63" stroke="#E53935" stroke-width="3.2" stroke-linecap="round"/>' +
+        '<circle cx="50" cy="52" r="4.5" fill="#37474F"/>' +
+        '</svg>'
+    },
+
+    /* V – Vogel */
+    {
+      id: 'vogel', letter: 'V', word: 'Vogel',
+      svg: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">' +
+        '<ellipse cx="42" cy="62" rx="26" ry="18" fill="#66BB6A"/>' +
+        '<circle cx="70" cy="48" r="18" fill="#66BB6A"/>' +
+        '<path d="M84 46 97 43 84 53Z" fill="#FF8F00"/>' +
+        '<circle cx="76" cy="42" r="4.2" fill="white"/>' +
+        '<circle cx="77" cy="42" r="2.6" fill="#1A1A1A"/>' +
+        '<circle cx="76" cy="41" r="1"   fill="white"/>' +
+        '<path d="M26 56Q34 44 52 52Q44 60 26 56Z" fill="#43A047"/>' +
+        '<path d="M18 64Q7 57 5 50"  stroke="#43A047" stroke-width="6" stroke-linecap="round" fill="none"/>' +
+        '<path d="M18 64Q6 64 3 59"  stroke="#43A047" stroke-width="6" stroke-linecap="round" fill="none"/>' +
+        '<path d="M18 64Q7 72 5 78"  stroke="#43A047" stroke-width="6" stroke-linecap="round" fill="none"/>' +
+        '<line x1="42" y1="79" x2="35" y2="91" stroke="#FF8F00" stroke-width="2.8" stroke-linecap="round"/>' +
+        '<line x1="35" y1="91" x2="27" y2="91" stroke="#FF8F00" stroke-width="2.8" stroke-linecap="round"/>' +
+        '<line x1="35" y1="91" x2="32" y2="97" stroke="#FF8F00" stroke-width="2.8" stroke-linecap="round"/>' +
+        '</svg>'
+    },
+
+    /* W – Wolke */
+    {
+      id: 'wolke', letter: 'W', word: 'Wolke',
+      svg: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">' +
+        '<circle cx="30" cy="60" r="20" fill="#E3F2FD"/>' +
+        '<circle cx="50" cy="47" r="28" fill="#E3F2FD"/>' +
+        '<circle cx="72" cy="58" r="20" fill="#E3F2FD"/>' +
+        '<rect x="10" y="60" width="80" height="26" rx="8" fill="#E3F2FD"/>' +
+        '<path d="M22 75Q50 82 78 75" stroke="#BBDEFB" stroke-width="1.5" fill="none"/>' +
+        '</svg>'
+    }
+
+  ]; /* Ende ITEMS */
+
+  /* ══════════════════════════════════════════════
+     SPIELZUSTAND
+     ══════════════════════════════════════════════ */
+  var state = { index: 0, score: 0, locked: false };
+  var ghost    = null;
+  var dragCard = null;
+
+  /* DOM-Referenzen */
+  var objCol    = document.getElementById('objCol');
+  var lBig      = document.getElementById('lBig');
+  var lSmall    = document.getElementById('lSmall');
+  var dropZone  = document.getElementById('dropZone');
+  var btnPrev   = document.getElementById('btnPrev');
+  var btnNext   = document.getElementById('btnNext');
+  var navProg   = document.getElementById('navProgress');
+  var navScore  = document.getElementById('navScore');
+  var endScreen = document.getElementById('endScreen');
+  var endScore  = document.getElementById('endScore');
+  var btnReplay = document.getElementById('btnReplay');
+
+  /* ── Hilfsfunktionen ─────────────────────── */
+  function shuffle(arr) {
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+
+  /* ── Runde rendern ───────────────────────── */
+  function render() {
+    var item = ITEMS[state.index];
+
+    /* Buchstabe */
+    lBig.textContent   = item.letter;
+    lSmall.textContent = item.letter.toLowerCase();
+
+    /* Fortschritt + Punkte */
+    navProg.textContent  = 'Buchstabe ' + (state.index + 1) + ' · ' + ITEMS.length;
+    navScore.textContent = '⭐ ' + state.score;
+    btnPrev.disabled = (state.index === 0);
+    btnNext.disabled = (state.index === ITEMS.length - 1);
+
+    /* Abwurfzone zurücksetzen */
+    dropZone.className   = 'drop-zone';
+    dropZone.innerHTML   = '<span class="drop-hint">Zieh den<br>richtigen<br>Gegenstand<br>hierhin</span>';
+
+    /* Karten mischen und rendern */
+    var distractors = shuffle(
+      ITEMS.filter(function(it) { return it.id !== item.id; })
+    ).slice(0, 2);
+    var cards = shuffle([item].concat(distractors));
+
+    objCol.innerHTML = '';
+    cards.forEach(function(it) {
+      var card = document.createElement('div');
+      card.className    = 'obj-card';
+      card.dataset.id   = it.id;
+      card.innerHTML    = it.svg + '<span class="obj-label">' + it.word + '</span>';
+      attachDrag(card);
+      objCol.appendChild(card);
+    });
+  }
+
+  /* ── Drag & Drop (Pointer Events) ─────────── */
+  function attachDrag(card) {
+    var itemId = card.dataset.id;
+
+    card.addEventListener('pointerdown', function(e) {
+      if (state.locked) return;
+      e.preventDefault();
+      card.setPointerCapture(e.pointerId);
+
+      /* Ghost erstellen */
+      ghost = document.createElement('div');
+      ghost.className = 'ghost';
+      ghost.innerHTML = card.innerHTML;
+      ghost.style.left = e.clientX + 'px';
+      ghost.style.top  = e.clientY + 'px';
+      document.body.appendChild(ghost);
+
+      card.classList.add('dragging');
+      dragCard = card;
+    });
+
+    card.addEventListener('pointermove', function(e) {
+      if (!ghost || dragCard !== card) return;
+      ghost.style.left = e.clientX + 'px';
+      ghost.style.top  = e.clientY + 'px';
+
+      var dz   = dropZone.getBoundingClientRect();
+      var over = (e.clientX > dz.left && e.clientX < dz.right &&
+                  e.clientY > dz.top  && e.clientY < dz.bottom);
+      dropZone.classList.toggle('over', over);
+    });
+
+    card.addEventListener('pointerup', function(e) {
+      if (!ghost || dragCard !== card) return;
+      var dz     = dropZone.getBoundingClientRect();
+      var overDZ = (e.clientX > dz.left && e.clientX < dz.right &&
+                    e.clientY > dz.top  && e.clientY < dz.bottom);
+      var cx = e.clientX;
+      var cy = e.clientY;
+      endDrag();
+      if (overDZ) handleDrop(itemId, card, cx, cy);
+    });
+
+    card.addEventListener('pointercancel', function() {
+      if (dragCard === card) endDrag();
+    });
+  }
+
+  function endDrag() {
+    if (ghost && ghost.parentNode) ghost.parentNode.removeChild(ghost);
+    ghost = null;
+    if (dragCard) { dragCard.classList.remove('dragging'); dragCard = null; }
+    dropZone.classList.remove('over');
+  }
+
+  /* ── Abwurf auswerten ────────────────────── */
+  function handleDrop(itemId, card, cx, cy) {
+    if (state.locked) return;
+
+    var correct = (ITEMS[state.index].id === itemId);
+
+    if (correct) {
+      state.locked = true;
+      state.score += 10;
+      navScore.textContent = '⭐ ' + state.score;
+      dropZone.classList.add('ok-flash');
+
+      /* Stern-Animation */
+      var star = document.createElement('div');
+      star.className   = 'star-pop';
+      star.textContent = '⭐';
+      star.style.left  = cx + 'px';
+      star.style.top   = cy + 'px';
+      document.body.appendChild(star);
+      setTimeout(function() { if (star.parentNode) star.parentNode.removeChild(star); }, 700);
+
+      /* Weiter oder Abschluss */
+      setTimeout(function() {
+        state.locked = false;
+        if (state.index < ITEMS.length - 1) {
+          state.index++;
+          render();
+        } else {
+          showEnd();
+        }
+      }, 900);
+
+    } else {
+      /* Schütteln + kurze Fehlermeldung */
+      card.classList.add('shake');
+      dropZone.classList.add('err-flash');
+      setTimeout(function() {
+        card.classList.remove('shake');
+        dropZone.classList.remove('err-flash');
+        dropZone.className = 'drop-zone';
+        dropZone.innerHTML = '<span class="drop-hint">Zieh den<br>richtigen<br>Gegenstand<br>hierhin</span>';
+      }, 500);
+    }
+  }
+
+  /* ── Abschlussbildschirm ─────────────────── */
+  function showEnd() {
+    var pct   = state.score / (ITEMS.length * 10);
+    var emoji = pct >= .9 ? '🌟' : pct >= .6 ? '😊' : '👍';
+    var stars = pct >= .9 ? '⭐⭐⭐' : pct >= .6 ? '⭐⭐' : '⭐';
+    document.querySelector('.end-emoji').textContent = emoji;
+    endScore.textContent = stars + '  ' + state.score + ' Punkte';
+    endScreen.classList.add('visible');
+  }
+
+  /* ── Navigation ──────────────────────────── */
+  btnPrev.addEventListener('click', function() {
+    if (!state.locked && state.index > 0) { state.index--; render(); }
+  });
+
+  btnNext.addEventListener('click', function() {
+    if (!state.locked && state.index < ITEMS.length - 1) { state.index++; render(); }
+  });
+
+  btnReplay.addEventListener('click', function() {
+    state.index  = 0;
+    state.score  = 0;
+    state.locked = false;
+    endScreen.classList.remove('visible');
+    render();
+  });
+
+  /* ── Start ───────────────────────────────── */
+  render();
+  </script>
+
+</body>
+</html>
